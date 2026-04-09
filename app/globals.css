@@ -1,8 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --background: #07080a;
-  --foreground: #ededed;
+  --background: #05060a;
+  --foreground: #e8e8ec;
+  --accent: #22d3ee;
+  --accent-2: #a78bfa;
 }
 
 @theme inline {
@@ -10,6 +12,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
 }
 
 body {
@@ -18,26 +21,57 @@ body {
   font-family: var(--font-sans), system-ui, sans-serif;
 }
 
-/* Smooth scrolling — Next.js 16 requires data attribute on <html> */
+/* Display font utility */
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+/* Prevent canvas from stealing scroll/touch events */
+.landing-canvas {
+  touch-action: pan-y;
+  pointer-events: none;
+  will-change: contents;
+}
+
+/* Fix scroll on mobile */
+html, body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Film grain overlay */
+.grain::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 180px;
+}
+
+/* Glow text effect */
+.glow-text {
+  text-shadow: 0 0 80px rgba(34, 211, 238, 0.15), 0 0 160px rgba(167, 139, 250, 0.1);
+}
+
+/* Animated gradient border */
+@keyframes border-glow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+.border-glow {
+  animation: border-glow 4s ease-in-out infinite;
+}
 
 /* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.15); }
 
 /* Select dropdown dark theme */
-select option {
-  background: #1a1a2e;
-  color: #ededed;
-}
+select option { background: #0f1018; color: #e8e8ec; }

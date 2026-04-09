@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,9 +12,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+});
+
 export const metadata: Metadata = {
-  title: "NeuroBridge — AWS for Living Neurons",
-  description: "Biocomputing-as-a-Service platform. Visualize, analyze, and optimize experiments on brain organoids.",
+  title: "NeuroBridge — The Platform for Living Neural Networks",
+  description: "Biocomputing-as-a-Service. One API to access, visualize, and experiment on brain organoids with AI-powered tools.",
 };
 
 export default function RootLayout({
@@ -25,9 +32,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full antialiased dark`}
     >
-      <body className="min-h-full flex flex-col bg-[#07080a] text-white">{children}</body>
+      <body className="min-h-full flex flex-col bg-[#05060a] text-white">{children}</body>
     </html>
   );
 }
