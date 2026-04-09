@@ -1,36 +1,153 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NeuroBridge
+
+**The Vercel for living neurons.** A biocomputing analytics platform for brain organoid research.
+
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](http://57.128.254.111:3847)
+[![API Docs](https://img.shields.io/badge/api-swagger-blue)](http://57.128.254.111:8847/docs)
+[![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
+
+---
+
+## What is NeuroBridge?
+
+NeuroBridge is a web-based analytics platform for researchers working with biological neural networks (brain organoids). It provides real-time visualization, 25+ analysis modules, and AI-powered insights for data from [FinalSpark](https://finalspark.com), [Cortical Labs](https://corticallabs.com), and university MEA platforms.
+
+**Think AWS CloudWatch, but for living neurons.**
+
+### Key Features
+
+- **6 Interactive Visualizations** — Raster plots, firing rate heatmaps, spike waveforms, ISI histograms, cross-correlograms, connectivity graphs (all D3.js)
+- **25 Analysis Modules** — From standard spike sorting to novel Organoid IQ scoring, attractor landscape mapping, and causal emergence measurement
+- **60+ API Endpoints** — Full REST API with Swagger documentation
+- **Real-time Dashboard** — Upload data or generate synthetic spikes, see results instantly
+- **Animated Landing Page** — Canvas-based neural network background, scroll-reveal animations, Framer Motion
+
+---
+
+## Screenshots
+
+### Landing Page
+Animated neural network background with live spike trace, scroll-reveal capabilities section.
+
+### Dashboard
+6 interactive D3.js visualizations with live data from the analysis API. Generate synthetic data or upload real recordings.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 16 (App Router, Turbopack) |
+| UI | React 19, TypeScript |
+| Visualization | D3.js v7, Canvas API |
+| Animation | Framer Motion |
+| Styling | Tailwind CSS v4 |
+| Backend | [NeuroBridge API](https://github.com/Luckyguybiz/neurobridge-api) (FastAPI, Python) |
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 20+
+- [NeuroBridge API](https://github.com/Luckyguybiz/neurobridge-api) running on port 8847
+
+### Installation
 
 ```bash
+git clone https://github.com/Luckyguybiz/neurobridge.git
+cd neurobridge
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Open http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The dashboard auto-connects to the API at `localhost:8847`. For production, it detects the hostname and connects to `{hostname}:8847`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
+```
+neurobridge/
+├── app/
+│   ├── page.tsx              # Landing page
+│   ├── dashboard/page.tsx    # Analytics dashboard
+│   ├── layout.tsx            # Root layout
+│   └── globals.css           # Global styles
+├── components/
+│   ├── dashboard/            # D3.js visualization components
+│   │   ├── RasterPlot.tsx
+│   │   ├── FiringRateHeatmap.tsx
+│   │   ├── SpikeWaveforms.tsx
+│   │   ├── ISIHistogram.tsx
+│   │   ├── CrossCorrelogram.tsx
+│   │   └── ConnectivityGraph.tsx
+│   └── landing/              # Animated landing components
+│       ├── NeuralBackground.tsx
+│       ├── LiveSpikeTrace.tsx
+│       ├── AnimatedText.tsx
+│       └── ScrollReveal.tsx
+└── lib/
+    ├── api.ts                # Backend API client
+    ├── types.ts              # TypeScript interfaces
+    └── synthetic-data.ts     # Local spike generator
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Dashboard Visualizations
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Visualization | Description |
+|--------------|-------------|
+| **Raster Plot** | Spike events across electrodes over time |
+| **Firing Rate Heatmap** | Color-coded spike frequency (Inferno scale) |
+| **Spike Waveforms** | Overlaid waveform shapes per electrode |
+| **ISI Histogram** | Inter-spike interval distribution (log scale) |
+| **Cross-Correlogram** | Temporal correlation between electrode pairs |
+| **Connectivity Graph** | Force-directed network of functional connections |
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## API Integration
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The frontend connects to the [NeuroBridge API](https://github.com/Luckyguybiz/neurobridge-api) for:
+
+- Synthetic data generation
+- File upload (CSV, HDF5, Parquet, JSON, NWB)
+- 25+ analysis modules (spike sorting, burst detection, connectivity, IQ scoring, etc.)
+- Data export (CSV, JSON)
+
+See the [API documentation](https://github.com/Luckyguybiz/neurobridge-api) for the full endpoint reference.
+
+---
+
+## Deployment
+
+```bash
+npm run build
+# rsync to server
+rsync -avz --exclude node_modules --exclude .next ./ user@server:/path/
+# On server:
+npm install && npm run build
+pm2 start npm --name neurobridge -- start -- -p 3847
+```
+
+---
+
+## Related
+
+- [NeuroBridge API](https://github.com/Luckyguybiz/neurobridge-api) — Backend with 25 analysis modules
+- [FinalSpark Neuroplatform](https://finalspark.com) — Remote access to living brain organoids
+- [Cortical Labs](https://corticallabs.com) — CL1 biological computer
+
+---
+
+## License
+
+MIT
+
+---
+
+*NeuroBridge — Biocomputing-as-a-Service*
