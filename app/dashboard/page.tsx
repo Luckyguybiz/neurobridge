@@ -11,9 +11,11 @@ import SpikeWaveforms from '@/components/dashboard/SpikeWaveforms';
 import ISIHistogram from '@/components/dashboard/ISIHistogram';
 import CrossCorrelogram from '@/components/dashboard/CrossCorrelogram';
 import ConnectivityGraph from '@/components/dashboard/ConnectivityGraph';
+import AdvancedAnalysis from '@/components/dashboard/AdvancedAnalysis';
 import type { Spike } from '@/lib/types';
 
 type Status = 'idle' | 'loading' | 'ready' | 'error';
+type Tab = 'visualizations' | 'advanced' | 'summary';
 
 function LiveDot() {
   return (
@@ -53,6 +55,7 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState<Record<string, unknown> | null>(null);
   const [burstInfo, setBurstInfo] = useState<{ n_bursts: number; burst_rate_per_min: number; mean_duration_ms: number } | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  const [activeTab, setActiveTab] = useState<Tab>('visualizations');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Timer
@@ -241,6 +244,30 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Tab Navigation */}
+      {status === 'ready' && datasetId && (
+        <div className="relative z-10 px-3 sm:px-4 pt-3 flex gap-1">
+          {([
+            { key: 'visualizations' as Tab, label: 'Visualizations', count: 6 },
+            { key: 'advanced' as Tab, label: 'Advanced Analysis', count: 12 },
+            { key: 'summary' as Tab, label: 'Summary', count: undefined },
+          ]).map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 ${
+                activeTab === tab.key
+                  ? 'bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border border-cyan-500/20 text-cyan-400/90'
+                  : 'bg-white/[0.02] border border-white/[0.04] text-white/30 hover:text-white/50'
+              }`}
+            >
+              {tab.label}
+              {tab.count && <span className="ml-1 text-[9px] opacity-50">{tab.count}</span>}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Dashboard Grid */}
       <main className="relative z-10 p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
         {status === 'loading' && spikes.length === 0 ? (
@@ -252,28 +279,40 @@ export default function DashboardPage() {
           </div>
         ) : spikes.length > 0 ? (
           <>
-            {[
-              { title: 'Raster Plot', desc: `${spikes.length.toLocaleString()} spikes across ${nElectrodes} electrodes`, span: 'lg:col-span-2 xl:col-span-2' },
-              { title: 'Network Connectivity', desc: 'Functional connections (co-firing analysis)', span: '' },
-              { title: 'Firing Rate Heatmap', desc: 'Spike frequency over time per electrode', span: 'lg:col-span-2' },
-              { title: 'Spike Waveforms', desc: 'Overlaid spike shapes per electrode', span: '' },
-              { title: 'ISI Distribution', desc: 'Inter-spike interval histogram (log scale)', span: '' },
-              { title: 'Cross-Correlogram', desc: 'Temporal correlation between electrode pairs', span: '' },
-            ].map((card, i) => (
-              <motion.div key={card.title} custom={i} initial="hidden" animate="visible" variants={cardVariants} className={card.span}>
-                <ChartCard title={card.title} description={card.desc}>
-                  {i === 0 && <RasterPlot spikes={spikes} duration={duration} electrodes={nElectrodes} />}
-                  {i === 1 && <ConnectivityGraph spikes={spikes} electrodes={nElectrodes} />}
-                  {i === 2 && <FiringRateHeatmap spikes={spikes} duration={duration} electrodes={nElectrodes} />}
-                  {i === 3 && <SpikeWaveforms spikes={spikes} electrodes={nElectrodes} />}
-                  {i === 4 && <ISIHistogram spikes={spikes} electrodes={nElectrodes} />}
-                  {i === 5 && <CrossCorrelogram spikes={spikes} electrodes={nElectrodes} />}
-                </ChartCard>
-              </motion.div>
-            ))}
+            {/* Advanced Analysis Tab */}
+            {activeTab === 'advanced' && datasetId && (
+              <div className="col-span-full">
+                <AdvancedAnalysis datasetId={datasetId} />
+              </div>
+            )}
 
-            {/* Analysis Summary Card */}
-            {summary && burstInfo && (
+            {/* Visualizations Tab */}
+            {activeTab === 'visualizations' && (
+              <>
+                {[
+                  { title: 'Raster Plot', desc: `${spikes.length.toLocaleString()} spikes across ${nElectrodes} electrodes`, span: 'lg:col-span-2 xl:col-span-2' },
+                  { title: 'Network Connectivity', desc: 'Functional connections (co-firing analysis)', span: '' },
+                  { title: 'Firing Rate Heatmap', desc: 'Spike frequency over time per electrode', span: 'lg:col-span-2' },
+                  { title: 'Spike Waveforms', desc: 'Overlaid spike shapes per electrode', span: '' },
+                  { title: 'ISI Distribution', desc: 'Inter-spike interval histogram (log scale)', span: '' },
+                  { title: 'Cross-Correlogram', desc: 'Temporal correlation between electrode pairs', span: '' },
+                ].map((card, i) => (
+                  <motion.div key={card.title} custom={i} initial="hidden" animate="visible" variants={cardVariants} className={card.span}>
+                    <ChartCard title={card.title} description={card.desc}>
+                      {i === 0 && <RasterPlot spikes={spikes} duration={duration} electrodes={nElectrodes} />}
+                      {i === 1 && <ConnectivityGraph spikes={spikes} electrodes={nElectrodes} />}
+                      {i === 2 && <FiringRateHeatmap spikes={spikes} duration={duration} electrodes={nElectrodes} />}
+                      {i === 3 && <SpikeWaveforms spikes={spikes} electrodes={nElectrodes} />}
+                      {i === 4 && <ISIHistogram spikes={spikes} electrodes={nElectrodes} />}
+                      {i === 5 && <CrossCorrelogram spikes={spikes} electrodes={nElectrodes} />}
+                    </ChartCard>
+                  </motion.div>
+                ))}
+              </>
+            )}
+
+            {/* Analysis Summary Card (shown in visualizations and summary tabs) */}
+            {(activeTab === 'visualizations' || activeTab === 'summary') && summary && burstInfo && (
               <motion.div custom={6} initial="hidden" animate="visible" variants={cardVariants} className="xl:col-span-3 lg:col-span-2">
                 <ChartCard title="Analysis Summary" description={`Dataset ${datasetId} · Computed by NeuroBridge API`}>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-[12px]">

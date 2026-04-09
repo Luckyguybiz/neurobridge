@@ -148,6 +148,104 @@ export async function getAmplitudes(datasetId: string) {
   return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/amplitudes`);
 }
 
+// ─── Advanced Analysis ───
+
+export async function getOrganoidIQ(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/iq`);
+}
+
+export async function getSTDP(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/stdp`);
+}
+
+export async function getLearning(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/learning`);
+}
+
+export async function getAttractors(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/attractors`);
+}
+
+export async function getStateSpace(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/state-space`);
+}
+
+export async function getPhaseTransitions(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/phase-transitions`);
+}
+
+export async function getPredictiveCoding(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/predictive-coding`);
+}
+
+export async function getWeights(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/weights`);
+}
+
+export async function getWeightTracking(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/weight-tracking`);
+}
+
+export async function getEmergence(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/emergence`);
+}
+
+export async function getReplay(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/replay`);
+}
+
+export async function getSequences(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/sequences`);
+}
+
+export async function getMemoryCapacity(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/memory-capacity`);
+}
+
+export async function getFingerprint(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/fingerprint`);
+}
+
+export async function getAnomalies(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/anomalies`);
+}
+
+export async function getStates(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/states`);
+}
+
+export async function getPCA(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/pca`);
+}
+
+export async function getMultiscale(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/multiscale`);
+}
+
+export async function getHealth(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/health`);
+}
+
+export async function getPredictBursts(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/predict/bursts`);
+}
+
+export async function getFullReport(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/full-report`);
+}
+
+export async function getAvalanches(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/avalanches`);
+}
+
+export async function getEntropy(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/entropy`);
+}
+
+export async function getComplexity(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/complexity`);
+}
+
 // ─── Export ───
 
 export function getExportCSVUrl(datasetId: string) {
