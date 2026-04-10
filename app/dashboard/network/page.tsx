@@ -326,7 +326,7 @@ export default function NetworkPage() {
         transition={{ duration: 0.5 }}
       >
         <ChartCard title="Functional Connectivity Graph" description="Force-directed layout · nodes = electrodes · edges = co-firing strength">
-          <div className="w-full" style={{ height: 400 }}>
+          <div className="w-full" style={{ height: 300 }}>
             <LargeConnectivityGraph spikes={spikes} electrodes={nElectrodes} />
           </div>
           {datasetId && <NetworkStats datasetId={datasetId} />}
