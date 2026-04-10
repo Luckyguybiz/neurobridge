@@ -2,11 +2,7 @@
  * NeuroBridge API client — connects frontend dashboard to Python backend.
  */
 
-const API_BASE = typeof window !== 'undefined'
-  ? window.location.hostname === 'neurocomputers.io' || window.location.hostname === 'www.neurocomputers.io'
-    ? 'https://api.neurocomputers.io'
-    : '' // Use Next.js API routes locally
-  : '';
+const API_BASE = '';
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
