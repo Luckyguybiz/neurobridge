@@ -3,7 +3,7 @@
 import { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 import type { Spike } from '@/lib/types';
-import { ELECTRODE_COLORS, ELECTRODE_POSITIONS } from '@/lib/utils';
+import { ELECTRODE_COLORS, ELECTRODE_POSITIONS, getThemeColors } from '@/lib/utils';
 
 interface SimNode extends d3.SimulationNodeDatum {
   id: number;

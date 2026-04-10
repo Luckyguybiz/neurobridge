@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import type { Spike } from '@/lib/types';
-import { ELECTRODE_COLORS } from '@/lib/utils';
+import { ELECTRODE_COLORS, getThemeColors } from '@/lib/utils';
 
 export default function CrossCorrelogram({ spikes, electrodes }: { spikes: Spike[]; electrodes: number }) {
   const svgRef = useRef<SVGSVGElement>(null);

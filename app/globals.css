@@ -135,3 +135,36 @@ html, body {
 ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover); }
 
 select option { background: var(--bg-secondary); color: var(--text-primary); }
+
+/* ─── Light mode overrides for Tailwind dark-only classes ─── */
+/* These cascade-override text-white variants when .light is active */
+.light .text-white\/85, .light .text-white\/80, .light .text-white\/90 { color: var(--text-primary) !important; }
+.light .text-white\/70, .light .text-white\/60 { color: var(--text-secondary) !important; }
+.light .text-white\/50, .light .text-white\/40, .light .text-white\/35 { color: var(--text-muted) !important; }
+.light .text-white\/30, .light .text-white\/25, .light .text-white\/20, .light .text-white\/15 { color: var(--text-faint) !important; }
+
+/* Background overrides */
+.light .bg-white\/\[0\.03\], .light .bg-white\/\[0\.02\] { background: var(--bg-card) !important; }
+.light .bg-white\/\[0\.04\], .light .bg-white\/\[0\.05\] { background: var(--bg-card) !important; }
+.light .bg-white\/\[0\.06\], .light .bg-white\/\[0\.08\] { background: var(--bg-card-hover) !important; }
+
+/* Border overrides */
+.light .border-white\/\[0\.04\], .light .border-white\/\[0\.03\] { border-color: var(--border) !important; }
+.light .border-white\/\[0\.06\], .light .border-white\/\[0\.08\] { border-color: var(--border-hover) !important; }
+
+/* Hardcoded dark backgrounds */
+.light .bg-\[\#05060a\], .light .bg-\[\#06070c\], .light .bg-\[\#08090e\], .light .bg-\[\#0a0b10\], .light .bg-\[\#0f1018\] {
+  background: var(--bg-primary) !important;
+}
+
+/* Gradient text stays vibrant in both modes */
+.light .from-cyan-500\/20 { --tw-gradient-from: color-mix(in srgb, var(--accent-cyan) 20%, transparent) !important; }
+.light .to-violet-500\/20 { --tw-gradient-to: color-mix(in srgb, var(--accent-violet) 20%, transparent) !important; }
+
+/* Hover states */
+.light .hover\:text-white\/60:hover, .light .hover\:text-white\/70:hover { color: var(--text-secondary) !important; }
+.light .hover\:text-white\/90:hover, .light .hover\:text-white\/50:hover { color: var(--text-primary) !important; }
+.light .hover\:bg-white\/\[0\.03\]:hover, .light .hover\:bg-white\/\[0\.06\]:hover,
+.light .hover\:bg-white\/\[0\.08\]:hover, .light .hover\:bg-white\/\[0\.1\]:hover {
+  background: var(--bg-card-hover) !important;
+}

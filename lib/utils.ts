@@ -31,3 +31,53 @@ export function groupSpikesByElectrode(spikes: { time: number; electrode: number
   }
   return groups;
 }
+
+/**
+ * Get theme-aware colors for D3/Canvas rendering.
+ * Reads CSS variables at runtime so charts adapt to light/dark mode.
+ */
+export function getThemeColors(): {
+  text: string;
+  textSecondary: string;
+  textMuted: string;
+  textFaint: string;
+  grid: string;
+  axis: string;
+  bg: string;
+  bgCard: string;
+  border: string;
+  cyan: string;
+  violet: string;
+} {
+  if (typeof window === 'undefined') {
+    // SSR fallback — dark theme
+    return {
+      text: 'rgba(255,255,255,0.85)',
+      textSecondary: 'rgba(255,255,255,0.6)',
+      textMuted: 'rgba(255,255,255,0.3)',
+      textFaint: 'rgba(255,255,255,0.15)',
+      grid: 'rgba(255,255,255,0.06)',
+      axis: 'rgba(255,255,255,0.12)',
+      bg: '#05060a',
+      bgCard: 'rgba(255,255,255,0.03)',
+      border: 'rgba(255,255,255,0.04)',
+      cyan: '#22d3ee',
+      violet: '#a78bfa',
+    };
+  }
+  const s = getComputedStyle(document.documentElement);
+  const v = (name: string) => s.getPropertyValue(name).trim();
+  return {
+    text: v('--text-primary') || 'rgba(255,255,255,0.85)',
+    textSecondary: v('--text-secondary') || 'rgba(255,255,255,0.6)',
+    textMuted: v('--text-muted') || 'rgba(255,255,255,0.3)',
+    textFaint: v('--text-faint') || 'rgba(255,255,255,0.15)',
+    grid: v('--chart-grid') || 'rgba(255,255,255,0.06)',
+    axis: v('--chart-axis') || 'rgba(255,255,255,0.12)',
+    bg: v('--bg-primary') || '#05060a',
+    bgCard: v('--bg-card') || 'rgba(255,255,255,0.03)',
+    border: v('--border') || 'rgba(255,255,255,0.04)',
+    cyan: v('--accent-cyan') || '#22d3ee',
+    violet: v('--accent-violet') || '#a78bfa',
+  };
+}

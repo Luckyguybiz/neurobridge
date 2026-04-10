@@ -44,9 +44,9 @@ const steps = [
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#05060a] text-white overflow-clip grain">
+    <div className="min-h-screen overflow-clip grain" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl bg-[#05060a]/60 border-b border-white/[0.04]">
+      <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl" style={{ background: 'color-mix(in srgb, var(--bg-primary) 60%, transparent)', borderBottom: '1px solid var(--border)' }}>
         <div className="max-w-[1200px] mx-auto flex items-center justify-between px-6 h-14">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center text-[10px] font-bold text-black">N</div>
@@ -143,7 +143,7 @@ export default function HomePage() {
         <ScrollReveal variant="scale">
           <div className="relative">
             <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-cyan-500/10 via-transparent to-violet-500/10 border-glow" />
-            <div className="relative rounded-2xl border border-white/[0.04] bg-[#08090e] overflow-hidden">
+            <div className="relative rounded-2xl border border-white/[0.04] bg-[var(--bg-secondary)] overflow-hidden">
               <LiveSpikeTrace />
             </div>
           </div>
@@ -207,7 +207,7 @@ export default function HomePage() {
                 <ScrollReveal variant={i % 2 === 0 ? 'fade-right' : 'fade-left'} delay={0.15} className="flex-1 w-full">
                   <div className="relative group/card">
                     <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-cyan-500/10 via-transparent to-violet-500/10 opacity-0 group-hover/card:opacity-100 transition-opacity duration-700" />
-                    <div className="relative rounded-2xl border border-white/[0.04] bg-[#08090e] p-4 overflow-hidden transition-colors duration-700 group-hover/card:border-white/[0.08]">
+                    <div className="relative rounded-2xl border border-white/[0.04] bg-[var(--bg-secondary)] p-4 overflow-hidden transition-colors duration-700 group-hover/card:border-white/[0.08]">
                       {cap.visual === 'raster' && <MiniRasterPlot />}
                       {cap.visual === 'heatmap' && <MiniHeatmap />}
                       {cap.visual === 'network' && <MiniNetwork />}

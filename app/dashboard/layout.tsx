@@ -121,11 +121,11 @@ function LiveDot() {
 
 function MetricPill({ label, value, unit }: { label: string; value: string; unit?: string }) {
   return (
-    <div className="flex flex-col px-2.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.04]">
-      <span className="text-[9px] text-white/30 uppercase tracking-wider">{label}</span>
-      <span className="text-[13px] font-medium text-white/80 tabular-nums leading-tight">
+    <div className="flex flex-col px-2.5 py-1.5 rounded-lg" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+      <span className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{label}</span>
+      <span className="text-[13px] font-medium tabular-nums leading-tight" style={{ color: 'var(--text-primary)' }}>
         {value}
-        {unit && <span className="text-[10px] text-white/40 ml-0.5">{unit}</span>}
+        {unit && <span className="text-[10px] ml-0.5" style={{ color: 'var(--text-muted)' }}>{unit}</span>}
       </span>
     </div>
   );
@@ -241,9 +241,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     }}>
       <div className="min-h-screen grain flex" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
         {/* Ambient blobs */}
-        <div className="fixed inset-0 pointer-events-none z-0">
-          <div className="absolute top-0 left-1/4 w-[600px] h-[400px] bg-cyan-500/[0.015] rounded-full blur-[150px]" />
-          <div className="absolute bottom-0 right-1/4 w-[500px] h-[300px] bg-violet-500/[0.015] rounded-full blur-[120px]" />
+        <div className="fixed inset-0 pointer-events-none z-0" style={{ opacity: 'var(--ambient-opacity)' }}>
+          <div className="absolute top-0 left-1/4 w-[600px] h-[400px] rounded-full blur-[150px]" style={{ background: 'var(--accent-cyan)' }} />
+          <div className="absolute bottom-0 right-1/4 w-[500px] h-[300px] rounded-full blur-[120px]" style={{ background: 'var(--accent-violet)' }} />
         </div>
 
         {/* Mobile sidebar overlay */}
@@ -259,22 +259,24 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         </AnimatePresence>
 
         {/* ── Sidebar ─────────────────────────────────────────────────── */}
-        <aside className={`
-          fixed left-0 top-0 h-full z-40 w-[220px]
-          bg-[#06070c]/95 backdrop-blur-2xl
-          border-r border-white/[0.04]
-          flex flex-col
-          transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        `}>
+        <aside
+          className={`
+            fixed left-0 top-0 h-full z-40 w-[220px]
+            backdrop-blur-2xl flex flex-col
+            transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]
+            ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          `}
+          style={{ background: 'var(--bg-secondary)', borderRight: '1px solid var(--border)' }}
+        >
           {/* Logo */}
-          <div className="h-12 flex items-center justify-between px-4 border-b border-white/[0.04]">
+          <div className="h-12 flex items-center justify-between px-4" style={{ borderBottom: '1px solid var(--border)' }}>
             <Link href="/" className="flex items-center gap-2 group">
               <div className="w-6 h-6 rounded-md bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center text-[9px] font-bold text-black shrink-0">N</div>
-              <span className="text-[13px] font-medium text-white/60 tracking-tight group-hover:text-white/90 transition-colors duration-300">NeuroBridge</span>
+              <span className="text-[13px] font-medium tracking-tight transition-colors duration-300" style={{ color: 'var(--text-secondary)' }}>NeuroBridge</span>
             </Link>
             <button
-              className="lg:hidden text-white/30 hover:text-white/60 transition-colors"
+              className="lg:hidden transition-colors"
+              style={{ color: 'var(--text-muted)' }}
               onClick={() => setSidebarOpen(false)}
             >
               <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5}>
@@ -286,7 +288,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           {/* Nav items */}
           <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
             <div className="px-2 pb-1.5">
-              <span className="text-[9px] font-medium text-white/20 uppercase tracking-widest">Analysis</span>
+              <span className="text-[9px] font-medium uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>Analysis</span>
             </div>
             {NAV.map(({ href, label, Icon }) => {
               const active = isActive(href);
@@ -298,20 +300,21 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   className={`
                     flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium
                     transition-all duration-300 group relative
-                    ${active
-                      ? 'bg-gradient-to-r from-cyan-500/15 to-violet-500/10 border border-cyan-500/[0.15] text-white/90'
-                      : 'text-white/35 hover:text-white/70 hover:bg-white/[0.03]'
-                    }
+                    ${active ? 'border' : ''}
                   `}
+                  style={active
+                    ? { background: 'linear-gradient(to right, color-mix(in srgb, var(--accent-cyan) 15%, transparent), color-mix(in srgb, var(--accent-violet) 10%, transparent))', borderColor: 'color-mix(in srgb, var(--accent-cyan) 15%, transparent)', color: 'var(--text-primary)' }
+                    : { color: 'var(--text-muted)' }
+                  }
                 >
                   {active && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-gradient-to-b from-cyan-400 to-violet-400 rounded-full" />
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full" style={{ background: 'linear-gradient(to bottom, var(--accent-cyan), var(--accent-violet))' }} />
                   )}
-                  <span className={`transition-colors duration-300 ${active ? 'text-cyan-400' : 'text-white/30 group-hover:text-white/50'}`}>
+                  <span className="transition-colors duration-300" style={{ color: active ? 'var(--accent-cyan)' : 'var(--text-faint)' }}>
                     <Icon />
                   </span>
                   {label}
-                  {active && <div className="ml-auto w-1 h-1 rounded-full bg-cyan-400/60" />}
+                  {active && <div className="ml-auto w-1 h-1 rounded-full" style={{ background: 'var(--accent-cyan)' }} />}
                 </Link>
               );
             })}
@@ -319,10 +322,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
           {/* Status in sidebar */}
           {status === 'ready' && datasetId && (
-            <div className="px-4 py-3 border-t border-white/[0.04]">
-              <div className="text-[9px] text-white/20 uppercase tracking-widest mb-1.5">Dataset</div>
-              <div className="font-mono text-[10px] text-white/40 truncate">{datasetId}</div>
-              <div className="text-[10px] text-white/30 mt-0.5">{nElectrodes} ch · {duration.toFixed(0)}s</div>
+            <div className="px-4 py-3" style={{ borderTop: '1px solid var(--border)' }}>
+              <div className="text-[9px] uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-faint)' }}>Dataset</div>
+              <div className="font-mono text-[10px] truncate" style={{ color: 'var(--text-muted)' }}>{datasetId}</div>
+              <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{nElectrodes} ch · {duration.toFixed(0)}s</div>
             </div>
           )}
 
@@ -352,7 +355,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             <div className="px-4 sm:px-5 h-12 flex items-center justify-between gap-3">
               {/* Mobile menu toggle */}
               <button
-                className="lg:hidden text-white/40 hover:text-white/70 transition-colors"
+                className="lg:hidden transition-colors"
+                style={{ color: 'var(--text-muted)' }}
                 onClick={() => setSidebarOpen(true)}
               >
                 <svg viewBox="0 0 20 20" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round">
@@ -406,21 +410,24 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 <button
                   onClick={() => generateData(120, 8)}
                   disabled={status === 'loading'}
-                  className="hidden sm:block text-[11px] px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.04] text-white/40 hover:text-white/70 transition-all duration-300 disabled:opacity-40"
+                  className="hidden sm:block text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40"
+                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
                 >
                   120s
                 </button>
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={status === 'loading'}
-                  className="text-[11px] px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.04] text-white/40 hover:text-white/70 transition-all duration-300 disabled:opacity-40"
+                  className="text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40"
+                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
                 >
                   Upload
                 </button>
                 {datasetId && status === 'ready' && (
                   <a
                     href={api.getExportCSVUrl(datasetId)}
-                    className="hidden sm:block text-[11px] px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.04] text-white/40 hover:text-white/70 transition-all duration-300"
+                    className="hidden sm:block text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300"
+                    style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
                   >
                     CSV
                   </a>

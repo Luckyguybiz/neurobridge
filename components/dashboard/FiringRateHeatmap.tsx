@@ -3,12 +3,14 @@
 import { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 import type { Spike } from '@/lib/types';
+import { getThemeColors } from '@/lib/utils';
 
 export default function FiringRateHeatmap({ spikes, duration, electrodes }: { spikes: Spike[]; duration: number; electrodes: number }) {
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     if (!svgRef.current || spikes.length === 0) return;
+    const tc = getThemeColors();
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
@@ -54,13 +56,13 @@ export default function FiringRateHeatmap({ spikes, duration, electrodes }: { sp
     g.append('g')
       .attr('transform', `translate(0,${h})`)
       .call(d3.axisBottom(x).ticks(6).tickFormat((d) => `${d}s`))
-      .call((g) => g.selectAll('text').attr('fill', 'rgba(255,255,255,0.5)').style('font-size', '10px'))
-      .call((g) => g.selectAll('line, path').attr('stroke', 'rgba(255,255,255,0.15)'));
+      .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
+      .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
 
     g.append('g')
       .call(d3.axisLeft(y).tickFormat((d) => `E${d}`))
-      .call((g) => g.selectAll('text').attr('fill', 'rgba(255,255,255,0.5)').style('font-size', '10px'))
-      .call((g) => g.selectAll('line, path').attr('stroke', 'rgba(255,255,255,0.15)'));
+      .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
+      .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
 
     // Color legend
     const legendW = 12;
@@ -75,8 +77,8 @@ export default function FiringRateHeatmap({ spikes, duration, electrodes }: { sp
     legendG.append('rect').attr('width', legendW).attr('height', legendH).attr('fill', 'url(#heatGrad)').attr('rx', 3);
     legendG.append('g').attr('transform', `translate(${legendW},0)`)
       .call(d3.axisRight(legendScale).ticks(4).tickSize(3))
-      .call((g) => g.selectAll('text').attr('fill', 'rgba(255,255,255,0.4)').style('font-size', '9px'))
-      .call((g) => g.selectAll('line, path').attr('stroke', 'rgba(255,255,255,0.15)'));
+      .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '9px'))
+      .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
   }, [spikes, duration, electrodes]);
 
   return <svg ref={svgRef} className="w-full h-64" />;
