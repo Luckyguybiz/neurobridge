@@ -3,12 +3,10 @@
  */
 
 const API_BASE = typeof window !== 'undefined'
-  ? window.location.hostname === 'localhost'
-    ? 'http://localhost:8847'
-    : window.location.hostname === 'neurocomputers.io' || window.location.hostname === 'www.neurocomputers.io'
-      ? 'https://api.neurocomputers.io'
-      : `http://${window.location.hostname}:8847`
-  : 'http://localhost:8847';
+  ? window.location.hostname === 'neurocomputers.io' || window.location.hostname === 'www.neurocomputers.io'
+    ? 'https://api.neurocomputers.io'
+    : '' // Use Next.js API routes locally
+  : '';
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -53,6 +51,22 @@ export async function uploadDataset(file: File, samplingRate = 30000) {
     throw new Error(err.detail || 'Upload failed');
   }
   return res.json();
+}
+
+export async function loadLocalDataset(filename: string, samplingRate = 437) {
+  return apiFetch<{
+    dataset_id: string;
+    n_spikes: number;
+    n_electrodes: number;
+    duration_s: number;
+  }>('/api/load-local', {
+    method: 'POST',
+    body: JSON.stringify({ filename, sampling_rate: samplingRate }),
+  });
+}
+
+export async function listLocalFiles() {
+  return apiFetch<{ files: string[] }>('/api/local-files');
 }
 
 export async function listDatasets() {

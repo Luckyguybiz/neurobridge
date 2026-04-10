@@ -24,6 +24,7 @@ export interface DashboardContextValue {
   elapsed: number;
   generateData: (dur?: number, electrodes?: number, burstProb?: number) => Promise<void>;
   uploadData: (file: File) => Promise<void>;
+  loadLocalData: (filename: string) => Promise<void>;
 }
 
 export const DashboardContext = createContext<DashboardContextValue | null>(null);

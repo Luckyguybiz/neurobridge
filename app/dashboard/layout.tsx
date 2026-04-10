@@ -233,6 +233,39 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // ── Load local CSV ─────────────────────────────────────────────────────
+  const loadLocalData = useCallback(async (filename: string) => {
+    setStatus('loading');
+    setError('');
+    setElapsed(0);
+    try {
+      const result = await api.loadLocalDataset(filename);
+      setDatasetId(result.dataset_id);
+      setDuration(result.duration_s);
+      setNElectrodes(result.n_electrodes);
+
+      const spikeData = await api.getSpikes(result.dataset_id, { limit: 15000 });
+      const spikeArr: Spike[] = spikeData.times.map((t: number, i: number) => ({
+        time: t,
+        electrode: spikeData.electrodes[i],
+        amplitude: spikeData.amplitudes[i],
+        waveform: [],
+      }));
+      setSpikes(spikeArr);
+
+      const [summaryData, burstData] = await Promise.all([
+        api.getFullSummary(result.dataset_id),
+        api.getBursts(result.dataset_id),
+      ]);
+      setSummary(summaryData);
+      setBurstInfo(burstData as unknown as BurstInfo);
+      setStatus('ready');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load local data');
+      setStatus('error');
+    }
+  }, []);
+
   // ── Auto-generate on mount ─────────────────────────────────────────────
   useEffect(() => { generateData(30, 8); }, [generateData]);
 
@@ -248,7 +281,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     <DashboardContext.Provider value={{
       datasetId, spikes, duration, nElectrodes,
       summary, burstInfo, status, error, elapsed,
-      generateData, uploadData,
+      generateData, uploadData, loadLocalData,
     }}>
       <div className="min-h-screen grain flex" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
         {/* Ambient blobs */}
@@ -425,6 +458,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
                 >
                   120s
+                </button>
+                <button
+                  onClick={() => loadLocalData('SpikeDataToShare_fs437data.csv')}
+                  disabled={status === 'loading'}
+                  className="text-[11px] px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 border border-emerald-500/20 text-emerald-400/80 hover:text-emerald-300 transition-all duration-300 disabled:opacity-40"
+                >
+                  fs437
                 </button>
                 <button
                   onClick={() => fileInputRef.current?.click()}
