@@ -19,6 +19,7 @@ export default function ConnectivityGraph({ spikes, electrodes }: { spikes: Spik
 
   useEffect(() => {
     if (!svgRef.current || spikes.length === 0) return;
+    const tc = getThemeColors();
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
@@ -70,7 +71,7 @@ export default function ConnectivityGraph({ spikes, electrodes }: { spikes: Spik
     const linkEls = svg.selectAll('.link')
       .data(links)
       .join('line')
-      .attr('stroke', 'rgba(255,255,255,0.3)')
+      .attr('stroke', tc.textMuted)
       .attr('stroke-width', (d) => linkWidth(d.strength))
       .attr('opacity', (d) => linkOpacity(d.strength));
 
@@ -95,7 +96,7 @@ export default function ConnectivityGraph({ spikes, electrodes }: { spikes: Spik
       .text((d) => d.label)
       .attr('text-anchor', 'middle')
       .attr('dy', '0.35em')
-      .attr('fill', 'rgba(255,255,255,0.8)')
+      .attr('fill', tc.text)
       .style('font-size', '11px')
       .style('font-weight', '600')
       .style('pointer-events', 'none');

@@ -11,6 +11,7 @@ export default function SpikeWaveforms({ spikes, electrodes }: { spikes: Spike[]
 
   useEffect(() => {
     if (!svgRef.current) return;
+    const tc = getThemeColors();
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
@@ -38,16 +39,16 @@ export default function SpikeWaveforms({ spikes, electrodes }: { spikes: Spike[]
     g.append('g')
       .attr('transform', `translate(0,${h})`)
       .call(d3.axisBottom(x).ticks(5).tickFormat((d) => `${((+d / 30000) * 1000).toFixed(1)} ms`))
-      .call((g) => g.selectAll('text').attr('fill', 'rgba(255,255,255,0.5)').style('font-size', '10px'))
-      .call((g) => g.selectAll('line, path').attr('stroke', 'rgba(255,255,255,0.15)'));
+      .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
+      .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
 
     g.append('g')
       .call(d3.axisLeft(y).ticks(5).tickFormat((d) => `${d} uV`))
-      .call((g) => g.selectAll('text').attr('fill', 'rgba(255,255,255,0.5)').style('font-size', '10px'))
-      .call((g) => g.selectAll('line, path').attr('stroke', 'rgba(255,255,255,0.15)'));
+      .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
+      .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
 
     // Zero line
-    g.append('line').attr('x1', 0).attr('x2', w).attr('y1', y(0)).attr('y2', y(0)).attr('stroke', 'rgba(255,255,255,0.1)');
+    g.append('line').attr('x1', 0).attr('x2', w).attr('y1', y(0)).attr('y2', y(0)).attr('stroke', tc.grid);
 
     const line = d3.line<number>()
       .x((_, i) => x(i))
@@ -85,8 +86,8 @@ export default function SpikeWaveforms({ spikes, electrodes }: { spikes: Spike[]
             onClick={() => setSelectedElectrode(i)}
             className="px-2 py-0.5 rounded text-xs transition-all"
             style={{
-              backgroundColor: selectedElectrode === i ? ELECTRODE_COLORS[i] : 'rgba(255,255,255,0.05)',
-              color: selectedElectrode === i ? '#000' : 'rgba(255,255,255,0.5)',
+              backgroundColor: selectedElectrode === i ? ELECTRODE_COLORS[i] : 'var(--bg-card)',
+              color: selectedElectrode === i ? '#000' : 'var(--text-secondary)',
             }}
           >
             E{i}

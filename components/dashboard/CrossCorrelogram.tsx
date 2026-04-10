@@ -12,6 +12,7 @@ export default function CrossCorrelogram({ spikes, electrodes }: { spikes: Spike
 
   useEffect(() => {
     if (!svgRef.current || spikes.length === 0) return;
+    const tc = getThemeColors();
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
@@ -63,29 +64,29 @@ export default function CrossCorrelogram({ spikes, electrodes }: { spikes: Spike
       .attr('opacity', 0.6);
 
     // Zero line
-    g.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', 0).attr('y2', h).attr('stroke', 'rgba(255,255,255,0.3)').attr('stroke-dasharray', '3,3');
+    g.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', 0).attr('y2', h).attr('stroke', tc.textMuted).attr('stroke-dasharray', '3,3');
 
     g.append('g')
       .attr('transform', `translate(0,${h})`)
       .call(d3.axisBottom(x).ticks(5).tickFormat((d) => `${d} ms`))
-      .call((g) => g.selectAll('text').attr('fill', 'rgba(255,255,255,0.5)').style('font-size', '10px'))
-      .call((g) => g.selectAll('line, path').attr('stroke', 'rgba(255,255,255,0.15)'));
+      .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
+      .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
 
     g.append('g')
       .call(d3.axisLeft(y).ticks(4))
-      .call((g) => g.selectAll('text').attr('fill', 'rgba(255,255,255,0.5)').style('font-size', '10px'))
-      .call((g) => g.selectAll('line, path').attr('stroke', 'rgba(255,255,255,0.15)'));
+      .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
+      .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
   }, [spikes, pairA, pairB, electrodes]);
 
   return (
     <div>
-      <div className="flex gap-2 mb-2 items-center text-xs text-white/50">
+      <div className="flex gap-2 mb-2 items-center text-xs" style={{ color: 'var(--text-secondary)' }}>
         <span>Pair:</span>
-        <select value={pairA} onChange={(e) => setPairA(+e.target.value)} className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-white/80">
+        <select value={pairA} onChange={(e) => setPairA(+e.target.value)} className="rounded px-2 py-0.5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
           {Array.from({ length: electrodes }, (_, i) => <option key={i} value={i}>E{i}</option>)}
         </select>
         <span>vs</span>
-        <select value={pairB} onChange={(e) => setPairB(+e.target.value)} className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-white/80">
+        <select value={pairB} onChange={(e) => setPairB(+e.target.value)} className="rounded px-2 py-0.5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
           {Array.from({ length: electrodes }, (_, i) => <option key={i} value={i}>E{i}</option>)}
         </select>
       </div>
