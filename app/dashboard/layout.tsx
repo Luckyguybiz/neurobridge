@@ -8,6 +8,7 @@ import * as api from '@/lib/api';
 import { DashboardContext } from '@/lib/dashboard-context';
 import type { Spike } from '@/lib/types';
 import type { BurstInfo, DashboardStatus } from '@/lib/dashboard-context';
+import { ThemeToggle } from '@/lib/theme-context';
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
 
@@ -238,7 +239,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       summary, burstInfo, status, error, elapsed,
       generateData, uploadData,
     }}>
-      <div className="min-h-screen bg-[#05060a] text-white grain flex">
+      <div className="min-h-screen grain flex" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
         {/* Ambient blobs */}
         <div className="fixed inset-0 pointer-events-none z-0">
           <div className="absolute top-0 left-1/4 w-[600px] h-[400px] bg-cyan-500/[0.015] rounded-full blur-[150px]" />
@@ -326,10 +327,15 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           )}
 
           {/* Footer */}
-          <div className="px-2 pb-4 pt-2 border-t border-white/[0.04]">
+          <div className="px-2 pb-4 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
+            <div className="flex items-center justify-between px-3 py-1.5 mb-1">
+              <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Theme</span>
+              <ThemeToggle />
+            </div>
             <Link
               href="/"
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] text-white/25 hover:text-white/60 hover:bg-white/[0.03] transition-all duration-300"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] hover:bg-[var(--bg-card-hover)] transition-all duration-300"
+              style={{ color: 'var(--text-muted)' }}
             >
               <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round">
                 <path d="M10 3L5 8l5 5" />
@@ -342,7 +348,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         {/* ── Main area ────────────────────────────────────────────────── */}
         <div className="flex-1 flex flex-col min-w-0 lg:pl-[220px]">
           {/* Header */}
-          <header className="sticky top-0 z-20 backdrop-blur-2xl bg-[#05060a]/70 border-b border-white/[0.04]">
+          <header className="sticky top-0 z-20 backdrop-blur-2xl border-b" style={{ background: 'color-mix(in srgb, var(--bg-primary) 70%, transparent)', borderColor: 'var(--border)' }}>
             <div className="px-4 sm:px-5 h-12 flex items-center justify-between gap-3">
               {/* Mobile menu toggle */}
               <button

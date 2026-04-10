@@ -14,17 +14,30 @@ export default function ChartCard({
   className?: string;
 }) {
   return (
-    <div className={`group relative rounded-2xl border border-white/[0.04] bg-[#08090e]/80 backdrop-blur-sm hover:border-white/[0.08] hover:translate-y-[-2px] hover:shadow-[0_4px_30px_rgba(0,0,0,0.3)] transition-all duration-700 ${className}`}>
+    <div
+      className={`group relative rounded-2xl backdrop-blur-sm hover:translate-y-[-2px] transition-all duration-700 ${className}`}
+      style={{
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border)',
+        boxShadow: `0 2px 10px var(--shadow)`,
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-hover)'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
+    >
       {/* Hover glow */}
-      <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-cyan-500/[0.04] via-transparent to-violet-500/[0.04] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+      <div className="absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+        style={{ background: `linear-gradient(135deg, color-mix(in srgb, var(--accent-cyan) 4%, transparent), transparent, color-mix(in srgb, var(--accent-violet) 4%, transparent))` }}
+      />
 
       <div className="relative z-10 p-4 sm:p-5">
         <div className="mb-3 flex items-start justify-between">
           <div>
-            <h3 className="text-[14px] font-display text-white/85">{title}</h3>
-            {description && <p className="text-[10px] text-white/20 mt-0.5 tracking-wide">{description}</p>}
+            <h3 className="text-[14px] font-display" style={{ color: 'var(--text-primary)' }}>{title}</h3>
+            {description && <p className="text-[10px] mt-0.5 tracking-wide" style={{ color: 'var(--text-muted)' }}>{description}</p>}
           </div>
-          <div className="w-1.5 h-1.5 rounded-full bg-cyan-400/20 group-hover:bg-cyan-400/60 transition-colors duration-700 mt-1.5 shrink-0" />
+          <div className="w-1.5 h-1.5 rounded-full transition-colors duration-700 mt-1.5 shrink-0"
+            style={{ background: 'color-mix(in srgb, var(--accent-cyan) 20%, transparent)' }}
+          />
         </div>
         <div className="w-full">{children}</div>
       </div>
