@@ -319,6 +319,149 @@ export default function SpikesPage() {
           </ChartCard>
         </motion.div>
       </div>
+
+      {/* PCA + State Classification row */}
+      {datasetId && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}>
+            <ChartCard title="PCA Embedding" description="Neural state space — 2D projection of activity windows">
+              <PCAScatter datasetId={datasetId} />
+            </ChartCard>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}>
+            <ChartCard title="State Classification" description="Automatic classification: resting / active / bursting">
+              <StateClassification datasetId={datasetId} />
+            </ChartCard>
+          </motion.div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── PCA Scatter ─────────────────────────────────────────────────────────────
+
+function PCAScatter({ datasetId }: { datasetId: string }) {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [data, setData] = useState<Record<string, unknown> | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    api.getPCA(datasetId).then(setData).catch(e => setError(e instanceof Error ? e.message : 'Failed'));
+  }, [datasetId]);
+
+  useEffect(() => {
+    if (!svgRef.current || !data) return;
+    const svg = d3.select(svgRef.current);
+    svg.selectAll('*').remove();
+
+    const embedding = (data.embedding ?? data.components ?? data.points ?? []) as number[][];
+    const labels = (data.labels ?? data.cluster_labels ?? []) as number[];
+    const explained = (data.explained_variance ?? data.variance_explained ?? []) as number[];
+
+    if (embedding.length < 2) return;
+
+    const rect = svgRef.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = 220;
+    const margin = { top: 10, right: 10, bottom: 30, left: 40 };
+    const w = width - margin.left - margin.right;
+    const h = height - margin.top - margin.bottom;
+
+    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const xs = embedding.map(p => p[0] ?? 0);
+    const ys = embedding.map(p => p[1] ?? 0);
+    const x = d3.scaleLinear().domain([Math.min(...xs), Math.max(...xs)]).range([0, w]).nice();
+    const y = d3.scaleLinear().domain([Math.min(...ys), Math.max(...ys)]).range([h, 0]).nice();
+
+    g.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).ticks(5))
+      .call(ax => ax.selectAll('text').attr('fill', 'rgba(255,255,255,0.4)').style('font-size', '9px'))
+      .call(ax => ax.selectAll('line,path').attr('stroke', 'rgba(255,255,255,0.1)'));
+
+    g.append('g').call(d3.axisLeft(y).ticks(5))
+      .call(ax => ax.selectAll('text').attr('fill', 'rgba(255,255,255,0.4)').style('font-size', '9px'))
+      .call(ax => ax.selectAll('line,path').attr('stroke', 'rgba(255,255,255,0.1)'));
+
+    const colors = ['#22d3ee', '#a78bfa', '#34d399', '#fbbf24', '#f87171', '#818cf8'];
+
+    embedding.forEach((point, i) => {
+      const label = labels[i] ?? 0;
+      g.append('circle')
+        .attr('cx', x(point[0] ?? 0))
+        .attr('cy', y(point[1] ?? 0))
+        .attr('r', 3)
+        .attr('fill', colors[label % colors.length])
+        .attr('opacity', 0.7);
+    });
+
+    // Axis labels
+    if (explained.length >= 2) {
+      g.append('text').attr('x', w / 2).attr('y', h + 25).attr('text-anchor', 'middle')
+        .attr('fill', 'rgba(255,255,255,0.3)').style('font-size', '9px')
+        .text(`PC1 (${(Number(explained[0]) * 100).toFixed(0)}%)`);
+      g.append('text').attr('x', -h / 2).attr('y', -30).attr('text-anchor', 'middle')
+        .attr('transform', 'rotate(-90)')
+        .attr('fill', 'rgba(255,255,255,0.3)').style('font-size', '9px')
+        .text(`PC2 (${(Number(explained[1]) * 100).toFixed(0)}%)`);
+    }
+  }, [data]);
+
+  if (error) return <div className="text-[11px] text-red-400/60 py-4">{error}</div>;
+  if (!data) return <div className="flex items-center justify-center py-8"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>;
+
+  return <svg ref={svgRef} className="w-full" style={{ height: 220 }} />;
+}
+
+// ─── State Classification ────────────────────────────────────────────────────
+
+function StateClassification({ datasetId }: { datasetId: string }) {
+  const [data, setData] = useState<Record<string, unknown> | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    api.getStates(datasetId).then(setData).catch(e => setError(e instanceof Error ? e.message : 'Failed'));
+  }, [datasetId]);
+
+  if (error) return <div className="text-[11px] text-red-400/60 py-4">{error}</div>;
+  if (!data) return <div className="flex items-center justify-center py-8"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>;
+
+  const labels = (data.labels ?? data.state_labels ?? data.states ?? []) as number[];
+  const stateNames = ['Resting', 'Active', 'Bursting'];
+  const stateColors = ['#818cf8', '#22d3ee', '#f87171'];
+
+  // Count each state
+  const counts: Record<number, number> = {};
+  for (const l of labels) {
+    counts[l] = (counts[l] ?? 0) + 1;
+  }
+
+  const total = labels.length || 1;
+
+  return (
+    <div className="space-y-3">
+      {Object.entries(counts).sort((a, b) => Number(b[1]) - Number(a[1])).map(([state, count]) => {
+        const idx = Number(state);
+        const pct = (count / total * 100).toFixed(1);
+        return (
+          <div key={state} className="space-y-1">
+            <div className="flex justify-between text-[10px]">
+              <span className="text-white/40">{stateNames[idx] ?? `State ${idx}`}</span>
+              <span className="text-white/60 tabular-nums">{pct}% ({count} windows)</span>
+            </div>
+            <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${pct}%` }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+                className="h-full rounded-full"
+                style={{ backgroundColor: stateColors[idx] ?? '#666' }}
+              />
+            </div>
+          </div>
+        );
+      })}
+      <div className="text-[10px] text-white/20 mt-2">{labels.length} time windows classified</div>
     </div>
   );
 }
