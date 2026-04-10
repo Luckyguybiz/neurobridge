@@ -62,14 +62,49 @@ function IconDiscovery() {
   );
 }
 
+function IconExperiments() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+      <path d="M7 2v5l-4 8a1.5 1.5 0 001.3 2.2h11.4A1.5 1.5 0 0017 15L13 7V2" />
+      <line x1="5" y1="2" x2="15" y2="2" />
+      <circle cx="9" cy="13" r="1" fill="currentColor" />
+      <circle cx="13" cy="11" r="0.8" fill="currentColor" />
+    </svg>
+  );
+}
+
+function IconProtocols() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+      <rect x="3" y="2" width="14" height="16" rx="2" />
+      <line x1="7" y1="6" x2="13" y2="6" />
+      <line x1="7" y1="9.5" x2="13" y2="9.5" />
+      <line x1="7" y1="13" x2="11" y2="13" />
+    </svg>
+  );
+}
+
+function IconPublish() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+      <path d="M14 2H6a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2z" />
+      <polyline points="8,10 10,8 12,10" />
+      <line x1="10" y1="8" x2="10" y2="14" />
+    </svg>
+  );
+}
+
 // ─── Nav items ───────────────────────────────────────────────────────────────
 
 const NAV = [
-  { href: '/dashboard',           label: 'Overview',   Icon: IconOverview },
-  { href: '/dashboard/spikes',    label: 'Spikes',     Icon: IconSpikes },
-  { href: '/dashboard/network',   label: 'Network',    Icon: IconNetwork },
-  { href: '/dashboard/iq',        label: 'IQ',         Icon: IconIQ },
-  { href: '/dashboard/discovery', label: 'Discovery',  Icon: IconDiscovery },
+  { href: '/dashboard',              label: 'Overview',     Icon: IconOverview },
+  { href: '/dashboard/spikes',       label: 'Spikes',       Icon: IconSpikes },
+  { href: '/dashboard/network',      label: 'Network',      Icon: IconNetwork },
+  { href: '/dashboard/iq',           label: 'IQ',           Icon: IconIQ },
+  { href: '/dashboard/discovery',    label: 'Discovery',    Icon: IconDiscovery },
+  { href: '/dashboard/experiments',  label: 'Experiments',  Icon: IconExperiments },
+  { href: '/dashboard/protocols',    label: 'Protocols',    Icon: IconProtocols },
+  { href: '/dashboard/publish',      label: 'Publish',      Icon: IconPublish },
 ];
 
 // ─── Small helpers ────────────────────────────────────────────────────────────
