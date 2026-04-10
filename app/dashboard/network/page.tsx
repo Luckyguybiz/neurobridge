@@ -384,6 +384,146 @@ export default function NetworkPage() {
           </ChartCard>
         </motion.div>
       </div>
+
+      {/* Network Motifs + Information Flow row */}
+      {datasetId && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+            <ChartCard title="Network Motifs" description="3-node subgraph patterns vs random networks">
+              <MotifsCard datasetId={datasetId} />
+            </ChartCard>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.24 }}>
+            <ChartCard title="Information Flow (Granger)" description="Directed causal information flow between electrodes">
+              <InfoFlowCard datasetId={datasetId} />
+            </ChartCard>
+          </motion.div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Motifs Card ─────────────────────────────────────────────────────────────
+
+function MotifsCard({ datasetId }: { datasetId: string }) {
+  const [data, setData] = useState<Record<string, unknown> | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    api.getMotifs(datasetId)
+      .then(setData)
+      .catch((e) => setError(e instanceof Error ? e.message : 'Failed'));
+  }, [datasetId]);
+
+  if (error) return <div className="text-[11px] text-red-400/60 py-4">{error}</div>;
+  if (!data) return <div className="flex items-center justify-center py-6"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>;
+
+  const counts = (data.motif_counts ?? {}) as Record<string, number>;
+  const zScore = Number(data.triangle_z_score ?? 0);
+  const enrichment = String(data.triangle_enrichment ?? 'unknown');
+
+  const motifTypes = [
+    { key: 'triangle', label: 'Triangle (recurrent)', color: 'bg-violet-500/40' },
+    { key: 'chain', label: 'Chain (feed-forward)', color: 'bg-cyan-500/40' },
+    { key: 'star', label: 'Star (hub)', color: 'bg-amber-500/40' },
+    { key: 'disconnected', label: 'Disconnected', color: 'bg-white/10' },
+  ];
+
+  const maxCount = Math.max(...Object.values(counts), 1);
+
+  return (
+    <div className="space-y-3">
+      {motifTypes.map((m) => {
+        const count = counts[m.key] ?? 0;
+        return (
+          <div key={m.key} className="space-y-1">
+            <div className="flex justify-between text-[10px]">
+              <span className="text-white/40">{m.label}</span>
+              <span className="text-white/60 tabular-nums">{count}</span>
+            </div>
+            <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${(count / maxCount) * 100}%` }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+                className={`h-full rounded-full ${m.color}`}
+              />
+            </div>
+          </div>
+        );
+      })}
+      <div className="flex items-center gap-2 mt-2 text-[10px]">
+        <span className="text-white/25">Triangle z-score:</span>
+        <span className={`font-mono tabular-nums ${zScore > 2 ? 'text-emerald-400' : zScore < -2 ? 'text-red-400' : 'text-white/50'}`}>
+          {zScore.toFixed(2)}
+        </span>
+        <span className={`px-1.5 py-0.5 rounded text-[9px] ${
+          enrichment === 'over-represented' ? 'bg-emerald-500/15 text-emerald-400' :
+          enrichment === 'under-represented' ? 'bg-red-500/15 text-red-400' :
+          'bg-white/[0.05] text-white/40'
+        }`}>
+          {enrichment}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Information Flow Card ───────────────────────────────────────────────────
+
+function InfoFlowCard({ datasetId }: { datasetId: string }) {
+  const [data, setData] = useState<Record<string, unknown> | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    api.getInformationFlow(datasetId)
+      .then(setData)
+      .catch((e) => setError(e instanceof Error ? e.message : 'Failed'));
+  }, [datasetId]);
+
+  if (error) return <div className="text-[11px] text-red-400/60 py-4">{error}</div>;
+  if (!data) return <div className="flex items-center justify-center py-6"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>;
+
+  const hubElectrode = Number(data.hub_electrode ?? 0);
+  const hubStrength = Number(data.hub_out_strength ?? 0);
+  const meanGC = Number(data.mean_gc ?? 0);
+  const asymmetry = Number(data.flow_asymmetry ?? 0);
+  const topPairs = (data.top_pairs ?? []) as Array<{ source: number; target: number; gc_value: number }>;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-4">
+        <div className="px-3 py-2 rounded-lg bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border border-cyan-500/10">
+          <div className="text-[10px] text-white/30">Hub Electrode</div>
+          <div className="text-lg font-bold text-cyan-400 tabular-nums">E{hubElectrode}</div>
+        </div>
+        <div className="space-y-1 text-[11px]">
+          <div className="text-white/40">Outgoing strength: <span className="text-cyan-400/70 tabular-nums">{hubStrength.toFixed(3)}</span></div>
+          <div className="text-white/40">Mean GC: <span className="text-white/60 tabular-nums">{meanGC.toFixed(4)}</span></div>
+          <div className="text-white/40">Flow asymmetry: <span className="text-white/60 tabular-nums">{asymmetry.toFixed(4)}</span></div>
+        </div>
+      </div>
+
+      {topPairs.length > 0 && (
+        <div className="space-y-1">
+          <div className="text-[10px] text-white/25 mb-1">Top causal pairs</div>
+          {topPairs.slice(0, 5).map((p, i) => (
+            <div key={i} className="flex items-center gap-2 text-[10px] py-0.5">
+              <span className="text-cyan-400/60 tabular-nums w-6">E{p.source}</span>
+              <span className="text-white/20">&rarr;</span>
+              <span className="text-violet-400/60 tabular-nums w-6">E{p.target}</span>
+              <div className="flex-1 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-cyan-500/40 to-violet-500/40"
+                  style={{ width: `${Math.min(100, (p.gc_value / Math.max(topPairs[0]?.gc_value ?? 1, 0.001)) * 100)}%` }}
+                />
+              </div>
+              <span className="text-white/30 tabular-nums w-12 text-right">{p.gc_value.toFixed(3)}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
