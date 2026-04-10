@@ -347,6 +347,231 @@ function MultiscaleCard({ data }: { data: Record<string, unknown> }) {
   );
 }
 
+// ─── Sleep-Wake ─────────────────────────────────────────────────────────────
+
+function SleepWakeCard({ data }: { data: Record<string, unknown> }) {
+  const upDown = (data.up_down_states ?? {}) as Record<string, unknown>;
+  const upFraction = Number(upDown.up_fraction ?? 0);
+  const nTransitions = Number(upDown.n_transitions ?? 0);
+  const score = Number(data.sleep_like_score ?? 0);
+  const hasUpDown = Boolean(data.has_up_down_states);
+  const hasSlowWaves = Boolean(data.has_slow_waves);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-4">
+        <div className="text-2xl font-bold tabular-nums text-violet-400">{(score * 100).toFixed(0)}%</div>
+        <div className="text-[11px] text-white/40">Sleep-like score</div>
+      </div>
+
+      {/* UP/DOWN state bar */}
+      <div className="space-y-1">
+        <div className="flex justify-between text-[10px] text-white/30">
+          <span>DOWN (silent)</span>
+          <span>UP (active)</span>
+        </div>
+        <div className="h-3 bg-white/[0.04] rounded-full overflow-hidden flex">
+          <div className="h-full bg-indigo-900/50" style={{ width: `${(1 - upFraction) * 100}%` }} />
+          <div className="h-full bg-gradient-to-r from-cyan-500/40 to-violet-500/40" style={{ width: `${upFraction * 100}%` }} />
+        </div>
+        <div className="flex justify-between text-[10px] tabular-nums text-white/25">
+          <span>{((1 - upFraction) * 100).toFixed(0)}%</span>
+          <span>{(upFraction * 100).toFixed(0)}%</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 text-[11px]">
+        <div className="px-2 py-1.5 rounded-md bg-white/[0.03]">
+          <div className="text-white/25">Transitions</div>
+          <div className="text-white/70 tabular-nums">{nTransitions}</div>
+        </div>
+        <div className="px-2 py-1.5 rounded-md bg-white/[0.03]">
+          <div className="text-white/25">Indicators</div>
+          <div className="text-white/70">
+            {hasUpDown ? '✓' : '✗'} UP/DOWN
+            {' '}
+            {hasSlowWaves ? '✓' : '✗'} Slow waves
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Habituation ────────────────────────────────────────────────────────────
+
+function HabituationCard({ data }: { data: Record<string, unknown> }) {
+  const detected = Boolean(data.habituation_detected);
+  const nEvents = Number(data.n_events ?? 0);
+  const decreasePct = Number(data.amplitude_decrease_pct ?? 0);
+  const fit = (data.decay_fit ?? {}) as Record<string, unknown>;
+  const rSquared = Number(fit.r_squared ?? 0);
+  const amplitudes = (data.event_amplitudes ?? []) as number[];
+
+  // Mini sparkline of event amplitudes
+  const maxAmp = Math.max(...amplitudes.slice(0, 30), 1);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-3">
+        <div className={`text-lg font-bold ${detected ? 'text-emerald-400' : 'text-white/40'}`}>
+          {detected ? 'HABITUATION DETECTED' : 'NOT DETECTED'}
+        </div>
+      </div>
+
+      {amplitudes.length > 2 && (
+        <div className="flex items-end gap-px h-10">
+          {amplitudes.slice(0, 30).map((a, i) => (
+            <div
+              key={i}
+              className="flex-1 rounded-t-sm bg-gradient-to-t from-cyan-500/30 to-violet-500/30"
+              style={{ height: `${(a / maxAmp) * 100}%`, opacity: 0.3 + 0.7 * (1 - i / 30) }}
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="grid grid-cols-3 gap-2 text-[10px]">
+        <div className="px-2 py-1 rounded-md bg-white/[0.03]">
+          <div className="text-white/25">Events</div>
+          <div className="text-white/60 tabular-nums">{nEvents}</div>
+        </div>
+        <div className="px-2 py-1 rounded-md bg-white/[0.03]">
+          <div className="text-white/25">Decrease</div>
+          <div className="text-white/60 tabular-nums">{decreasePct.toFixed(1)}%</div>
+        </div>
+        <div className="px-2 py-1 rounded-md bg-white/[0.03]">
+          <div className="text-white/25">R²</div>
+          <div className="text-white/60 tabular-nums">{rSquared.toFixed(3)}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Metastability ──────────────────────────────────────────────────────────
+
+function MetastabilityCard({ data }: { data: Record<string, unknown> }) {
+  const kuramoto = (data.kuramoto ?? {}) as Record<string, unknown>;
+  const kMean = Number(kuramoto.kuramoto_mean ?? 0);
+  const metaIndex = Number(kuramoto.metastability_index ?? 0);
+  const syncLevel = String(kuramoto.synchronization_level ?? 'unknown');
+  const isMetastable = Boolean(data.is_metastable);
+  const transitions = (data.state_transitions ?? {}) as Record<string, unknown>;
+  const nStates = Number(transitions.n_states ?? 0);
+  const nTrans = Number(transitions.n_transitions ?? 0);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-4">
+        <div>
+          <div className="text-2xl font-bold tabular-nums text-cyan-400">{kMean.toFixed(3)}</div>
+          <div className="text-[10px] text-white/25">Kuramoto R (synchronization)</div>
+        </div>
+        <div className={`px-2 py-0.5 rounded text-[10px] font-medium ${
+          isMetastable ? 'bg-emerald-500/15 text-emerald-400' : 'bg-white/[0.05] text-white/40'
+        }`}>
+          {isMetastable ? 'METASTABLE' : syncLevel.toUpperCase()}
+        </div>
+      </div>
+
+      {/* Synchronization bar */}
+      <div className="space-y-1">
+        <div className="flex justify-between text-[9px] text-white/20">
+          <span>Desync</span><span>Critical</span><span>Full sync</span>
+        </div>
+        <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden relative">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${kMean * 100}%` }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-violet-500"
+          />
+          {/* Metastable zone marker */}
+          <div className="absolute top-0 left-[30%] w-[30%] h-full border-x border-emerald-400/20" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 text-[10px]">
+        <div className="px-2 py-1 rounded-md bg-white/[0.03]">
+          <div className="text-white/25">Meta Index</div>
+          <div className="text-white/60 tabular-nums">{metaIndex.toFixed(3)}</div>
+        </div>
+        <div className="px-2 py-1 rounded-md bg-white/[0.03]">
+          <div className="text-white/25">States</div>
+          <div className="text-white/60 tabular-nums">{nStates}</div>
+        </div>
+        <div className="px-2 py-1 rounded-md bg-white/[0.03]">
+          <div className="text-white/25">Transitions</div>
+          <div className="text-white/60 tabular-nums">{nTrans}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Consciousness ──────────────────────────────────────────────────────────
+
+function ConsciousnessCard({ data }: { data: Record<string, unknown> }) {
+  const score = Number(data.consciousness_score ?? (data.sentience_risk as Record<string, unknown>)?.overall_score ?? 0);
+  const riskLevel = String(data.overall_risk_level ?? data.interpretation ?? 'unknown');
+  const indicators = (data.consciousness_indicators ?? {}) as Record<string, unknown>;
+
+  const indicatorEntries = Object.entries(
+    typeof indicators === 'object' && indicators !== null ? indicators : {}
+  ).filter(([k]) => !k.startsWith('_') && k !== 'summary');
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-4">
+        <div className="relative w-16 h-16">
+          {/* Circular gauge */}
+          <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+            <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="3" />
+            <circle
+              cx="18" cy="18" r="15" fill="none"
+              stroke={score > 0.6 ? '#f87171' : score > 0.3 ? '#fbbf24' : '#34d399'}
+              strokeWidth="3"
+              strokeDasharray={`${score * 94.2} 94.2`}
+              strokeLinecap="round"
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-[13px] font-bold tabular-nums text-white/80">{(score * 100).toFixed(0)}</span>
+          </div>
+        </div>
+        <div>
+          <div className={`text-sm font-bold ${
+            riskLevel === 'CRITICAL' || riskLevel === 'high' ? 'text-red-400' :
+            riskLevel === 'HIGH' || riskLevel === 'moderate' ? 'text-amber-400' :
+            'text-emerald-400'
+          }`}>
+            {riskLevel.toUpperCase()} RISK
+          </div>
+          <div className="text-[10px] text-white/30">Consciousness assessment</div>
+        </div>
+      </div>
+
+      {indicatorEntries.length > 0 && (
+        <div className="space-y-1">
+          {indicatorEntries.slice(0, 6).map(([k, v]) => (
+            <div key={k} className="flex items-center justify-between text-[10px] py-0.5">
+              <span className="text-white/30 capitalize">{k.replace(/_/g, ' ')}</span>
+              <span className={typeof v === 'boolean'
+                ? (v ? 'text-emerald-400' : 'text-white/20')
+                : 'text-cyan-400/60 tabular-nums'
+              }>
+                {typeof v === 'boolean' ? (v ? '● Yes' : '○ No') :
+                 typeof v === 'number' ? Number(v).toFixed(3) : String(v)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 type AnalysisState = {
@@ -357,12 +582,16 @@ type AnalysisState = {
 export default function DiscoveryPage() {
   const { datasetId, status, spikes } = useDashboardContext();
 
-  const [emergence,   setEmergence]   = useState<AnalysisState>({ data: null, error: '' });
-  const [predictive,  setPredictive]  = useState<AnalysisState>({ data: null, error: '' });
-  const [attractors,  setAttractors]  = useState<AnalysisState>({ data: null, error: '' });
-  const [phase,       setPhase]       = useState<AnalysisState>({ data: null, error: '' });
-  const [replay,      setReplay]      = useState<AnalysisState>({ data: null, error: '' });
-  const [multiscale,  setMultiscale]  = useState<AnalysisState>({ data: null, error: '' });
+  const [emergence,      setEmergence]      = useState<AnalysisState>({ data: null, error: '' });
+  const [predictive,     setPredictive]     = useState<AnalysisState>({ data: null, error: '' });
+  const [attractors,     setAttractors]     = useState<AnalysisState>({ data: null, error: '' });
+  const [phase,          setPhase]          = useState<AnalysisState>({ data: null, error: '' });
+  const [replay,         setReplay]         = useState<AnalysisState>({ data: null, error: '' });
+  const [multiscale,     setMultiscale]     = useState<AnalysisState>({ data: null, error: '' });
+  const [sleepWake,      setSleepWake]      = useState<AnalysisState>({ data: null, error: '' });
+  const [habituation,    setHabituation]    = useState<AnalysisState>({ data: null, error: '' });
+  const [metastability,  setMetastability]  = useState<AnalysisState>({ data: null, error: '' });
+  const [consciousness,  setConsciousness]  = useState<AnalysisState>({ data: null, error: '' });
 
   useEffect(() => {
     if (!datasetId) return;
@@ -379,6 +608,10 @@ export default function DiscoveryPage() {
     fetch(() => api.getPhaseTransitions(datasetId), setPhase);
     fetch(() => api.getReplay(datasetId),           setReplay);
     fetch(() => api.getMultiscale(datasetId),       setMultiscale);
+    fetch(() => api.getSleepWake(datasetId),        setSleepWake);
+    fetch(() => api.getHabituation(datasetId),      setHabituation);
+    fetch(() => api.getMetastability(datasetId),    setMetastability);
+    fetch(() => api.getConsciousness(datasetId),    setConsciousness);
   }, [datasetId]);
 
   if (status === 'loading' && spikes.length === 0) {
@@ -434,6 +667,34 @@ export default function DiscoveryPage() {
       render: (d: Record<string, unknown>) => <MultiscaleCard data={d} />,
       wide: false,
     },
+    {
+      title: 'Sleep-Wake Cycles',
+      desc:  'UP/DOWN state detection + slow-wave oscillations',
+      state: sleepWake,
+      render: (d: Record<string, unknown>) => <SleepWakeCard data={d} />,
+      wide: false,
+    },
+    {
+      title: 'Habituation',
+      desc:  'Response decay to repeated patterns — simplest learning',
+      state: habituation,
+      render: (d: Record<string, unknown>) => <HabituationCard data={d} />,
+      wide: false,
+    },
+    {
+      title: 'Metastability',
+      desc:  'Kuramoto synchronization + brain-like state switching',
+      state: metastability,
+      render: (d: Record<string, unknown>) => <MetastabilityCard data={d} />,
+      wide: false,
+    },
+    {
+      title: 'Consciousness Assessment',
+      desc:  'Composite score: PCI + recurrence + Phi + ethical flags',
+      state: consciousness,
+      render: (d: Record<string, unknown>) => <ConsciousnessCard data={d} />,
+      wide: false,
+    },
   ];
 
   return (
@@ -446,7 +707,7 @@ export default function DiscoveryPage() {
         className="mb-4"
       >
         <h1 className="text-[18px] font-display text-white/80">Discovery Analysis</h1>
-        <p className="text-[12px] text-white/30 mt-0.5">Advanced computational neuroscience metrics · {datasetId ?? 'no dataset'}</p>
+        <p className="text-[12px] text-white/30 mt-0.5">10 advanced computational neuroscience metrics · {datasetId ?? 'no dataset'}</p>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
