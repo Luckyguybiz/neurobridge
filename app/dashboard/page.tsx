@@ -14,7 +14,7 @@ import CrossCorrelogram from '@/components/dashboard/CrossCorrelogram';
 import ConnectivityGraph from '@/components/dashboard/ConnectivityGraph';
 import AdvancedAnalysis from '@/components/dashboard/AdvancedAnalysis';
 
-type Tab = 'visualizations' | 'advanced' | 'summary';
+type Tab = 'visualizations' | 'advanced';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 16, scale: 0.98 },
@@ -112,7 +112,6 @@ export default function DashboardPage() {
           {([
             { key: 'visualizations' as Tab, label: 'Visualizations', count: 6 },
             { key: 'advanced'       as Tab, label: 'Advanced', count: 12 },
-            { key: 'summary'        as Tab, label: 'Summary', count: undefined },
           ]).map((tab) => (
             <button
               key={tab.key}
@@ -175,8 +174,8 @@ export default function DashboardPage() {
             </>
           )}
 
-          {/* Summary (shown in both visualizations + summary tabs) */}
-          {(activeTab === 'visualizations' || activeTab === 'summary') && summary && burstInfo && (
+          {/* Summary (shown in visualizations tab) */}
+          {activeTab === 'visualizations' && summary && burstInfo && (
             <motion.div custom={6} initial="hidden" animate="visible" variants={cardVariants} className="xl:col-span-3 lg:col-span-2">
               <ChartCard title="Analysis Summary" description={`Dataset ${datasetId} · NeuroBridge API`}>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-[12px]">

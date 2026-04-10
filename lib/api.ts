@@ -327,6 +327,76 @@ export async function generateDraft(datasetId: string) {
   return apiFetch<Record<string, unknown>>(`/api/publish/draft/${datasetId}`, { method: 'POST' });
 }
 
+// ─── Extended Analysis ───
+
+export async function getTuringTest(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/turing-test`);
+}
+
+export async function getWelfare(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/welfare`);
+}
+
+export async function getHomeostasis(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/homeostasis`);
+}
+
+export async function getSuffering(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/suffering`);
+}
+
+export async function getMorphology(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/morphology`);
+}
+
+export async function getSwarm(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/swarm`);
+}
+
+export async function getForgetting(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/forgetting`);
+}
+
+export async function getTransferLearning(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/transfer`);
+}
+
+export async function getConsolidation(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/consolidation`);
+}
+
+export async function getChannelCapacity(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/channel-capacity`);
+}
+
+export async function getTopology(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/topology`);
+}
+
+export async function getConnectome(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/connectome`);
+}
+
+export async function getCommunities(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/communities`);
+}
+
+export async function getGraphTheory(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/graph-theory`);
+}
+
+export async function getEffectiveConnectivity(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/effective-connectivity`);
+}
+
+export async function getCausalHierarchy(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/causal-hierarchy`);
+}
+
+export async function getHybridBenchmark(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/hybrid-benchmark`);
+}
+
 // ─── Export ───
 
 export function getExportCSVUrl(datasetId: string) {
