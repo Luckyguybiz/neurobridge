@@ -223,6 +223,11 @@ function StatChip({ label, value }: { label: string; value: string }) {
 
 export default function SpikesPage() {
   const { datasetId, spikes, duration, nElectrodes, status } = useDashboardContext();
+  const [selectedElectrode, setSelectedElectrode] = useState<number | null>(null);
+
+  const filteredSpikes = selectedElectrode !== null
+    ? spikes.filter(s => s.electrode === selectedElectrode)
+    : spikes;
 
   const hasWaveforms = spikes.some((s) => s.waveform.length > 0);
 
@@ -254,11 +259,44 @@ export default function SpikesPage() {
         transition={{ duration: 0.5 }}
         className="grid grid-cols-2 sm:grid-cols-4 gap-2"
       >
-        <StatChip label="Total Spikes"   value={totalSpikes.toLocaleString()} />
+        <StatChip label={selectedElectrode !== null ? `E${selectedElectrode} Spikes` : "Total Spikes"} value={filteredSpikes.length.toLocaleString()} />
         <StatChip label="Electrodes"     value={`${uniqueElectrodes}`} />
         <StatChip label="Mean Rate"      value={`${meanRate} Hz`} />
         <StatChip label="Mean Amplitude" value={`${meanAmp.toFixed(0)} µV`} />
       </motion.div>
+
+      {/* Electrode selector */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-[10px] text-white/25 uppercase tracking-wider mr-1">Filter:</span>
+        <button
+          onClick={() => setSelectedElectrode(null)}
+          className={`text-[10px] px-2.5 py-1 rounded-md transition-all ${
+            selectedElectrode === null
+              ? 'bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border border-cyan-500/20 text-cyan-400'
+              : 'bg-white/[0.03] border border-white/[0.04] text-white/30 hover:text-white/50'
+          }`}
+        >
+          All
+        </button>
+        {Array.from({ length: nElectrodes }, (_, i) => (
+          <button
+            key={i}
+            onClick={() => setSelectedElectrode(selectedElectrode === i ? null : i)}
+            className={`text-[10px] px-2.5 py-1 rounded-md transition-all ${
+              selectedElectrode === i
+                ? 'border text-white/90'
+                : 'bg-white/[0.03] border border-white/[0.04] text-white/30 hover:text-white/50'
+            }`}
+            style={selectedElectrode === i ? {
+              backgroundColor: `${ELECTRODE_COLORS[i % ELECTRODE_COLORS.length]}20`,
+              borderColor: `${ELECTRODE_COLORS[i % ELECTRODE_COLORS.length]}40`,
+              color: ELECTRODE_COLORS[i % ELECTRODE_COLORS.length],
+            } : undefined}
+          >
+            E{i}
+          </button>
+        ))}
+      </div>
 
       {/* Raster plot — full width, tall */}
       <motion.div
@@ -266,9 +304,9 @@ export default function SpikesPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.05 }}
       >
-        <ChartCard title="Raster Plot" description={`${totalSpikes.toLocaleString()} spikes across ${nElectrodes} electrodes · ${duration.toFixed(1)}s`}>
+        <ChartCard title="Raster Plot" description={`${filteredSpikes.length.toLocaleString()} spikes${selectedElectrode !== null ? ` · E${selectedElectrode}` : ` across ${nElectrodes} electrodes`} · ${duration.toFixed(1)}s`}>
           <div className="w-full" style={{ height: 320 }}>
-            <RasterPlotTall spikes={spikes} duration={duration} electrodes={nElectrodes} />
+            <RasterPlotTall spikes={filteredSpikes} duration={duration} electrodes={nElectrodes} />
           </div>
         </ChartCard>
       </motion.div>
@@ -289,14 +327,14 @@ export default function SpikesPage() {
       {/* Bottom row: Amplitude dist + ISI + Waveforms */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
-          <ChartCard title="Amplitude Distribution" description="Histogram of spike amplitudes across all electrodes">
-            <AmplitudeHistogram spikes={spikes} />
+          <ChartCard title="Amplitude Distribution" description={selectedElectrode !== null ? `E${selectedElectrode} amplitudes` : "All electrode amplitudes"}>
+            <AmplitudeHistogram spikes={filteredSpikes} />
           </ChartCard>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
-          <ChartCard title="ISI Distribution" description="Inter-spike interval histogram (log scale)">
-            <ISIHistogram spikes={spikes} electrodes={nElectrodes} />
+          <ChartCard title="ISI Distribution" description={selectedElectrode !== null ? `E${selectedElectrode} ISI` : "All electrodes ISI"}>
+            <ISIHistogram spikes={filteredSpikes} electrodes={nElectrodes} />
           </ChartCard>
         </motion.div>
 
