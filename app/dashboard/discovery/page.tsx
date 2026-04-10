@@ -572,6 +572,168 @@ function ConsciousnessCard({ data }: { data: Record<string, unknown> }) {
   );
 }
 
+// ─── Turing Test ───────────────────────────────────────────────────────────
+
+function TuringTestCard({ data }: { data: Record<string, unknown> }) {
+  const score = Number(data.biological_realism_score ?? 0);
+  const verdict = String(data.verdict ?? data.classification ?? '—');
+  const comparison = (data.feature_comparison ?? data.comparisons ?? {}) as Record<string, Record<string, unknown>>;
+  const metrics = Object.keys(comparison);
+
+  const getColor = (s: number) => s >= 0.8 ? 'text-emerald-400' : s >= 0.5 ? 'text-amber-400' : 'text-red-400';
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-4">
+        <div className="text-3xl font-bold tabular-nums text-cyan-400">{(score * 100).toFixed(1)}%</div>
+        <div>
+          <div className="text-[10px] text-white/25 uppercase tracking-widest">Biological Realism</div>
+          <div className={`text-[13px] font-medium ${getColor(score)}`}>{verdict}</div>
+        </div>
+      </div>
+
+      {/* Realism bar */}
+      <div className="space-y-1">
+        <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden">
+          <motion.div
+            className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500"
+            initial={{ width: 0 }}
+            animate={{ width: `${score * 100}%` }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          />
+        </div>
+      </div>
+
+      {/* Feature comparison table */}
+      {metrics.length > 0 && (
+        <div className="space-y-1 mt-2">
+          <div className="flex gap-2 text-[9px] text-white/25 uppercase tracking-widest border-b border-white/[0.06] pb-1">
+            <span className="w-24 shrink-0">Metric</span>
+            <span className="flex-1 text-center">Real</span>
+            <span className="flex-1 text-center">Poisson</span>
+            <span className="flex-1 text-center">LIF</span>
+          </div>
+          {metrics.slice(0, 8).map((metric) => {
+            const row = comparison[metric] ?? {};
+            return (
+              <div key={metric} className="flex gap-2 text-[10px] py-0.5 border-b border-white/[0.03]">
+                <span className="text-white/30 w-24 shrink-0 truncate capitalize">{metric.replace(/_/g, ' ')}</span>
+                <span className="flex-1 text-center text-emerald-400/60 tabular-nums">
+                  {typeof row.real === 'number' ? Number(row.real).toFixed(3) : String(row.real ?? '—')}
+                </span>
+                <span className="flex-1 text-center text-amber-400/60 tabular-nums">
+                  {typeof row.poisson === 'number' ? Number(row.poisson).toFixed(3) : String(row.poisson ?? '—')}
+                </span>
+                <span className="flex-1 text-center text-violet-400/60 tabular-nums">
+                  {typeof row.lif === 'number' ? Number(row.lif).toFixed(3) : String(row.lif ?? '—')}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <JsonRows data={data} max={4} />
+    </div>
+  );
+}
+
+// ─── Energy Landscape ──────────────────────────────────────────────────────
+
+function EnergyLandscapeCard({ data }: { data: Record<string, unknown> }) {
+  const nAttractors = Number(data.n_attractors ?? 0);
+  const energyRange = Number(data.energy_range ?? 0);
+  const meanEnergy = Number(data.mean_energy ?? 0);
+  const modelType = String(data.model_type ?? data.model ?? '—');
+
+  return (
+    <div className="space-y-3">
+      <div className="flex gap-6">
+        <div>
+          <div className="text-4xl font-bold text-amber-400 tabular-nums">{nAttractors}</div>
+          <div className="text-[10px] text-white/30 mt-0.5">Attractors</div>
+        </div>
+        <div className="pl-4 border-l border-white/[0.06]">
+          <div className="text-2xl font-bold text-cyan-400 tabular-nums">{meanEnergy.toFixed(3)}</div>
+          <div className="text-[10px] text-white/30 mt-0.5">Mean Energy</div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 text-[11px]">
+        <div className="px-2 py-1.5 rounded-md bg-white/[0.03]">
+          <div className="text-white/25">Energy Range</div>
+          <div className="text-white/70 tabular-nums">{energyRange.toFixed(3)}</div>
+        </div>
+        <div className="px-2 py-1.5 rounded-md bg-white/[0.03]">
+          <div className="text-white/25">Model Type</div>
+          <div className="text-white/70 capitalize">{modelType.replace(/_/g, ' ')}</div>
+        </div>
+      </div>
+
+      <JsonRows data={data} max={6} />
+    </div>
+  );
+}
+
+// ─── Welfare Report ────────────────────────────────────────────────────────
+
+function WelfareCard({ data }: { data: Record<string, unknown> }) {
+  const score = Number(data.welfare_score ?? 0);
+  const level = String(data.welfare_level ?? data.level ?? '—');
+  const recommendations = (data.recommendations ?? []) as string[];
+  const monitoringStatus = String(data.monitoring_status ?? data.monitoring ?? '—');
+
+  const badgeColor = score >= 0.7 ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20'
+                   : score >= 0.4 ? 'bg-amber-500/15 text-amber-400 border-amber-500/20'
+                   :                'bg-red-500/15 text-red-400 border-red-500/20';
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-4">
+        <div className="text-3xl font-bold tabular-nums text-white/80">{(score * 100).toFixed(0)}%</div>
+        <div className={`px-3 py-1 rounded-lg border text-[12px] font-bold ${badgeColor}`}>
+          {level.toUpperCase()}
+        </div>
+      </div>
+
+      {/* Welfare bar */}
+      <div className="space-y-1">
+        <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden">
+          <motion.div
+            className={`h-full rounded-full ${
+              score >= 0.7 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' :
+              score >= 0.4 ? 'bg-gradient-to-r from-amber-500 to-amber-400' :
+                             'bg-gradient-to-r from-red-500 to-red-400'
+            }`}
+            initial={{ width: 0 }}
+            animate={{ width: `${score * 100}%` }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          />
+        </div>
+      </div>
+
+      <div className="px-2 py-1.5 rounded-md bg-white/[0.03] text-[11px]">
+        <div className="text-white/25">Monitoring Status</div>
+        <div className="text-white/70 capitalize">{monitoringStatus.replace(/_/g, ' ')}</div>
+      </div>
+
+      {recommendations.length > 0 && (
+        <div className="space-y-1">
+          <div className="text-[9px] text-white/25 uppercase tracking-widest">Recommendations</div>
+          {recommendations.slice(0, 5).map((rec, i) => (
+            <div key={i} className="flex gap-2 text-[10px] py-0.5">
+              <span className="text-white/20 shrink-0">-</span>
+              <span className="text-white/50">{rec}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <JsonRows data={data} max={4} />
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 type AnalysisState = {
@@ -592,6 +754,9 @@ export default function DiscoveryPage() {
   const [habituation,    setHabituation]    = useState<AnalysisState>({ data: null, error: '' });
   const [metastability,  setMetastability]  = useState<AnalysisState>({ data: null, error: '' });
   const [consciousness,  setConsciousness]  = useState<AnalysisState>({ data: null, error: '' });
+  const [turingTest,     setTuringTest]     = useState<AnalysisState>({ data: null, error: '' });
+  const [energyLand,     setEnergyLand]     = useState<AnalysisState>({ data: null, error: '' });
+  const [welfare,        setWelfare]        = useState<AnalysisState>({ data: null, error: '' });
 
   useEffect(() => {
     if (!datasetId) return;
@@ -612,6 +777,9 @@ export default function DiscoveryPage() {
     fetch(() => api.getHabituation(datasetId),      setHabituation);
     fetch(() => api.getMetastability(datasetId),    setMetastability);
     fetch(() => api.getConsciousness(datasetId),    setConsciousness);
+    fetch(() => api.getTuringTest(datasetId),       setTuringTest);
+    fetch(() => api.getEnergyLandscape(datasetId),  setEnergyLand);
+    fetch(() => api.getWelfare(datasetId),           setWelfare);
   }, [datasetId]);
 
   if (status === 'loading' && spikes.length === 0) {
@@ -695,6 +863,27 @@ export default function DiscoveryPage() {
       render: (d: Record<string, unknown>) => <ConsciousnessCard data={d} />,
       wide: false,
     },
+    {
+      title: 'Turing Test',
+      desc:  'Biological realism score — real vs Poisson vs LIF comparison',
+      state: turingTest,
+      render: (d: Record<string, unknown>) => <TuringTestCard data={d} />,
+      wide: true,
+    },
+    {
+      title: 'Energy Landscape',
+      desc:  'Attractor basins, energy surface + Hopfield model fit',
+      state: energyLand,
+      render: (d: Record<string, unknown>) => <EnergyLandscapeCard data={d} />,
+      wide: false,
+    },
+    {
+      title: 'Welfare Report',
+      desc:  'Organoid welfare assessment + monitoring recommendations',
+      state: welfare,
+      render: (d: Record<string, unknown>) => <WelfareCard data={d} />,
+      wide: false,
+    },
   ];
 
   return (
@@ -707,7 +896,7 @@ export default function DiscoveryPage() {
         className="mb-4"
       >
         <h1 className="text-[18px] font-display text-white/80">Discovery Analysis</h1>
-        <p className="text-[12px] text-white/30 mt-0.5">10 advanced computational neuroscience metrics · {datasetId ?? 'no dataset'}</p>
+        <p className="text-[12px] text-white/30 mt-0.5">13 advanced computational neuroscience metrics · {datasetId ?? 'no dataset'}</p>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">

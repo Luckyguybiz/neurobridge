@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { useDashboardContext } from '@/lib/dashboard-context';
 import * as api from '@/lib/api';
 import ChartCard from '@/components/dashboard/ChartCard';
@@ -238,10 +239,15 @@ export default function IQPage() {
   const [iqData,   setIQData]   = useState<Record<string, unknown> | null>(null);
   const [health,   setHealth]   = useState<Record<string, unknown> | null>(null);
   const [finger,   setFinger]   = useState<Record<string, unknown> | null>(null);
+  const [ethics,   setEthics]   = useState<Record<string, unknown> | null>(null);
   const [errors,   setErrors]   = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!datasetId) return;
+
+    api.getEthics(datasetId)
+      .then(setEthics)
+      .catch((e) => setErrors((p) => ({ ...p, ethics: e instanceof Error ? e.message : 'Failed' })));
 
     api.getOrganoidIQ(datasetId)
       .then(setIQData)
@@ -375,6 +381,45 @@ export default function IQPage() {
           </ChartCard>
         </motion.div>
       </div>
+
+      {/* Ethics Badge */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <ChartCard title="Sentience Ethics" description="Risk assessment for organoid sentience">
+          {errors.ethics
+            ? <div className="text-[11px] text-red-400/60">{errors.ethics}</div>
+            : !ethics
+              ? <div className="flex items-center justify-center py-4"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>
+              : (() => {
+                  const sentience = (ethics.sentience_risk ?? {}) as Record<string, unknown>;
+                  const riskScore = Number(sentience.overall_score ?? ethics.sentience_score ?? ethics.risk_score ?? 0);
+                  const riskLevel = String(sentience.risk_level ?? ethics.risk_level ?? ethics.overall_risk_level ?? 'unknown');
+                  const isHigh = riskLevel.toLowerCase().includes('high') || riskLevel.toLowerCase().includes('critical');
+                  const isMed  = riskLevel.toLowerCase().includes('moderate') || riskLevel.toLowerCase().includes('medium');
+                  const badgeColor = isHigh ? 'bg-red-500/15 text-red-400 border-red-500/20'
+                                   : isMed  ? 'bg-amber-500/15 text-amber-400 border-amber-500/20'
+                                   :          'bg-emerald-500/15 text-emerald-400 border-emerald-500/20';
+                  return (
+                    <div className="flex items-center gap-4 flex-wrap">
+                      <div className="text-2xl font-bold tabular-nums text-white/80">{(riskScore * 100).toFixed(1)}%</div>
+                      <div className={`px-3 py-1 rounded-lg border text-[11px] font-bold ${badgeColor}`}>
+                        {riskLevel.toUpperCase()}
+                      </div>
+                      <Link
+                        href="/dashboard/discovery"
+                        className="ml-auto text-[11px] text-cyan-400/70 hover:text-cyan-400 transition-colors"
+                      >
+                        View Details →
+                      </Link>
+                    </div>
+                  );
+                })()
+          }
+        </ChartCard>
+      </motion.div>
 
       {/* Radar Chart + Comparative row */}
       {datasetId && (
