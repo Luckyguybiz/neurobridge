@@ -117,7 +117,7 @@ export default function HomePage() {
               <span className="relative z-10">Try Live Dashboard</span>
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-violet-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </Link>
-            <a href="https://github.com" target="_blank" rel="noopener" className="px-8 py-3.5 rounded-full border border-white/[0.06] text-[13px] text-white/30 hover:text-white/60 hover:border-white/[0.12] transition-all duration-500">
+            <a href="https://github.com/Luckyguybiz/neurobridge-api" target="_blank" rel="noopener" className="px-8 py-3.5 rounded-full border border-white/[0.06] text-[13px] text-white/30 hover:text-white/60 hover:border-white/[0.12] transition-all duration-500">
               View on GitHub
             </a>
           </motion.div>
@@ -155,14 +155,14 @@ export default function HomePage() {
         <div className="max-w-[1100px] mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-0 md:divide-x md:divide-white/[0.04]">
             {[
-              { value: '8', label: 'Electrodes' },
-              { value: '30', label: 'kHz sampling', suffix: ' kHz' },
-              { value: '6', label: 'Analysis types' },
-              { value: '16', label: 'Live organoids' },
+              { value: '125', label: 'API Endpoints' },
+              { value: '57', label: 'Analysis Modules' },
+              { value: '9', label: 'Dashboard Pages' },
+              { value: '16', label: 'Live Organoids' },
             ].map((s, i) => (
               <ScrollReveal key={s.label} delay={i * 0.1} className="text-center px-4">
                 <div className="text-[clamp(2rem,4vw,3.5rem)] font-display text-white/85 tracking-tight">
-                  <AnimatedCounter value={s.value} suffix={s.suffix || ''} />
+                  <AnimatedCounter value={s.value} suffix={'suffix' in s ? (s as Record<string, string>).suffix : ''} />
                 </div>
                 <div className="text-[11px] text-white/20 mt-2 tracking-[0.2em] uppercase">{s.label}</div>
               </ScrollReveal>
