@@ -246,6 +246,83 @@ export async function getComplexity(datasetId: string) {
   return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/complexity`);
 }
 
+// ─── Discovery Analysis (new modules) ───
+
+export async function getSleepWake(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/sleep-wake`);
+}
+
+export async function getHabituation(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/habituation`);
+}
+
+export async function getMetastability(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/metastability`);
+}
+
+export async function getInformationFlow(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/information-flow`);
+}
+
+export async function getMotifs(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/motifs`);
+}
+
+export async function getEnergyLandscape(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/energy-landscape`);
+}
+
+export async function getConsciousness(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/consciousness`);
+}
+
+export async function getComparative(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/comparative`);
+}
+
+export async function getSuggestProtocol(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/suggest-protocol`);
+}
+
+export async function getEthics(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/ethics`);
+}
+
+// ─── Experiments ───
+
+export async function runClosedLoop(datasetId: string, nTrials = 100) {
+  return apiFetch<Record<string, unknown>>(`/api/experiments/${datasetId}/closed-loop/simulate?n_trials=${nTrials}`, { method: 'POST' });
+}
+
+export async function runPong(datasetId: string, nTrials = 200) {
+  return apiFetch<Record<string, unknown>>(`/api/experiments/${datasetId}/pong/simulate?n_trials=${nTrials}`, { method: 'POST' });
+}
+
+export async function runLogicBenchmark(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/experiments/${datasetId}/logic/benchmark`, { method: 'POST' });
+}
+
+export async function runVowels(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/experiments/${datasetId}/vowels/simulate`, { method: 'POST' });
+}
+
+export async function getMemoryTests(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/experiments/${datasetId}/memory-tests`);
+}
+
+export async function getProtocols() {
+  return apiFetch<Record<string, unknown>>('/api/protocols');
+}
+
+export async function getGrantMatch(datasetId?: string) {
+  const path = datasetId ? `/api/funding/match/${datasetId}` : '/api/funding/match';
+  return apiFetch<Record<string, unknown>>(path);
+}
+
+export async function generateDraft(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/publish/draft/${datasetId}`, { method: 'POST' });
+}
+
 // ─── Export ───
 
 export function getExportCSVUrl(datasetId: string) {
