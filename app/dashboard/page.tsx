@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import * as api from '@/lib/api';
 import { useDashboardContext } from '@/lib/dashboard-context';
@@ -23,6 +24,76 @@ const cardVariants = {
   }),
 };
 
+function QuickStats({ datasetId }: { datasetId: string }) {
+  const router = useRouter();
+  const [iq, setIQ] = useState<Record<string, unknown> | null>(null);
+  const [health, setHealth] = useState<Record<string, unknown> | null>(null);
+  const [consciousness, setConsciousness] = useState<Record<string, unknown> | null>(null);
+  const [welfare, setWelfare] = useState<Record<string, unknown> | null>(null);
+
+  useEffect(() => {
+    api.getOrganoidIQ(datasetId).then(setIQ).catch(() => {});
+    api.getHealth(datasetId).then(setHealth).catch(() => {});
+    api.getConsciousness(datasetId).then(setConsciousness).catch(() => {});
+    api.getHealth(datasetId).then(d => setWelfare(d)).catch(() => {});
+  }, [datasetId]);
+
+  const iqScore = Number(iq?.iq_score ?? iq?.score ?? 0);
+  const iqGrade = String(iq?.grade ?? '?');
+  const healthScore = Number(health?.health_score ?? health?.overall_score ?? 0);
+  const consScore = Number(consciousness?.consciousness_score ?? (consciousness?.sentience_risk as Record<string,unknown>)?.overall_score ?? 0);
+  const consRisk = String(consciousness?.overall_risk_level ?? consciousness?.interpretation ?? '?');
+
+  const cards = [
+    {
+      label: 'Organoid IQ',
+      value: iqScore > 0 ? `${iqScore.toFixed(0)} (${iqGrade})` : '...',
+      color: iqScore >= 60 ? 'text-cyan-400' : iqScore >= 40 ? 'text-amber-400' : 'text-white/50',
+      bg: 'from-cyan-500/8 border-cyan-500/10',
+      href: '/dashboard/iq',
+    },
+    {
+      label: 'Health',
+      value: healthScore > 0 ? `${(healthScore * 100).toFixed(0)}%` : '...',
+      color: healthScore >= 0.7 ? 'text-emerald-400' : healthScore >= 0.4 ? 'text-amber-400' : 'text-red-400',
+      bg: 'from-emerald-500/8 border-emerald-500/10',
+      href: '/dashboard/iq',
+    },
+    {
+      label: 'Consciousness',
+      value: consScore > 0 ? `${(consScore * 100).toFixed(0)}% ${consRisk}` : '...',
+      color: consScore > 0.5 ? 'text-red-400' : consScore > 0.3 ? 'text-amber-400' : 'text-emerald-400',
+      bg: 'from-violet-500/8 border-violet-500/10',
+      href: '/dashboard/discovery',
+    },
+    {
+      label: 'Modules',
+      value: '57 analyses',
+      color: 'text-white/60',
+      bg: 'from-white/[0.03] border-white/[0.06]',
+      href: '/dashboard/experiments',
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-3">
+      {cards.map((card, i) => (
+        <motion.div
+          key={card.label}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.05, duration: 0.4 }}
+          onClick={() => router.push(card.href)}
+          className={`px-3 py-2.5 rounded-xl bg-gradient-to-br ${card.bg} border cursor-pointer hover:scale-[1.02] transition-transform`}
+        >
+          <div className="text-[9px] text-white/30 uppercase tracking-wider">{card.label}</div>
+          <div className={`text-[15px] font-bold tabular-nums ${card.color}`}>{card.value}</div>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const { datasetId, spikes, duration, nElectrodes, summary, burstInfo, status } = useDashboardContext();
   const [activeTab, setActiveTab] = useState<Tab>('visualizations');
@@ -32,6 +103,9 @@ export default function DashboardPage() {
 
   return (
     <div className="p-3 sm:p-4">
+      {/* Quick Stats */}
+      {status === 'ready' && datasetId && <QuickStats datasetId={datasetId} />}
+
       {/* Tab navigation */}
       {status === 'ready' && datasetId && (
         <div className="flex gap-1 mb-3">
