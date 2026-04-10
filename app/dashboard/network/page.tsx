@@ -400,6 +400,27 @@ export default function NetworkPage() {
           </motion.div>
         </div>
       )}
+
+      {/* Connectomics row */}
+      {datasetId && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.28 }}>
+            <ChartCard title="Graph Theory" description="Rich-club, small-world, efficiency, centrality">
+              <GraphTheoryCard datasetId={datasetId} />
+            </ChartCard>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.32 }}>
+            <ChartCard title="Communities" description="Network modules via spectral clustering">
+              <CommunitiesCard datasetId={datasetId} />
+            </ChartCard>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.36 }}>
+            <ChartCard title="Topology (TDA)" description="Betti numbers — topological data analysis">
+              <TopologyCard datasetId={datasetId} />
+            </ChartCard>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
@@ -471,6 +492,109 @@ function MotifsCard({ datasetId }: { datasetId: string }) {
 }
 
 // ─── Information Flow Card ───────────────────────────────────────────────────
+
+function GraphTheoryCard({ datasetId }: { datasetId: string }) {
+  const [data, setData] = useState<Record<string, unknown> | null>(null);
+  const [error, setError] = useState('');
+  useEffect(() => { api.getGraphTheory(datasetId).then(setData).catch(e => setError(e instanceof Error ? e.message : 'Failed')); }, [datasetId]);
+  if (error) return <div className="text-[11px] text-red-400/60 py-4">{error}</div>;
+  if (!data) return <div className="flex items-center justify-center py-6"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>;
+
+  const metrics = [
+    { label: 'Small-World', key: 'small_world_sigma', fmt: (v: number) => v.toFixed(2) },
+    { label: 'Global Efficiency', key: 'global_efficiency', fmt: (v: number) => v.toFixed(3) },
+    { label: 'Path Length', key: 'characteristic_path_length', fmt: (v: number) => v.toFixed(2) },
+    { label: 'Rich-Club', key: 'rich_club_coefficient', fmt: (v: number) => v.toFixed(3) },
+  ];
+
+  return (
+    <div className="space-y-2">
+      {metrics.map(m => {
+        const val = Number(data[m.key] ?? 0);
+        return (
+          <div key={m.key} className="flex justify-between text-[11px] py-1 border-b border-white/[0.03]">
+            <span className="text-white/40">{m.label}</span>
+            <span className="text-cyan-400/70 tabular-nums">{m.fmt(val)}</span>
+          </div>
+        );
+      })}
+      {typeof data.small_world_sigma === 'number' && data.small_world_sigma > 1 && (
+        <div className="text-[10px] text-emerald-400/60 mt-1">Small-world network detected</div>
+      )}
+    </div>
+  );
+}
+
+function CommunitiesCard({ datasetId }: { datasetId: string }) {
+  const [data, setData] = useState<Record<string, unknown> | null>(null);
+  const [error, setError] = useState('');
+  useEffect(() => { api.getCommunities(datasetId).then(setData).catch(e => setError(e instanceof Error ? e.message : 'Failed')); }, [datasetId]);
+  if (error) return <div className="text-[11px] text-red-400/60 py-4">{error}</div>;
+  if (!data) return <div className="flex items-center justify-center py-6"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>;
+
+  const nCommunities = Number(data.n_communities ?? data.n_clusters ?? 0);
+  const modularity = Number(data.modularity ?? data.modularity_score ?? 0);
+  const assignments = (data.community_assignments ?? data.labels ?? data.assignments ?? []) as number[];
+  const colors = ['#22d3ee', '#a78bfa', '#34d399', '#fbbf24', '#f87171', '#818cf8', '#fb923c', '#e879f9'];
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-4">
+        <div className="text-2xl font-bold text-violet-400 tabular-nums">{nCommunities}</div>
+        <div className="text-[10px] text-white/30">communities<br/>Q = {modularity.toFixed(3)}</div>
+      </div>
+      {assignments.length > 0 && (
+        <div className="flex gap-1 flex-wrap">
+          {assignments.map((c, i) => (
+            <div key={i} className="w-6 h-6 rounded-md flex items-center justify-center text-[9px] font-bold text-black/70"
+              style={{ backgroundColor: colors[c % colors.length] }}>
+              E{i}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TopologyCard({ datasetId }: { datasetId: string }) {
+  const [data, setData] = useState<Record<string, unknown> | null>(null);
+  const [error, setError] = useState('');
+  useEffect(() => { api.getTopology(datasetId).then(setData).catch(e => setError(e instanceof Error ? e.message : 'Failed')); }, [datasetId]);
+  if (error) return <div className="text-[11px] text-red-400/60 py-4">{error}</div>;
+  if (!data) return <div className="flex items-center justify-center py-6"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>;
+
+  const betti = [
+    { label: 'B0 (components)', value: Number(data.beta_0 ?? data.betti_0 ?? (data.betti_numbers as number[])?.[0] ?? 0) },
+    { label: 'B1 (loops)', value: Number(data.beta_1 ?? data.betti_1 ?? (data.betti_numbers as number[])?.[1] ?? 0) },
+    { label: 'B2 (cavities)', value: Number(data.beta_2 ?? data.betti_2 ?? (data.betti_numbers as number[])?.[2] ?? 0) },
+  ];
+  const maxB = Math.max(...betti.map(b => b.value), 1);
+
+  return (
+    <div className="space-y-3">
+      {betti.map(b => (
+        <div key={b.label} className="space-y-1">
+          <div className="flex justify-between text-[10px]">
+            <span className="text-white/40">{b.label}</span>
+            <span className="text-white/60 tabular-nums">{b.value}</span>
+          </div>
+          <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${(b.value / maxB) * 100}%` }}
+              transition={{ duration: 0.6 }}
+              className="h-full rounded-full bg-gradient-to-r from-cyan-500/40 to-violet-500/40"
+            />
+          </div>
+        </div>
+      ))}
+      <div className="text-[10px] text-white/20">
+        {betti[1].value > 0 ? 'Loops detected — recurrent processing present' : 'No loops — feedforward structure'}
+      </div>
+    </div>
+  );
+}
 
 function InfoFlowCard({ datasetId }: { datasetId: string }) {
   const [data, setData] = useState<Record<string, unknown> | null>(null);
