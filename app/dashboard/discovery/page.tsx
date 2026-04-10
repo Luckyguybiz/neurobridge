@@ -757,6 +757,10 @@ export default function DiscoveryPage() {
   const [turingTest,     setTuringTest]     = useState<AnalysisState>({ data: null, error: '' });
   const [energyLand,     setEnergyLand]     = useState<AnalysisState>({ data: null, error: '' });
   const [welfare,        setWelfare]        = useState<AnalysisState>({ data: null, error: '' });
+  const [homeostasis,   setHomeostasis]   = useState<AnalysisState>({ data: null, error: '' });
+  const [forgetting,    setForgetting]    = useState<AnalysisState>({ data: null, error: '' });
+  const [transferL,     setTransferL]     = useState<AnalysisState>({ data: null, error: '' });
+  const [morphology,    setMorphology]    = useState<AnalysisState>({ data: null, error: '' });
 
   useEffect(() => {
     if (!datasetId) return;
@@ -779,7 +783,11 @@ export default function DiscoveryPage() {
     fetch(() => api.getConsciousness(datasetId),    setConsciousness);
     fetch(() => api.getTuringTest(datasetId),       setTuringTest);
     fetch(() => api.getEnergyLandscape(datasetId),  setEnergyLand);
-    fetch(() => api.getWelfare(datasetId),           setWelfare);
+    fetch(() => api.getWelfare(datasetId),          setWelfare);
+    fetch(() => api.getHomeostasis(datasetId),      setHomeostasis);
+    fetch(() => api.getForgetting(datasetId),       setForgetting);
+    fetch(() => api.getTransferLearning(datasetId), setTransferL);
+    fetch(() => api.getMorphology(datasetId),       setMorphology);
   }, [datasetId]);
 
   if (status === 'loading' && spikes.length === 0) {
@@ -882,6 +890,105 @@ export default function DiscoveryPage() {
       desc:  'Organoid welfare assessment + monitoring recommendations',
       state: welfare,
       render: (d: Record<string, unknown>) => <WelfareCard data={d} />,
+      wide: false,
+    },
+    {
+      title: 'Homeostatic Plasticity',
+      desc:  'Firing rate self-regulation — does the network stabilize itself?',
+      state: homeostasis,
+      render: (d: Record<string, unknown>) => {
+        const active = Boolean(d.homeostasis_active);
+        const stability = Number(d.stability_score ?? 0);
+        const trend = String(d.trend_direction ?? 'unknown');
+        const compensations = Number(d.n_compensation_events ?? 0);
+        return (
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className={`text-sm font-bold ${active ? 'text-emerald-400' : 'text-amber-400'}`}>
+                {active ? 'HOMEOSTASIS ACTIVE' : 'UNSTABLE'}
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-[10px]">
+              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div className="text-white/25">Stability</div><div className="text-white/60 tabular-nums">{stability.toFixed(2)}</div></div>
+              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div className="text-white/25">Trend</div><div className="text-white/60">{trend}</div></div>
+              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div className="text-white/25">Compensations</div><div className="text-white/60 tabular-nums">{compensations}</div></div>
+            </div>
+          </div>
+        );
+      },
+      wide: false,
+    },
+    {
+      title: 'Catastrophic Forgetting',
+      desc:  'Do early patterns survive over time?',
+      state: forgetting,
+      render: (d: Record<string, unknown>) => {
+        const retention = (d.retention_scores ?? d.retention_curve ?? []) as number[];
+        const halfLife = Number(d.half_life_windows ?? 0);
+        const decayType = String(d.decay_type ?? d.classification ?? 'unknown');
+        const maxR = Math.max(...retention, 0.01);
+        return (
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className={`text-sm font-bold ${decayType === 'stable' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                {decayType.toUpperCase()}
+              </div>
+              {halfLife > 0 && <div className="text-[10px] text-white/30">half-life: {halfLife} windows</div>}
+            </div>
+            {retention.length > 1 && (
+              <div className="flex items-end gap-px h-8">
+                {retention.slice(0, 20).map((r, i) => (
+                  <div key={i} className="flex-1 rounded-t-sm bg-gradient-to-t from-cyan-500/30 to-violet-500/30" style={{ height: `${(r / maxR) * 100}%` }} />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      },
+      wide: false,
+    },
+    {
+      title: 'Transfer Learning',
+      desc:  'Does learning one pattern help with another?',
+      state: transferL,
+      render: (d: Record<string, unknown>) => {
+        const hasTransfer = Boolean(d.positive_transfer ?? d.transfer_detected ?? false);
+        const gainMean = Number(d.mean_transfer_gain ?? d.mean_gain ?? 0);
+        return (
+          <div className="space-y-2">
+            <div className={`text-sm font-bold ${hasTransfer ? 'text-emerald-400' : 'text-white/40'}`}>
+              {hasTransfer ? 'POSITIVE TRANSFER' : 'NO TRANSFER DETECTED'}
+            </div>
+            <div className="text-[10px] text-white/40">Mean gain: <span className="text-cyan-400/70 tabular-nums">{gainMean.toFixed(4)}</span></div>
+            <JsonRows data={d} max={5} />
+          </div>
+        );
+      },
+      wide: false,
+    },
+    {
+      title: 'Morphological Computing',
+      desc:  'How structure relates to computational ability',
+      state: morphology,
+      render: (d: Record<string, unknown>) => {
+        const score = Number(d.morphological_score ?? 0);
+        const uniformity = Number(d.spatial_uniformity ?? 0);
+        const activeFrac = Number(d.active_electrode_fraction ?? 0);
+        const interp = String(d.interpretation ?? '');
+        return (
+          <div className="space-y-2">
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-bold text-cyan-400 tabular-nums">{(score * 100).toFixed(0)}</span>
+              <span className="text-[11px] text-white/30">/ 100</span>
+            </div>
+            <div className="text-[10px] text-white/40">{interp}</div>
+            <div className="grid grid-cols-2 gap-2 text-[10px]">
+              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div className="text-white/25">Uniformity</div><div className="text-white/60 tabular-nums">{(uniformity * 100).toFixed(0)}%</div></div>
+              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div className="text-white/25">Active</div><div className="text-white/60 tabular-nums">{(activeFrac * 100).toFixed(0)}%</div></div>
+            </div>
+          </div>
+        );
+      },
       wide: false,
     },
   ];
