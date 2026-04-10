@@ -85,6 +85,16 @@ function IconProtocols() {
   );
 }
 
+function IconLive() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" className="w-4 h-4">
+      <circle cx="10" cy="10" r="3" fill="currentColor" />
+      <path d="M5.5 5.5a6.4 6.4 0 000 9" />
+      <path d="M14.5 5.5a6.4 6.4 0 010 9" />
+    </svg>
+  );
+}
+
 function IconPublish() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
@@ -106,6 +116,7 @@ const NAV = [
   { href: '/dashboard/experiments',  label: 'Experiments',  Icon: IconExperiments },
   { href: '/dashboard/protocols',    label: 'Protocols',    Icon: IconProtocols },
   { href: '/dashboard/publish',      label: 'Publish',      Icon: IconPublish },
+  { href: '/dashboard/live',         label: 'Live',         Icon: IconLive },
 ];
 
 // ─── Small helpers ────────────────────────────────────────────────────────────
