@@ -97,6 +97,23 @@ function QuickStats({ datasetId }: { datasetId: string }) {
 export default function DashboardPage() {
   const { datasetId, spikes, duration, nElectrodes, summary, burstInfo, status } = useDashboardContext();
   const [activeTab, setActiveTab] = useState<Tab>('visualizations');
+  const [reportLoading, setReportLoading] = useState(false);
+
+  const downloadFullReport = async () => {
+    if (!datasetId) return;
+    setReportLoading(true);
+    try {
+      const report = await api.getFullReport(datasetId);
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `neurobridge-report-${datasetId}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch { /* ignore */ }
+    setReportLoading(false);
+  };
 
   const pop     = summary?.population as Record<string, unknown> | undefined;
   const dataset = summary?.dataset    as Record<string, unknown> | undefined;
@@ -126,6 +143,14 @@ export default function DashboardPage() {
               {tab.count && <span className="ml-1 text-[9px] opacity-50">{tab.count}</span>}
             </button>
           ))}
+          <button
+            onClick={downloadFullReport}
+            disabled={reportLoading}
+            className="text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40 ml-auto"
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+          >
+            {reportLoading ? 'Generating...' : 'Full Report JSON'}
+          </button>
         </div>
       )}
 
