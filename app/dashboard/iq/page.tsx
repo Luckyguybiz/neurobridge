@@ -375,6 +375,129 @@ export default function IQPage() {
           </ChartCard>
         </motion.div>
       </div>
+
+      {/* Radar Chart + Comparative row */}
+      {datasetId && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+            <ChartCard title="IQ Radar" description="6-dimension intelligence profile">
+              {dimEntries.length > 0 ? (
+                <RadarChart dimensions={dimEntries} />
+              ) : (
+                <div className="text-[11px] text-white/30 py-4">Loading dimensions...</div>
+              )}
+            </ChartCard>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.25 }}>
+            <ChartCard title="Comparative Analysis" description="Your organoid vs known neural systems">
+              <ComparativeCard datasetId={datasetId} />
+            </ChartCard>
+          </motion.div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Radar Chart ─────────────────────────────────────────────────────────────
+
+function RadarChart({ dimensions }: { dimensions: [string, number][] }) {
+  const n = dimensions.length;
+  if (n < 3) return null;
+
+  const cx = 100, cy = 100, r = 75;
+  const angleStep = (2 * Math.PI) / n;
+
+  const getPoint = (i: number, value: number) => {
+    const angle = angleStep * i - Math.PI / 2;
+    const dist = (value / 100) * r;
+    return { x: cx + dist * Math.cos(angle), y: cy + dist * Math.sin(angle) };
+  };
+
+  const rings = [25, 50, 75, 100];
+  const points = dimensions.map(([, v], i) => getPoint(i, v));
+
+  return (
+    <div className="flex justify-center py-2">
+      <svg viewBox="0 0 200 200" className="w-full max-w-[240px]">
+        {rings.map((ring) => (
+          <polygon
+            key={ring}
+            points={Array.from({ length: n }, (_, i) => {
+              const p = getPoint(i, ring);
+              return `${p.x},${p.y}`;
+            }).join(' ')}
+            fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={0.5}
+          />
+        ))}
+        {dimensions.map(([,], i) => {
+          const end = getPoint(i, 100);
+          return <line key={i} x1={cx} y1={cy} x2={end.x} y2={end.y} stroke="rgba(255,255,255,0.04)" strokeWidth={0.5} />;
+        })}
+        <polygon points={points.map(p => `${p.x},${p.y}`).join(' ')} fill="rgba(34,211,238,0.12)" stroke="rgba(34,211,238,0.5)" strokeWidth={1.5} />
+        {points.map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r={3} fill="#22d3ee" />
+        ))}
+        {dimensions.map(([label], i) => {
+          const lp = getPoint(i, 118);
+          return (
+            <text key={i} x={lp.x} y={lp.y} textAnchor="middle" dominantBaseline="middle" className="fill-white/30 text-[7px] capitalize">
+              {label.replace(/_/g, ' ').slice(0, 12)}
+            </text>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+// ─── Comparative Card ────────────────────────────────────────────────────────
+
+function ComparativeCard({ datasetId }: { datasetId: string }) {
+  const [data, setData] = useState<Record<string, unknown> | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    api.getComparative(datasetId)
+      .then(setData)
+      .catch((e) => setError(e instanceof Error ? e.message : 'Failed'));
+  }, [datasetId]);
+
+  if (error) return <div className="text-[11px] text-red-400/60 py-4">{error}</div>;
+  if (!data) return <div className="flex items-center justify-center py-8"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>;
+
+  const mostSimilar = String(data.most_similar_system ?? 'unknown');
+  const mostSimilarScore = Number(data.most_similar_score ?? 0);
+  const mostSimilarDesc = String(data.most_similar_description ?? '');
+  const similarities = (data.similarities ?? {}) as Record<string, { similarity: number; description: string }>;
+  const systems = Object.entries(similarities).sort((a, b) => b[1].similarity - a[1].similarity);
+
+  return (
+    <div className="space-y-3">
+      <div className="px-3 py-2 rounded-lg bg-gradient-to-br from-violet-500/10 to-cyan-500/10 border border-violet-500/10">
+        <div className="text-[10px] text-white/30">Most similar to</div>
+        <div className="text-sm font-bold text-violet-400 capitalize">{mostSimilar.replace(/_/g, ' ')}</div>
+        <div className="text-[10px] text-white/40 mt-0.5">{mostSimilarDesc}</div>
+        <div className="text-[11px] text-violet-400/70 tabular-nums mt-1">{(mostSimilarScore * 100).toFixed(0)}% match</div>
+      </div>
+      <div className="space-y-2">
+        {systems.map(([name, info]) => (
+          <div key={name} className="space-y-1">
+            <div className="flex justify-between text-[10px]">
+              <span className="text-white/40 capitalize">{name.replace(/_/g, ' ')}</span>
+              <span className="text-white/50 tabular-nums">{(info.similarity * 100).toFixed(0)}%</span>
+            </div>
+            <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${info.similarity * 100}%` }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+                className={`h-full rounded-full ${name === mostSimilar ? 'bg-gradient-to-r from-violet-500 to-cyan-500' : 'bg-white/10'}`}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
