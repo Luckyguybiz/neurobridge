@@ -202,7 +202,7 @@ export default function DashboardPage() {
           {/* Summary (shown in visualizations tab) */}
           {activeTab === 'visualizations' && summary && burstInfo && (
             <motion.div custom={6} initial="hidden" animate="visible" variants={cardVariants} className="xl:col-span-3 lg:col-span-2">
-              <ChartCard title="Analysis Summary" description={`Dataset ${datasetId} · NeuroBridge API`}>
+              <ChartCard title="Analysis Summary" description={`Dataset ${datasetId} · Neurocomputers API`}>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-[12px]">
                   <div>
                     <div className="text-white/25 mb-1.5">Population</div>

@@ -316,7 +316,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <div className="h-12 flex items-center justify-between px-4" style={{ borderBottom: '1px solid var(--border)' }}>
             <Link href="/" className="flex items-center gap-2 group">
               <div className="w-6 h-6 rounded-md bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center text-[9px] font-bold text-black shrink-0">N</div>
-              <span className="text-[13px] font-medium tracking-tight transition-colors duration-300" style={{ color: 'var(--text-secondary)' }}>NeuroBridge</span>
+              <span className="text-[13px] font-medium tracking-tight transition-colors duration-300" style={{ color: 'var(--text-secondary)' }}>Neurocomputers</span>
             </Link>
             <button
               className="lg:hidden transition-colors"

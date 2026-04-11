@@ -1,5 +1,5 @@
 /**
- * NeuroBridge API client — connects frontend dashboard to Python backend.
+ * Neurocomputers API client — connects frontend dashboard to Python backend.
  */
 
 const API_BASE = typeof window !== 'undefined'
