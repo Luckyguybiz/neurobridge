@@ -44,7 +44,7 @@ const steps = [
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen overflow-clip grain" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+    <div className="min-h-screen overflow-x-clip grain" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl" style={{ background: 'color-mix(in srgb, var(--bg-primary) 60%, transparent)', borderBottom: '1px solid var(--border)' }}>
         <div className="max-w-[1200px] mx-auto flex items-center justify-between px-6 h-14">
@@ -93,7 +93,7 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="block text-[clamp(2.5rem,7vw,5.5rem)] font-display italic leading-[1.05] tracking-[-0.02em] bg-gradient-to-r from-cyan-300 via-cyan-200 to-violet-300 bg-clip-text text-transparent"
+              className="block text-[clamp(2.5rem,7vw,5.5rem)] font-display italic leading-[1.2] tracking-[-0.02em] pb-2 bg-gradient-to-r from-cyan-300 via-cyan-200 to-violet-300 bg-clip-text text-transparent"
             >
               living neural networks
             </motion.span>
