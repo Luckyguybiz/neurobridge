@@ -495,7 +495,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 <button
                   onClick={() => generateData(120, 8)}
                   disabled={status === 'loading'}
-                  className="hidden sm:block text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40"
+                  className="text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40"
                   style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
                 >
                   120s
