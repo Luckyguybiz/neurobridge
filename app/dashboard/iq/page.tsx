@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useDashboardContext } from '@/lib/dashboard-context';
+import { getThemeColors } from '@/lib/utils';
 import * as api from '@/lib/api';
 import ChartCard from '@/components/dashboard/ChartCard';
 
@@ -28,6 +29,7 @@ const GAUGE_START = 225; // degrees CW from top
 const GAUGE_SPAN  = 270; // total degrees
 
 function CircularGauge({ value, max = 100, grade }: { value: number; max?: number; grade: string }) {
+  const tc = getThemeColors();
   const cx = 110, cy = 110, r = 82, sw = 14;
   const vRatio  = Math.max(0, Math.min(1, value / max));
   const bgEnd   = GAUGE_START + GAUGE_SPAN;          // 495° (= 135° CW)
@@ -60,7 +62,7 @@ function CircularGauge({ value, max = 100, grade }: { value: number; max?: numbe
       <path
         d={arcPath(cx, cy, r, GAUGE_START, bgEnd)}
         fill="none"
-        stroke="rgba(255,255,255,0.06)"
+        stroke={tc.grid}
         strokeWidth={sw}
         strokeLinecap="round"
       />
@@ -75,7 +77,7 @@ function CircularGauge({ value, max = 100, grade }: { value: number; max?: numbe
             key={i}
             x1={inner.x} y1={inner.y}
             x2={outer.x} y2={outer.y}
-            stroke="rgba(255,255,255,0.1)"
+            stroke={tc.axis}
             strokeWidth={i % 5 === 0 ? 2 : 1}
           />
         );
@@ -106,15 +108,15 @@ function CircularGauge({ value, max = 100, grade }: { value: number; max?: numbe
       })()}
 
       {/* Center content */}
-      <text x={cx} y={cy - 14} textAnchor="middle" fill="rgba(255,255,255,0.9)" fontSize="36" fontWeight="700" fontFamily="monospace">{value.toFixed(0)}</text>
-      <text x={cx} y={cy + 8}  textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="13">/100</text>
+      <text x={cx} y={cy - 14} textAnchor="middle" fill={tc.text} fontSize="36" fontWeight="700" fontFamily="monospace">{value.toFixed(0)}</text>
+      <text x={cx} y={cy + 8}  textAnchor="middle" fill={tc.textMuted} fontSize="13">/100</text>
       <text x={cx} y={cy + 30} textAnchor="middle" fill={color} fontSize="22" fontWeight="700">{grade}</text>
 
       {/* Min / max labels */}
       <text x={angleToXY(cx, cy, r + 20, GAUGE_START).x} y={angleToXY(cx, cy, r + 20, GAUGE_START).y + 4}
-        textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize="9">0</text>
+        textAnchor="middle" fill={tc.textFaint} fontSize="9">0</text>
       <text x={angleToXY(cx, cy, r + 20, bgEnd).x} y={angleToXY(cx, cy, r + 20, bgEnd).y + 4}
-        textAnchor="middle" fill="rgba(255,255,255,0.2)" fontSize="9">100</text>
+        textAnchor="middle" fill={tc.textFaint} fontSize="9">100</text>
     </svg>
   );
 }
@@ -131,8 +133,8 @@ function SubscoreBar({ label, value, max = 100 }: { label: string; value: number
   return (
     <div className="space-y-1.5">
       <div className="flex justify-between text-[11px]">
-        <span className="text-white/50 capitalize">{label.replace(/_/g, ' ')}</span>
-        <span className="text-white/70 tabular-nums font-medium">{value.toFixed(1)}</span>
+        <span className="capitalize" style={{ color: 'var(--text-muted)' }}>{label.replace(/_/g, ' ')}</span>
+        <span className="tabular-nums font-medium" style={{ color: 'var(--text-secondary)' }}>{value.toFixed(1)}</span>
       </div>
       <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden">
         <motion.div
@@ -160,20 +162,20 @@ function HealthDisplay({ data }: { data: Record<string, unknown> }) {
       <div className="flex items-center gap-3">
         <span className={`text-3xl font-bold tabular-nums ${getColor(score)}`}>{score.toFixed(1)}</span>
         <div>
-          <div className="text-[10px] text-white/25 uppercase tracking-widest">Health Score</div>
+          <div className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Health Score</div>
           <div className={`text-[13px] font-medium capitalize ${getColor(score)}`}>{status}</div>
         </div>
       </div>
       <div className="space-y-1 font-mono text-[10px]">
         {entries.map(([k, v]) => (
           <div key={k} className="flex gap-2">
-            <span className="text-white/25 w-32 truncate">{k}:</span>
+            <span className="w-32 truncate" style={{ color: 'var(--text-muted)' }}>{k}:</span>
             <span className="text-cyan-400/60 truncate">
               {typeof v === 'number' ? (Number.isInteger(v) ? v : Number(v).toFixed(4)) :
                typeof v === 'boolean' ? (v ? '✓ yes' : '✗ no') :
                typeof v === 'string' ? v :
                Array.isArray(v) ? `[${(v as unknown[]).length} items]` :
-               String(v)}
+               typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v)}
             </span>
           </div>
         ))}
@@ -192,7 +194,7 @@ function FingerprintDisplay({ data }: { data: Record<string, unknown> }) {
   return (
     <div className="space-y-3">
       <div>
-        <div className="text-[9px] text-white/25 uppercase tracking-widest mb-1">Fingerprint Hash</div>
+        <div className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Fingerprint Hash</div>
         <div className="font-mono text-[11px] text-cyan-400/70 break-all bg-white/[0.03] border border-white/[0.04] rounded-lg px-3 py-2">
           {hash}
         </div>
@@ -200,12 +202,12 @@ function FingerprintDisplay({ data }: { data: Record<string, unknown> }) {
       {similarity > 0 && (
         <div className="flex gap-4 text-[11px]">
           <div>
-            <div className="text-white/25 mb-0.5">Self-Similarity</div>
+            <div className="mb-0.5" style={{ color: 'var(--text-muted)' }}>Self-Similarity</div>
             <div className="text-violet-400 tabular-nums">{(similarity * 100).toFixed(1)}%</div>
           </div>
           {uniqueness > 0 && (
             <div>
-              <div className="text-white/25 mb-0.5">Uniqueness</div>
+              <div className="mb-0.5" style={{ color: 'var(--text-muted)' }}>Uniqueness</div>
               <div className="text-cyan-400 tabular-nums">{(uniqueness * 100).toFixed(1)}%</div>
             </div>
           )}
@@ -217,12 +219,13 @@ function FingerprintDisplay({ data }: { data: Record<string, unknown> }) {
           .slice(0, 6)
           .map(([k, v]) => (
             <div key={k} className="flex gap-2">
-              <span className="text-white/25 w-28 truncate">{k}:</span>
-              <span className="text-white/50 truncate">
+              <span className="w-28 truncate" style={{ color: 'var(--text-muted)' }}>{k}:</span>
+              <span className="truncate" style={{ color: 'var(--text-secondary)' }}>
                 {typeof v === 'number' ? Number(v).toFixed(4) :
                  typeof v === 'boolean' ? String(v) :
                  typeof v === 'string' ? v :
-                 Array.isArray(v) ? `[${(v as unknown[]).length}]` : String(v)}
+                 Array.isArray(v) ? `[${(v as unknown[]).length}]` :
+                 typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v)}
               </span>
             </div>
           ))}
@@ -312,13 +315,13 @@ export default function IQPage() {
                   <div className="flex flex-col items-center gap-3 shrink-0">
                     <CircularGauge value={score} grade={grade} />
                     <div className="text-center max-w-[200px]">
-                      <div className="text-[12px] text-white/50">{getGradeDesc(grade)}</div>
+                      <div className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{getGradeDesc(grade)}</div>
                     </div>
                   </div>
 
                   {/* Subscores column */}
                   <div className="flex-1 min-w-0 space-y-3">
-                    <div className="text-[10px] text-white/25 uppercase tracking-widest mb-2">Dimension Scores</div>
+                    <div className="text-[10px] uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Dimension Scores</div>
                     {dimEntries.length > 0
                       ? dimEntries.map(([dim, val]) => (
                           <SubscoreBar key={dim} label={dim} value={val} />
@@ -330,12 +333,13 @@ export default function IQPage() {
                             .slice(0, 10)
                             .map(([k, v]) => (
                               <div key={k} className="flex gap-2 py-1 border-b border-white/[0.03]">
-                                <span className="text-white/30 w-36 truncate">{k}:</span>
+                                <span className="w-36 truncate" style={{ color: 'var(--text-muted)' }}>{k}:</span>
                                 <span className="text-cyan-400/70">
                                   {typeof v === 'number' ? (Number.isInteger(v) ? v : Number(v).toFixed(4)) :
                                    typeof v === 'boolean' ? String(v) :
                                    typeof v === 'string' ? v :
-                                   Array.isArray(v) ? `[${(v as unknown[]).length}]` : String(v)}
+                                   Array.isArray(v) ? `[${(v as unknown[]).length}]` :
+                                   typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v)}
                                 </span>
                               </div>
                             ))}
@@ -404,7 +408,7 @@ export default function IQPage() {
                                    :          'bg-emerald-500/15 text-emerald-400 border-emerald-500/20';
                   return (
                     <div className="flex items-center gap-4 flex-wrap">
-                      <div className="text-2xl font-bold tabular-nums text-white/80">{(riskScore * 100).toFixed(1)}%</div>
+                      <div className="text-2xl font-bold tabular-nums" style={{ color: 'var(--text-secondary)' }}>{(riskScore * 100).toFixed(1)}%</div>
                       <div className={`px-3 py-1 rounded-lg border text-[11px] font-bold ${badgeColor}`}>
                         {riskLevel.toUpperCase()}
                       </div>
@@ -429,7 +433,7 @@ export default function IQPage() {
               {dimEntries.length > 0 ? (
                 <RadarChart dimensions={dimEntries} />
               ) : (
-                <div className="text-[11px] text-white/30 py-4">Loading dimensions...</div>
+                <div className="text-[11px] py-4" style={{ color: 'var(--text-muted)' }}>Loading dimensions...</div>
               )}
             </ChartCard>
           </motion.div>
@@ -447,6 +451,7 @@ export default function IQPage() {
 // ─── Radar Chart ─────────────────────────────────────────────────────────────
 
 function RadarChart({ dimensions }: { dimensions: [string, number][] }) {
+  const tc = getThemeColors();
   const n = dimensions.length;
   if (n < 3) return null;
 
@@ -472,12 +477,12 @@ function RadarChart({ dimensions }: { dimensions: [string, number][] }) {
               const p = getPoint(i, ring);
               return `${p.x},${p.y}`;
             }).join(' ')}
-            fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={0.5}
+            fill="none" stroke={tc.grid} strokeWidth={0.5}
           />
         ))}
         {dimensions.map(([,], i) => {
           const end = getPoint(i, 100);
-          return <line key={i} x1={cx} y1={cy} x2={end.x} y2={end.y} stroke="rgba(255,255,255,0.04)" strokeWidth={0.5} />;
+          return <line key={i} x1={cx} y1={cy} x2={end.x} y2={end.y} stroke={tc.grid} strokeWidth={0.5} />;
         })}
         <polygon points={points.map(p => `${p.x},${p.y}`).join(' ')} fill="rgba(34,211,238,0.12)" stroke="rgba(34,211,238,0.5)" strokeWidth={1.5} />
         {points.map((p, i) => (
@@ -486,7 +491,7 @@ function RadarChart({ dimensions }: { dimensions: [string, number][] }) {
         {dimensions.map(([label], i) => {
           const lp = getPoint(i, 118);
           return (
-            <text key={i} x={lp.x} y={lp.y} textAnchor="middle" dominantBaseline="middle" className="fill-white/30 text-[7px] capitalize">
+            <text key={i} x={lp.x} y={lp.y} textAnchor="middle" dominantBaseline="middle" fill={tc.textMuted} className="text-[7px] capitalize">
               {label.replace(/_/g, ' ').slice(0, 12)}
             </text>
           );
@@ -520,17 +525,17 @@ function ComparativeCard({ datasetId }: { datasetId: string }) {
   return (
     <div className="space-y-3">
       <div className="px-3 py-2 rounded-lg bg-gradient-to-br from-violet-500/10 to-cyan-500/10 border border-violet-500/10">
-        <div className="text-[10px] text-white/30">Most similar to</div>
+        <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Most similar to</div>
         <div className="text-sm font-bold text-violet-400 capitalize">{mostSimilar.replace(/_/g, ' ')}</div>
-        <div className="text-[10px] text-white/40 mt-0.5">{mostSimilarDesc}</div>
+        <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{mostSimilarDesc}</div>
         <div className="text-[11px] text-violet-400/70 tabular-nums mt-1">{(mostSimilarScore * 100).toFixed(0)}% match</div>
       </div>
       <div className="space-y-2">
         {systems.map(([name, info]) => (
           <div key={name} className="space-y-1">
             <div className="flex justify-between text-[10px]">
-              <span className="text-white/40 capitalize">{name.replace(/_/g, ' ')}</span>
-              <span className="text-white/50 tabular-nums">{(info.similarity * 100).toFixed(0)}%</span>
+              <span className="capitalize" style={{ color: 'var(--text-muted)' }}>{name.replace(/_/g, ' ')}</span>
+              <span className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{(info.similarity * 100).toFixed(0)}%</span>
             </div>
             <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
               <motion.div

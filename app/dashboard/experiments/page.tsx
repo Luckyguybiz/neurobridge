@@ -52,8 +52,8 @@ function Bar({
   const pct = maxValue > 0 ? Math.min(100, (value / maxValue) * 100) : 0;
   return (
     <div className="flex items-center gap-3 text-[10px]">
-      <span className="text-white/30 w-16 truncate shrink-0">{label}</span>
-      <div className="flex-1 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+      <span className="w-16 truncate shrink-0" style={{ color: 'var(--text-muted)' }}>{label}</span>
+      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-card)' }}>
         <motion.div
           className={`h-full rounded-full bg-gradient-to-r ${color}`}
           initial={{ width: 0 }}
@@ -61,7 +61,7 @@ function Bar({
           transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
         />
       </div>
-      <span className="text-white/50 w-12 tabular-nums text-right shrink-0">
+      <span className="w-12 tabular-nums text-right shrink-0" style={{ color: 'var(--text-secondary)' }}>
         {typeof value === 'number' && value % 1 !== 0 ? value.toFixed(1) : value}
       </span>
     </div>
@@ -108,7 +108,7 @@ function PongCard({ datasetId }: { datasetId: string }) {
   if (!result) {
     return (
       <div className="space-y-2">
-        <div className="text-[11px] text-white/40 leading-relaxed">
+        <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
           Simulate a DishBrain-style Pong experiment using free energy minimization.
           The organoid learns to predict and intercept the ball over 200 trials.
         </div>
@@ -135,18 +135,18 @@ function PongCard({ datasetId }: { datasetId: string }) {
           <div className="text-3xl font-bold text-cyan-400 tabular-nums">
             {(hitRate * (hitRate <= 1 ? 100 : 1)).toFixed(1)}%
           </div>
-          <div className="text-[10px] text-white/30 mt-0.5">Hit Rate</div>
+          <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Hit Rate</div>
         </div>
         <div className="pl-4 border-l border-white/[0.06]">
           <div className="text-3xl font-bold text-violet-400 tabular-nums">{trials}</div>
-          <div className="text-[10px] text-white/30 mt-0.5">Trials</div>
+          <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Trials</div>
         </div>
       </div>
 
       {/* Learning curve bar chart */}
       {barData.length > 0 && (
         <div className="space-y-1">
-          <div className="text-[9px] text-white/20 uppercase tracking-widest">Learning Curve</div>
+          <div className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>Learning Curve</div>
           <div className="flex items-end gap-px h-14">
             {barData.map((val, i) => {
               const v = Number(val);
@@ -162,7 +162,7 @@ function PongCard({ datasetId }: { datasetId: string }) {
               );
             })}
           </div>
-          <div className="flex justify-between text-[8px] text-white/20">
+          <div className="flex justify-between text-[8px]" style={{ color: 'var(--text-faint)' }}>
             <span>Trial 1</span>
             <span>Trial {trials}</span>
           </div>
@@ -200,7 +200,7 @@ function LogicCard({ datasetId }: { datasetId: string }) {
   if (!result) {
     return (
       <div className="space-y-2">
-        <div className="text-[11px] text-white/40 leading-relaxed">
+        <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
           Test the organoid's ability to compute boolean logic: AND, OR, XOR, NAND, XNOR gates.
         </div>
         <RunButton label="Run Benchmark" onClick={run} />
@@ -232,11 +232,11 @@ function LogicCard({ datasetId }: { datasetId: string }) {
         <div className="text-3xl font-bold text-emerald-400 tabular-nums">
           {(overall * (overall <= 1 ? 100 : 1)).toFixed(1)}%
         </div>
-        <div className="text-[11px] text-white/30">overall accuracy</div>
+        <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>overall accuracy</div>
       </div>
 
       <div className="space-y-1.5">
-        <div className="text-[9px] text-white/20 uppercase tracking-widest">Per-Gate Accuracy</div>
+        <div className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>Per-Gate Accuracy</div>
         {gateList.map((gate, i) => (
           <Bar
             key={gate.name}
@@ -280,7 +280,7 @@ function VowelCard({ datasetId }: { datasetId: string }) {
   if (!result) {
     return (
       <div className="space-y-2">
-        <div className="text-[11px] text-white/40 leading-relaxed">
+        <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
           Reservoir computing approach: classify 240 Japanese vowel samples using organoid neural dynamics.
         </div>
         <RunButton label="Run Classification" onClick={run} />
@@ -300,19 +300,19 @@ function VowelCard({ datasetId }: { datasetId: string }) {
           <div className="text-3xl font-bold text-violet-400 tabular-nums">
             {(accuracy * (accuracy <= 1 ? 100 : 1)).toFixed(1)}%
           </div>
-          <div className="text-[10px] text-white/30 mt-0.5">Accuracy</div>
+          <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Accuracy</div>
         </div>
         <div className="pl-4 border-l border-white/[0.06]">
-          <div className="text-3xl font-bold text-white/30 tabular-nums">
+          <div className="text-3xl font-bold tabular-nums" style={{ color: 'var(--text-muted)' }}>
             {(baseline * (baseline <= 1 ? 100 : 1)).toFixed(1)}%
           </div>
-          <div className="text-[10px] text-white/30 mt-0.5">Random Baseline</div>
+          <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Random Baseline</div>
         </div>
       </div>
 
       {/* Accuracy vs baseline bar */}
       <div className="space-y-1">
-        <div className="text-[9px] text-white/20 uppercase tracking-widest">Accuracy vs Chance</div>
+        <div className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>Accuracy vs Chance</div>
         <Bar label="Organoid" value={accuracy * (accuracy <= 1 ? 100 : 1)} maxValue={100} color="from-violet-500 to-pink-500" delay={0} />
         <Bar label="Random" value={baseline * (baseline <= 1 ? 100 : 1)} maxValue={100} color="from-white/20 to-white/10" delay={0.1} />
       </div>
@@ -320,18 +320,18 @@ function VowelCard({ datasetId }: { datasetId: string }) {
       {/* Simplified confusion matrix */}
       {confMatrix.length > 0 && (
         <div className="space-y-1">
-          <div className="text-[9px] text-white/20 uppercase tracking-widest">Confusion Matrix</div>
+          <div className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>Confusion Matrix</div>
           <div className="overflow-x-auto">
             <div className="inline-grid gap-px" style={{ gridTemplateColumns: `auto repeat(${vowels.length}, 1fr)` }}>
               {/* Header row */}
-              <div className="text-[8px] text-white/15 p-1" />
+              <div className="text-[8px] p-1" style={{ color: 'var(--text-faint)' }} />
               {vowels.map((v) => (
-                <div key={`h-${v}`} className="text-[8px] text-white/30 text-center p-1 font-mono">{v}</div>
+                <div key={`h-${v}`} className="text-[8px] text-center p-1 font-mono" style={{ color: 'var(--text-muted)' }}>{v}</div>
               ))}
               {/* Matrix rows */}
               {confMatrix.slice(0, vowels.length).map((row, ri) => (
                 <>
-                  <div key={`l-${ri}`} className="text-[8px] text-white/30 p-1 font-mono">{vowels[ri] ?? ri}</div>
+                  <div key={`l-${ri}`} className="text-[8px] p-1 font-mono" style={{ color: 'var(--text-muted)' }}>{vowels[ri] ?? ri}</div>
                   {(row as number[]).slice(0, vowels.length).map((cell, ci) => {
                     const maxCell = Math.max(...confMatrix.flat().map(Number), 1);
                     const intensity = Number(cell) / maxCell;
@@ -388,7 +388,7 @@ function MemoryCard({ datasetId }: { datasetId: string }) {
   if (!result) {
     return (
       <div className="space-y-2">
-        <div className="text-[11px] text-white/40 leading-relaxed">
+        <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
           Comprehensive memory battery: working memory, short-term, long-term, and associative memory assessments.
         </div>
         <RunButton label="Run Tests" onClick={run} />
@@ -412,11 +412,11 @@ function MemoryCard({ datasetId }: { datasetId: string }) {
         <div className="text-3xl font-bold text-amber-400 tabular-nums">
           {(overall * (overall <= 1 ? 100 : 1)).toFixed(1)}
         </div>
-        <div className="text-[11px] text-white/30">overall memory score</div>
+        <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>overall memory score</div>
       </div>
 
       <div className="space-y-1.5">
-        <div className="text-[9px] text-white/20 uppercase tracking-widest">Sub-scores</div>
+        <div className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>Sub-scores</div>
         {tests.map((test, i) => (
           <Bar
             key={test.name}
@@ -460,7 +460,7 @@ function ClosedLoopCard({ datasetId }: { datasetId: string }) {
   if (!result) {
     return (
       <div className="space-y-2">
-        <div className="text-[11px] text-white/40 leading-relaxed">
+        <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
           DishBrain-style closed-loop: the organoid receives real-time feedback and adapts its neural responses over 100 trials.
         </div>
         <RunButton label="Run Simulation" onClick={run} />
@@ -480,20 +480,20 @@ function ClosedLoopCard({ datasetId }: { datasetId: string }) {
           <div className="text-3xl font-bold text-pink-400 tabular-nums">
             {(performance * (performance <= 1 ? 100 : 1)).toFixed(1)}
           </div>
-          <div className="text-[10px] text-white/30 mt-0.5">Performance</div>
+          <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Performance</div>
         </div>
         <div className="pl-4 border-l border-white/[0.06]">
           <div className="text-3xl font-bold tabular-nums" style={{ color: improvement >= 0 ? '#34d399' : '#f87171' }}>
             {improvement > 0 ? '+' : ''}{(improvement * (Math.abs(improvement) <= 1 ? 100 : 1)).toFixed(1)}%
           </div>
-          <div className="text-[10px] text-white/30 mt-0.5">Improvement</div>
+          <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Improvement</div>
         </div>
       </div>
 
       {/* Trial performance curve */}
       {trialResults.length > 0 && (
         <div className="space-y-1">
-          <div className="text-[9px] text-white/20 uppercase tracking-widest">Trial Performance</div>
+          <div className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>Trial Performance</div>
           <div className="flex items-end gap-px h-12">
             {(trialResults.length > 30
               ? trialResults.filter((_, i) => i % Math.ceil(trialResults.length / 30) === 0)
@@ -512,7 +512,7 @@ function ClosedLoopCard({ datasetId }: { datasetId: string }) {
               );
             })}
           </div>
-          <div className="flex justify-between text-[8px] text-white/20">
+          <div className="flex justify-between text-[8px]" style={{ color: 'var(--text-faint)' }}>
             <span>Start</span>
             <span>End</span>
           </div>
@@ -550,7 +550,7 @@ function ProtocolCard({ datasetId }: { datasetId: string }) {
   if (!result) {
     return (
       <div className="space-y-2">
-        <div className="text-[11px] text-white/40 leading-relaxed">
+        <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
           AI-powered analysis of your organoid's current state to recommend the optimal stimulation protocol.
         </div>
         <RunButton label="Get Suggestion" onClick={run} />
@@ -575,7 +575,7 @@ function ProtocolCard({ datasetId }: { datasetId: string }) {
           <span className="text-[13px] font-medium text-cyan-400">{protocolName}</span>
         </div>
         {confidence > 0 && (
-          <span className="text-[10px] text-white/30 tabular-nums">
+          <span className="text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
             {(confidence * (confidence <= 1 ? 100 : 1)).toFixed(0)}% confidence
           </span>
         )}
@@ -583,17 +583,17 @@ function ProtocolCard({ datasetId }: { datasetId: string }) {
 
       {/* Reason */}
       {reason && (
-        <div className="text-[11px] text-white/50 leading-relaxed">{reason}</div>
+        <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{reason}</div>
       )}
 
       {/* Key parameters */}
       {paramEntries.length > 0 && (
         <div className="space-y-1">
-          <div className="text-[9px] text-white/20 uppercase tracking-widest">Key Parameters</div>
+          <div className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>Key Parameters</div>
           <div className="grid grid-cols-2 gap-1">
             {paramEntries.map(([k, v]) => (
               <div key={k} className="px-2 py-1.5 rounded-md bg-white/[0.03] border border-white/[0.04]">
-                <div className="text-[8px] text-white/25 capitalize">{k.replace(/_/g, ' ')}</div>
+                <div className="text-[8px] capitalize" style={{ color: 'var(--text-faint)' }}>{k.replace(/_/g, ' ')}</div>
                 <div className="text-[11px] text-cyan-400/70 tabular-nums font-mono">
                   {typeof v === 'number' ? (Number.isInteger(v) ? v : Number(v).toFixed(3)) : String(v)}
                 </div>
@@ -665,7 +665,7 @@ export default function ExperimentsPage() {
   if (!datasetId) {
     return (
       <div className="flex items-center justify-center py-40">
-        <div className="text-[13px] text-white/30">Generate or upload a dataset to run experiments</div>
+        <div className="text-[13px]" style={{ color: 'var(--text-muted)' }}>Generate or upload a dataset to run experiments</div>
       </div>
     );
   }
@@ -679,8 +679,8 @@ export default function ExperimentsPage() {
         transition={{ duration: 0.4 }}
         className="mb-4"
       >
-        <h1 className="text-[18px] font-display text-white/80">Experiments Hub</h1>
-        <p className="text-[12px] text-white/30 mt-0.5">
+        <h1 className="text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Experiments Hub</h1>
+        <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
           6 computational experiments inspired by DishBrain & Brainoware research
         </p>
       </motion.div>

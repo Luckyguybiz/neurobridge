@@ -46,8 +46,8 @@ function Bar({
   const pct = maxValue > 0 ? Math.min(100, (value / maxValue) * 100) : 0;
   return (
     <div className="flex items-center gap-3 text-[10px]">
-      <span className="text-white/30 w-16 truncate shrink-0">{label}</span>
-      <div className="flex-1 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+      <span className="w-16 truncate shrink-0" style={{ color: 'var(--text-muted)' }}>{label}</span>
+      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bg-card)' }}>
         <motion.div
           className={`h-full rounded-full bg-gradient-to-r ${color}`}
           initial={{ width: 0 }}
@@ -55,7 +55,7 @@ function Bar({
           transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
         />
       </div>
-      <span className="text-white/50 w-12 tabular-nums text-right shrink-0">
+      <span className="w-12 tabular-nums text-right shrink-0" style={{ color: 'var(--text-secondary)' }}>
         {typeof value === 'number' && value % 1 !== 0 ? value.toFixed(1) : value}
       </span>
     </div>
@@ -132,7 +132,7 @@ function PaperGenerator({ datasetId }: { datasetId: string }) {
   if (!draft) {
     return (
       <div className="space-y-2">
-        <div className="text-[11px] text-white/40 leading-relaxed">
+        <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
           Generate a publication-ready draft based on your organoid dataset analysis.
           Includes abstract, methods, results, and discussion sections.
         </div>
@@ -150,9 +150,9 @@ function PaperGenerator({ datasetId }: { datasetId: string }) {
     <div className="space-y-3">
       {/* Title & word count */}
       <div>
-        <div className="text-[14px] font-display text-white/85">{draft.title}</div>
+        <div className="text-[14px] font-display" style={{ color: 'var(--text-primary)' }}>{draft.title}</div>
         {draft.word_count != null && draft.word_count > 0 && (
-          <div className="text-[10px] text-white/30 mt-0.5 tabular-nums">
+          <div className="text-[10px] mt-0.5 tabular-nums" style={{ color: 'var(--text-muted)' }}>
             {draft.word_count.toLocaleString()} words
           </div>
         )}
@@ -161,12 +161,13 @@ function PaperGenerator({ datasetId }: { datasetId: string }) {
       {/* Sections list */}
       {draft.sections && draft.sections.length > 0 && (
         <div className="space-y-1">
-          <div className="text-[9px] text-white/20 uppercase tracking-widest">Sections</div>
+          <div className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>Sections</div>
           <div className="flex flex-wrap gap-1.5">
             {draft.sections.map((section, i) => (
               <span
                 key={i}
-                className="px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.06] text-[10px] text-white/40"
+                className="px-2 py-0.5 rounded-md text-[10px]"
+                style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
               >
                 {section}
               </span>
@@ -178,8 +179,8 @@ function PaperGenerator({ datasetId }: { datasetId: string }) {
       {/* Markdown preview */}
       {draft.markdown && (
         <div className="space-y-1.5">
-          <div className="text-[9px] text-white/20 uppercase tracking-widest">Preview</div>
-          <pre className="max-h-64 overflow-auto rounded-lg bg-[#0a0b10] border border-white/[0.06] p-3 text-[10px] text-white/50 leading-relaxed font-mono whitespace-pre-wrap">
+          <div className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>Preview</div>
+          <pre className="max-h-64 overflow-auto rounded-lg p-3 text-[10px] leading-relaxed font-mono whitespace-pre-wrap" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
             {draft.markdown}
           </pre>
         </div>
@@ -195,7 +196,8 @@ function PaperGenerator({ datasetId }: { datasetId: string }) {
         </button>
         <button
           onClick={generate}
-          className="px-4 py-1.5 rounded-full text-[11px] font-medium bg-white/[0.06] text-white/50 hover:bg-white/[0.1] hover:text-white/70 transition-all duration-300"
+          className="px-4 py-1.5 rounded-full text-[11px] font-medium transition-all duration-300"
+          style={{ background: 'var(--bg-card)', color: 'var(--text-secondary)' }}
         >
           Regenerate
         </button>
@@ -244,7 +246,7 @@ function GrantMatching({ datasetId }: { datasetId: string }) {
 
   if (grants.length === 0) {
     return (
-      <div className="text-[11px] text-white/40 leading-relaxed">
+      <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
         No matching grants found for this dataset.
       </div>
     );
@@ -283,8 +285,8 @@ function GrantMatching({ datasetId }: { datasetId: string }) {
             {/* Grant name & funder */}
             <div className="flex items-start justify-between gap-2">
               <div>
-                <div className="text-[12px] font-medium text-white/80">{grant.name}</div>
-                <div className="text-[10px] text-white/30">{grant.funder}</div>
+                <div className="text-[12px] font-medium" style={{ color: 'var(--text-primary)' }}>{grant.name}</div>
+                <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{grant.funder}</div>
               </div>
               {isTop && (
                 <span className="shrink-0 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/25 text-[9px] font-medium text-emerald-400">
@@ -296,8 +298,8 @@ function GrantMatching({ datasetId }: { datasetId: string }) {
             {/* Amount & deadline */}
             <div className="flex gap-4 text-[10px]">
               <div>
-                <span className="text-white/25">Amount: </span>
-                <span className="text-white/50 tabular-nums">
+                <span style={{ color: 'var(--text-faint)' }}>Amount: </span>
+                <span className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>
                   {typeof grant.amount === 'number'
                     ? `$${grant.amount.toLocaleString()}`
                     : grant.amount}
@@ -305,8 +307,8 @@ function GrantMatching({ datasetId }: { datasetId: string }) {
               </div>
               {grant.deadline && (
                 <div>
-                  <span className="text-white/25">Deadline: </span>
-                  <span className="text-white/50 tabular-nums">{grant.deadline}</span>
+                  <span style={{ color: 'var(--text-faint)' }}>Deadline: </span>
+                  <span className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{grant.deadline}</span>
                 </div>
               )}
             </div>
@@ -324,7 +326,7 @@ function GrantMatching({ datasetId }: { datasetId: string }) {
             {gaps.length > 0 && (
               <div className="space-y-0.5">
                 {gaps.map((gap, gi) => (
-                  <div key={gi} className="text-[9px] text-white/20 leading-relaxed">
+                  <div key={gi} className="text-[9px] leading-relaxed" style={{ color: 'var(--text-faint)' }}>
                     {gap}
                   </div>
                 ))}
@@ -353,7 +355,7 @@ export default function PublishPage() {
   if (!datasetId) {
     return (
       <div className="flex items-center justify-center py-40">
-        <div className="text-[13px] text-white/30">Generate or upload a dataset to publish</div>
+        <div className="text-[13px]" style={{ color: 'var(--text-muted)' }}>Generate or upload a dataset to publish</div>
       </div>
     );
   }
@@ -367,8 +369,8 @@ export default function PublishPage() {
         transition={{ duration: 0.4 }}
         className="mb-4"
       >
-        <h1 className="text-[18px] font-display text-white/80">Publish & Funding</h1>
-        <p className="text-[12px] text-white/30 mt-0.5">
+        <h1 className="text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Publish & Funding</h1>
+        <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
           Generate publication drafts and find matching grant opportunities
         </p>
       </motion.div>

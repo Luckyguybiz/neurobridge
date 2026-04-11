@@ -9,7 +9,7 @@ import ChartCard from '@/components/dashboard/ChartCard';
 import RasterPlot from '@/components/dashboard/RasterPlot';
 import SpikeWaveforms from '@/components/dashboard/SpikeWaveforms';
 import ISIHistogram from '@/components/dashboard/ISIHistogram';
-import { ELECTRODE_COLORS } from '@/lib/utils';
+import { ELECTRODE_COLORS, getThemeColors } from '@/lib/utils';
 import type { Spike } from '@/lib/types';
 
 // ─── Firing Rate Timeline ─────────────────────────────────────────────────────
@@ -27,6 +27,7 @@ function FiringRateTimeline({ datasetId }: { datasetId: string }) {
 
   useEffect(() => {
     if (!svgRef.current || !data) return;
+    const tc = getThemeColors();
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
@@ -52,7 +53,7 @@ function FiringRateTimeline({ datasetId }: { datasetId: string }) {
       .join('line')
       .attr('x1', 0).attr('x2', w)
       .attr('y1', (d) => y(d)).attr('y2', (d) => y(d))
-      .attr('stroke', 'rgba(255,255,255,0.04)');
+      .attr('stroke', tc.grid);
 
     // Area + line per electrode
     const area = d3.area<number>()
@@ -88,13 +89,13 @@ function FiringRateTimeline({ datasetId }: { datasetId: string }) {
     g.append('g')
       .attr('transform', `translate(0,${h})`)
       .call(d3.axisBottom(x).ticks(8).tickFormat((d) => `${d}s`))
-      .call((ax) => ax.selectAll('text').attr('fill', 'rgba(255,255,255,0.4)').style('font-size', '10px'))
-      .call((ax) => ax.selectAll('line,path').attr('stroke', 'rgba(255,255,255,0.1)'));
+      .call((ax) => ax.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
+      .call((ax) => ax.selectAll('line,path').attr('stroke', tc.axis));
 
     g.append('g')
       .call(d3.axisLeft(y).ticks(5).tickFormat((d) => `${d} Hz`))
-      .call((ax) => ax.selectAll('text').attr('fill', 'rgba(255,255,255,0.4)').style('font-size', '10px'))
-      .call((ax) => ax.selectAll('line,path').attr('stroke', 'rgba(255,255,255,0.1)'));
+      .call((ax) => ax.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
+      .call((ax) => ax.selectAll('line,path').attr('stroke', tc.axis));
 
     // Y-axis label
     svg.append('text')
@@ -102,7 +103,7 @@ function FiringRateTimeline({ datasetId }: { datasetId: string }) {
       .attr('x', -(height / 2))
       .attr('y', 12)
       .attr('text-anchor', 'middle')
-      .attr('fill', 'rgba(255,255,255,0.2)')
+      .attr('fill', tc.textFaint)
       .style('font-size', '10px')
       .text('Firing Rate (Hz)');
 
@@ -117,7 +118,7 @@ function FiringRateTimeline({ datasetId }: { datasetId: string }) {
         .attr('stroke', color).attr('stroke-width', 2);
       legendG.append('text')
         .attr('x', 18).attr('y', idx * 14 + 10)
-        .attr('fill', 'rgba(255,255,255,0.4)')
+        .attr('fill', tc.textSecondary)
         .style('font-size', '9px')
         .text(`E${elId}`);
     });
@@ -140,6 +141,7 @@ function AmplitudeHistogram({ spikes }: { spikes: Spike[] }) {
 
   useEffect(() => {
     if (!svgRef.current || spikes.length === 0) return;
+    const tc = getThemeColors();
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
@@ -184,25 +186,25 @@ function AmplitudeHistogram({ spikes }: { spikes: Spike[] }) {
     g.append('line')
       .attr('x1', x(meanAmp)).attr('x2', x(meanAmp))
       .attr('y1', 0).attr('y2', h)
-      .attr('stroke', 'rgba(255,255,255,0.4)')
+      .attr('stroke', tc.textSecondary)
       .attr('stroke-dasharray', '4,4')
       .attr('stroke-width', 1);
     g.append('text')
       .attr('x', x(meanAmp) + 4).attr('y', 14)
-      .attr('fill', 'rgba(255,255,255,0.4)')
+      .attr('fill', tc.textSecondary)
       .style('font-size', '9px')
       .text(`μ=${meanAmp.toFixed(0)}µV`);
 
     g.append('g')
       .attr('transform', `translate(0,${h})`)
       .call(d3.axisBottom(x).ticks(6).tickFormat((d) => `${d}µV`))
-      .call((ax) => ax.selectAll('text').attr('fill', 'rgba(255,255,255,0.4)').style('font-size', '10px'))
-      .call((ax) => ax.selectAll('line,path').attr('stroke', 'rgba(255,255,255,0.1)'));
+      .call((ax) => ax.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
+      .call((ax) => ax.selectAll('line,path').attr('stroke', tc.axis));
 
     g.append('g')
       .call(d3.axisLeft(y).ticks(4))
-      .call((ax) => ax.selectAll('text').attr('fill', 'rgba(255,255,255,0.4)').style('font-size', '10px'))
-      .call((ax) => ax.selectAll('line,path').attr('stroke', 'rgba(255,255,255,0.1)'));
+      .call((ax) => ax.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
+      .call((ax) => ax.selectAll('line,path').attr('stroke', tc.axis));
   }, [spikes]);
 
   return <svg ref={svgRef} className="w-full h-48" />;
@@ -213,8 +215,8 @@ function AmplitudeHistogram({ spikes }: { spikes: Spike[] }) {
 function StatChip({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col items-center px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.04]">
-      <span className="text-[10px] text-white/25 uppercase tracking-widest mb-0.5">{label}</span>
-      <span className="text-[18px] font-medium tabular-nums text-white/80">{value}</span>
+      <span className="text-[10px] uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>{label}</span>
+      <span className="text-[18px] font-medium tabular-nums" style={{ color: 'var(--text-primary)' }}>{value}</span>
     </div>
   );
 }
@@ -236,7 +238,7 @@ export default function SpikesPage() {
       <div className="flex items-center justify-center py-40">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[13px] text-white/30">Loading spike data...</p>
+          <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>Loading spike data...</p>
         </div>
       </div>
     );
@@ -267,14 +269,15 @@ export default function SpikesPage() {
 
       {/* Electrode selector */}
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-[10px] text-white/25 uppercase tracking-wider mr-1">Filter:</span>
+        <span className="text-[10px] uppercase tracking-wider mr-1" style={{ color: 'var(--text-muted)' }}>Filter:</span>
         <button
           onClick={() => setSelectedElectrode(null)}
           className={`text-[10px] px-2.5 py-1 rounded-md transition-all ${
             selectedElectrode === null
               ? 'bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border border-cyan-500/20 text-cyan-400'
-              : 'bg-white/[0.03] border border-white/[0.04] text-white/30 hover:text-white/50'
+              : 'bg-white/[0.03] border border-white/[0.04] hover:opacity-80'
           }`}
+          style={selectedElectrode === null ? undefined : { color: 'var(--text-muted)' }}
         >
           All
         </button>
@@ -284,8 +287,8 @@ export default function SpikesPage() {
             onClick={() => setSelectedElectrode(selectedElectrode === i ? null : i)}
             className={`text-[10px] px-2.5 py-1 rounded-md transition-all ${
               selectedElectrode === i
-                ? 'border text-white/90'
-                : 'bg-white/[0.03] border border-white/[0.04] text-white/30 hover:text-white/50'
+                ? 'border'
+                : 'bg-white/[0.03] border border-white/[0.04] hover:opacity-80'
             }`}
             style={selectedElectrode === i ? {
               backgroundColor: `${ELECTRODE_COLORS[i % ELECTRODE_COLORS.length]}20`,
@@ -347,7 +350,7 @@ export default function SpikesPage() {
               ? <SpikeWaveforms spikes={spikes} electrodes={nElectrodes} />
               : (
                 <div className="flex flex-col items-center justify-center py-10 gap-2">
-                  <div className="text-white/15 text-[11px] text-center">
+                  <div className="text-[11px] text-center" style={{ color: 'var(--text-muted)' }}>
                     Waveform data requires recording files with raw traces.<br />
                     Synthetic data via the API does not include waveforms.
                   </div>
@@ -390,6 +393,7 @@ function PCAScatter({ datasetId }: { datasetId: string }) {
 
   useEffect(() => {
     if (!svgRef.current || !data) return;
+    const tc = getThemeColors();
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
@@ -414,12 +418,12 @@ function PCAScatter({ datasetId }: { datasetId: string }) {
     const y = d3.scaleLinear().domain([Math.min(...ys), Math.max(...ys)]).range([h, 0]).nice();
 
     g.append('g').attr('transform', `translate(0,${h})`).call(d3.axisBottom(x).ticks(5))
-      .call(ax => ax.selectAll('text').attr('fill', 'rgba(255,255,255,0.4)').style('font-size', '9px'))
-      .call(ax => ax.selectAll('line,path').attr('stroke', 'rgba(255,255,255,0.1)'));
+      .call(ax => ax.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '9px'))
+      .call(ax => ax.selectAll('line,path').attr('stroke', tc.axis));
 
     g.append('g').call(d3.axisLeft(y).ticks(5))
-      .call(ax => ax.selectAll('text').attr('fill', 'rgba(255,255,255,0.4)').style('font-size', '9px'))
-      .call(ax => ax.selectAll('line,path').attr('stroke', 'rgba(255,255,255,0.1)'));
+      .call(ax => ax.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '9px'))
+      .call(ax => ax.selectAll('line,path').attr('stroke', tc.axis));
 
     const colors = ['#22d3ee', '#a78bfa', '#34d399', '#fbbf24', '#f87171', '#818cf8'];
 
@@ -436,11 +440,11 @@ function PCAScatter({ datasetId }: { datasetId: string }) {
     // Axis labels
     if (explained.length >= 2) {
       g.append('text').attr('x', w / 2).attr('y', h + 25).attr('text-anchor', 'middle')
-        .attr('fill', 'rgba(255,255,255,0.3)').style('font-size', '9px')
+        .attr('fill', tc.textMuted).style('font-size', '9px')
         .text(`PC1 (${(Number(explained[0]) * 100).toFixed(0)}%)`);
       g.append('text').attr('x', -h / 2).attr('y', -30).attr('text-anchor', 'middle')
         .attr('transform', 'rotate(-90)')
-        .attr('fill', 'rgba(255,255,255,0.3)').style('font-size', '9px')
+        .attr('fill', tc.textMuted).style('font-size', '9px')
         .text(`PC2 (${(Number(explained[1]) * 100).toFixed(0)}%)`);
     }
   }, [data]);
@@ -484,10 +488,10 @@ function StateClassification({ datasetId }: { datasetId: string }) {
         return (
           <div key={state} className="space-y-1">
             <div className="flex justify-between text-[10px]">
-              <span className="text-white/40">{stateNames[idx] ?? `State ${idx}`}</span>
-              <span className="text-white/60 tabular-nums">{pct}% ({count} windows)</span>
+              <span style={{ color: 'var(--text-muted)' }}>{stateNames[idx] ?? `State ${idx}`}</span>
+              <span className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{pct}% ({count} windows)</span>
             </div>
-            <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden">
+            <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--chart-grid)' }}>
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}
@@ -499,7 +503,7 @@ function StateClassification({ datasetId }: { datasetId: string }) {
           </div>
         );
       })}
-      <div className="text-[10px] text-white/20 mt-2">{labels.length} time windows classified</div>
+      <div className="text-[10px] mt-2" style={{ color: 'var(--text-muted)' }}>{labels.length} time windows classified</div>
     </div>
   );
 }
@@ -510,6 +514,7 @@ function RasterPlotTall({ spikes, duration, electrodes }: { spikes: Spike[]; dur
 
   useEffect(() => {
     if (!svgRef.current || spikes.length === 0) return;
+    const tc = getThemeColors();
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
@@ -528,13 +533,13 @@ function RasterPlotTall({ spikes, duration, electrodes }: { spikes: Spike[]; dur
     g.append('g')
       .attr('transform', `translate(0,${h})`)
       .call(d3.axisBottom(x).ticks(8).tickFormat((d) => `${d}s`))
-      .call((ax) => ax.selectAll('text').attr('fill', 'rgba(255,255,255,0.5)').style('font-size', '10px'))
-      .call((ax) => ax.selectAll('line,path').attr('stroke', 'rgba(255,255,255,0.12)'));
+      .call((ax) => ax.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
+      .call((ax) => ax.selectAll('line,path').attr('stroke', tc.axis));
 
     g.append('g')
       .call(d3.axisLeft(y).tickFormat((d) => `E${d}`))
-      .call((ax) => ax.selectAll('text').attr('fill', 'rgba(255,255,255,0.5)').style('font-size', '10px'))
-      .call((ax) => ax.selectAll('line,path').attr('stroke', 'rgba(255,255,255,0.12)'));
+      .call((ax) => ax.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
+      .call((ax) => ax.selectAll('line,path').attr('stroke', tc.axis));
 
     g.selectAll('.grid')
       .data(d3.range(electrodes))
@@ -542,7 +547,7 @@ function RasterPlotTall({ spikes, duration, electrodes }: { spikes: Spike[]; dur
       .attr('x1', 0).attr('x2', w)
       .attr('y1', (d) => (y(d) ?? 0) + y.bandwidth() / 2)
       .attr('y2', (d) => (y(d) ?? 0) + y.bandwidth() / 2)
-      .attr('stroke', 'rgba(255,255,255,0.04)');
+      .attr('stroke', tc.grid);
 
     const subset = spikes.length > 12000
       ? spikes.filter((_, i) => i % Math.ceil(spikes.length / 12000) === 0)

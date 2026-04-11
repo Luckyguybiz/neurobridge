@@ -188,6 +188,14 @@ select option { background: var(--bg-secondary); color: var(--text-primary); }
 .light .to-violet-500\/20 { --tw-gradient-to: rgba(124,58,237,0.12) !important; }
 .light .border-cyan-500\/20, .light .border-cyan-500\/\[0\.15\] { border-color: rgba(8,145,178,0.2) !important; }
 
+/* Light mode: SVG text visibility */
+.light svg text { fill: var(--text-secondary) !important; }
+.light svg text[fill*="rgba(255"] { fill: var(--text-secondary) !important; }
+
+/* Light mode: ensure all white text becomes dark */
+.light [style*="color: rgba(255"] { color: var(--text-primary) !important; }
+.light [style*="fill: rgba(255"] { fill: var(--text-primary) !important; }
+
 /* Light mode body */
 .light { color-scheme: light; }
 .light .grain::before { display: none; }

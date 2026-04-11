@@ -7,7 +7,7 @@ import { useDashboardContext } from '@/lib/dashboard-context';
 import * as api from '@/lib/api';
 import ChartCard from '@/components/dashboard/ChartCard';
 import ConnectivityGraph from '@/components/dashboard/ConnectivityGraph';
-import { ELECTRODE_COLORS } from '@/lib/utils';
+import { ELECTRODE_COLORS, getThemeColors } from '@/lib/utils';
 
 // ─── Transfer Entropy Matrix ──────────────────────────────────────────────────
 
@@ -23,6 +23,7 @@ function TEMatrix({ data }: { data: TEData }) {
 
   useEffect(() => {
     if (!svgRef.current || !data.te_matrix.length) return;
+    const tc = getThemeColors();
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
@@ -47,7 +48,7 @@ function TEMatrix({ data }: { data: TEData }) {
           .attr('y', i * cellSize)
           .attr('width', cellSize - 1)
           .attr('height', cellSize - 1)
-          .attr('fill', i === j ? 'rgba(255,255,255,0.03)' : color(val))
+          .attr('fill', i === j ? tc.grid : color(val))
           .attr('rx', 2);
 
         if (cellSize > 20 && i !== j) {
@@ -55,7 +56,7 @@ function TEMatrix({ data }: { data: TEData }) {
             .attr('x', j * cellSize + cellSize / 2)
             .attr('y', i * cellSize + cellSize / 2 + 4)
             .attr('text-anchor', 'middle')
-            .attr('fill', val > maxVal * 0.5 ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.5)')
+            .attr('fill', val > maxVal * 0.5 ? 'rgba(0,0,0,0.7)' : tc.textSecondary)
             .style('font-size', '8px')
             .text(val.toFixed(3));
         }
@@ -102,12 +103,12 @@ function TEMatrix({ data }: { data: TEData }) {
     <div>
       <div className="flex gap-4 mb-3 text-[11px]">
         <div>
-          <span className="text-white/30">Max TE: </span>
+          <span style={{ color: 'var(--text-muted)' }}>Max TE: </span>
           <span className="text-cyan-400">E{data.max_te_pair.source} → E{data.max_te_pair.target}</span>
-          <span className="text-white/40 ml-1">({data.max_te_pair.value.toFixed(4)} bits)</span>
+          <span className="ml-1" style={{ color: 'var(--text-muted)' }}>({data.max_te_pair.value.toFixed(4)} bits)</span>
         </div>
         <div>
-          <span className="text-white/30">Mean TE: </span>
+          <span style={{ color: 'var(--text-muted)' }}>Mean TE: </span>
           <span className="text-violet-400">{data.mean_te.toFixed(4)}</span>
         </div>
       </div>
@@ -194,11 +195,11 @@ function CrossCorrHeatmap({ datasetId, nElectrodes }: { datasetId: string; nElec
     <div className="relative">
       <svg ref={svgRef} className="w-full" style={{ height: 220 }} />
       <div className="fallback-json hidden mt-2">
-        <div className="text-[10px] text-white/30 mb-1">Cross-correlation data:</div>
+        <div className="text-[10px] mb-1" style={{ color: 'var(--text-muted)' }}>Cross-correlation data:</div>
         <div className="space-y-1 font-mono text-[10px]">
           {Object.entries(data).slice(0, 8).map(([k, v]) => (
             <div key={k} className="flex gap-2">
-              <span className="text-white/25">{k}:</span>
+              <span style={{ color: 'var(--text-muted)' }}>{k}:</span>
               <span className="text-cyan-400/60 truncate">
                 {Array.isArray(v) ? `[${(v as unknown[]).length} items]` :
                  typeof v === 'object' && v !== null ? `{${Object.keys(v).length} keys}` :
@@ -236,7 +237,7 @@ function WeightsDisplay({ datasetId }: { datasetId: string }) {
     <div className="space-y-1.5 font-mono text-[11px]">
       {entries.map(([k, v]) => (
         <div key={k} className="flex gap-2 py-0.5 border-b border-white/[0.03]">
-          <span className="text-white/30 shrink-0 w-28 truncate">{k}:</span>
+          <span className="shrink-0 w-28 truncate" style={{ color: 'var(--text-muted)' }}>{k}:</span>
           <span className="text-cyan-400/70 truncate">
             {typeof v === 'number'   ? (Number.isInteger(v) ? v : Number(v).toFixed(4)) :
              typeof v === 'boolean'  ? String(v) :
@@ -248,7 +249,7 @@ function WeightsDisplay({ datasetId }: { datasetId: string }) {
         </div>
       ))}
       {Object.keys(data).length > 14 && (
-        <div className="text-white/20 text-[10px]">+ {Object.keys(data).length - 14} more keys</div>
+        <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>+ {Object.keys(data).length - 14} more keys</div>
       )}
     </div>
   );
@@ -282,8 +283,8 @@ function NetworkStats({ datasetId }: { datasetId: string }) {
     <div className="flex flex-wrap gap-2 mt-3">
       {stats.map((s) => (
         <div key={s.label} className="px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.04]">
-          <div className="text-[9px] text-white/25 uppercase tracking-widest">{s.label}</div>
-          <div className="text-[14px] font-medium text-white/70 tabular-nums">{s.value}</div>
+          <div className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>{s.label}</div>
+          <div className="text-[14px] font-medium tabular-nums" style={{ color: 'var(--text-secondary)' }}>{s.value}</div>
         </div>
       ))}
     </div>
@@ -309,7 +310,7 @@ export default function NetworkPage() {
       <div className="flex items-center justify-center py-40">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[13px] text-white/30">Loading network data...</p>
+          <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>Loading network data...</p>
         </div>
       </div>
     );
@@ -345,7 +346,7 @@ export default function NetworkPage() {
           <ChartCard title="Cross-Correlation Matrix" description="Pairwise electrode correlation">
             {datasetId
               ? <CrossCorrHeatmap datasetId={datasetId} nElectrodes={nElectrodes} />
-              : <div className="text-[11px] text-white/30 py-4">No dataset loaded</div>}
+              : <div className="text-[11px] py-4" style={{ color: 'var(--text-muted)' }}>No dataset loaded</div>}
           </ChartCard>
         </motion.div>
 
@@ -380,7 +381,7 @@ export default function NetworkPage() {
           <ChartCard title="Synaptic Weights" description="Inferred connectome from spike timing">
             {datasetId
               ? <WeightsDisplay datasetId={datasetId} />
-              : <div className="text-[11px] text-white/30 py-4">No dataset loaded</div>}
+              : <div className="text-[11px] py-4" style={{ color: 'var(--text-muted)' }}>No dataset loaded</div>}
           </ChartCard>
         </motion.div>
       </div>
@@ -460,10 +461,10 @@ function MotifsCard({ datasetId }: { datasetId: string }) {
         return (
           <div key={m.key} className="space-y-1">
             <div className="flex justify-between text-[10px]">
-              <span className="text-white/40">{m.label}</span>
-              <span className="text-white/60 tabular-nums">{count}</span>
+              <span style={{ color: 'var(--text-muted)' }}>{m.label}</span>
+              <span className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{count}</span>
             </div>
-            <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden">
+            <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--chart-grid)' }}>
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${(count / maxCount) * 100}%` }}
@@ -475,14 +476,14 @@ function MotifsCard({ datasetId }: { datasetId: string }) {
         );
       })}
       <div className="flex items-center gap-2 mt-2 text-[10px]">
-        <span className="text-white/25">Triangle z-score:</span>
-        <span className={`font-mono tabular-nums ${zScore > 2 ? 'text-emerald-400' : zScore < -2 ? 'text-red-400' : 'text-white/50'}`}>
+        <span style={{ color: 'var(--text-muted)' }}>Triangle z-score:</span>
+        <span className={`font-mono tabular-nums ${zScore > 2 ? 'text-emerald-400' : zScore < -2 ? 'text-red-400' : ''}`} style={zScore <= 2 && zScore >= -2 ? { color: 'var(--text-secondary)' } : undefined}>
           {zScore.toFixed(2)}
         </span>
         <span className={`px-1.5 py-0.5 rounded text-[9px] ${
           enrichment === 'over-represented' ? 'bg-emerald-500/15 text-emerald-400' :
           enrichment === 'under-represented' ? 'bg-red-500/15 text-red-400' :
-          'bg-white/[0.05] text-white/40'
+          'bg-white/[0.05]'
         }`}>
           {enrichment}
         </span>
@@ -513,7 +514,7 @@ function GraphTheoryCard({ datasetId }: { datasetId: string }) {
         const val = Number(data[m.key] ?? 0);
         return (
           <div key={m.key} className="flex justify-between text-[11px] py-1 border-b border-white/[0.03]">
-            <span className="text-white/40">{m.label}</span>
+            <span style={{ color: 'var(--text-muted)' }}>{m.label}</span>
             <span className="text-cyan-400/70 tabular-nums">{m.fmt(val)}</span>
           </div>
         );
@@ -541,7 +542,7 @@ function CommunitiesCard({ datasetId }: { datasetId: string }) {
     <div className="space-y-3">
       <div className="flex items-center gap-4">
         <div className="text-2xl font-bold text-violet-400 tabular-nums">{nCommunities}</div>
-        <div className="text-[10px] text-white/30">communities<br/>Q = {modularity.toFixed(3)}</div>
+        <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>communities<br/>Q = {modularity.toFixed(3)}</div>
       </div>
       {assignments.length > 0 && (
         <div className="flex gap-1 flex-wrap">
@@ -576,10 +577,10 @@ function TopologyCard({ datasetId }: { datasetId: string }) {
       {betti.map(b => (
         <div key={b.label} className="space-y-1">
           <div className="flex justify-between text-[10px]">
-            <span className="text-white/40">{b.label}</span>
-            <span className="text-white/60 tabular-nums">{b.value}</span>
+            <span style={{ color: 'var(--text-muted)' }}>{b.label}</span>
+            <span className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{b.value}</span>
           </div>
-          <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden">
+          <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--chart-grid)' }}>
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${(b.value / maxB) * 100}%` }}
@@ -589,7 +590,7 @@ function TopologyCard({ datasetId }: { datasetId: string }) {
           </div>
         </div>
       ))}
-      <div className="text-[10px] text-white/20">
+      <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
         {betti[1].value > 0 ? 'Loops detected — recurrent processing present' : 'No loops — feedforward structure'}
       </div>
     </div>
@@ -619,31 +620,31 @@ function InfoFlowCard({ datasetId }: { datasetId: string }) {
     <div className="space-y-3">
       <div className="flex items-center gap-4">
         <div className="px-3 py-2 rounded-lg bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border border-cyan-500/10">
-          <div className="text-[10px] text-white/30">Hub Electrode</div>
+          <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Hub Electrode</div>
           <div className="text-lg font-bold text-cyan-400 tabular-nums">E{hubElectrode}</div>
         </div>
         <div className="space-y-1 text-[11px]">
-          <div className="text-white/40">Outgoing strength: <span className="text-cyan-400/70 tabular-nums">{hubStrength.toFixed(3)}</span></div>
-          <div className="text-white/40">Mean GC: <span className="text-white/60 tabular-nums">{meanGC.toFixed(4)}</span></div>
-          <div className="text-white/40">Flow asymmetry: <span className="text-white/60 tabular-nums">{asymmetry.toFixed(4)}</span></div>
+          <div style={{ color: 'var(--text-muted)' }}>Outgoing strength: <span className="text-cyan-400/70 tabular-nums">{hubStrength.toFixed(3)}</span></div>
+          <div style={{ color: 'var(--text-muted)' }}>Mean GC: <span className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{meanGC.toFixed(4)}</span></div>
+          <div style={{ color: 'var(--text-muted)' }}>Flow asymmetry: <span className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{asymmetry.toFixed(4)}</span></div>
         </div>
       </div>
 
       {topPairs.length > 0 && (
         <div className="space-y-1">
-          <div className="text-[10px] text-white/25 mb-1">Top causal pairs</div>
+          <div className="text-[10px] mb-1" style={{ color: 'var(--text-muted)' }}>Top causal pairs</div>
           {topPairs.slice(0, 5).map((p, i) => (
             <div key={i} className="flex items-center gap-2 text-[10px] py-0.5">
               <span className="text-cyan-400/60 tabular-nums w-6">E{p.source}</span>
-              <span className="text-white/20">&rarr;</span>
+              <span style={{ color: 'var(--text-muted)' }}>&rarr;</span>
               <span className="text-violet-400/60 tabular-nums w-6">E{p.target}</span>
-              <div className="flex-1 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+              <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--chart-grid)' }}>
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-cyan-500/40 to-violet-500/40"
                   style={{ width: `${Math.min(100, (p.gc_value / Math.max(topPairs[0]?.gc_value ?? 1, 0.001)) * 100)}%` }}
                 />
               </div>
-              <span className="text-white/30 tabular-nums w-12 text-right">{p.gc_value.toFixed(3)}</span>
+              <span className="tabular-nums w-12 text-right" style={{ color: 'var(--text-muted)' }}>{p.gc_value.toFixed(3)}</span>
             </div>
           ))}
         </div>
@@ -664,6 +665,7 @@ function LargeConnectivityGraph({ spikes, electrodes }: { spikes: Spike[]; elect
 
   useEffect(() => {
     if (!svgRef.current || spikes.length === 0) return;
+    const tc = getThemeColors();
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
@@ -736,7 +738,7 @@ function LargeConnectivityGraph({ spikes, electrodes }: { spikes: Spike[]; elect
       .text((d) => d.label)
       .attr('text-anchor', 'middle')
       .attr('dy', '0.35em')
-      .attr('fill', 'rgba(255,255,255,0.85)')
+      .attr('fill', tc.text)
       .style('font-size', '11px')
       .style('font-weight', '600')
       .style('pointer-events', 'none');
@@ -753,7 +755,7 @@ function LargeConnectivityGraph({ spikes, electrodes }: { spikes: Spike[]; elect
       .text((d) => `deg ${degreeMap[d.id] ?? 0}`)
       .attr('text-anchor', 'middle')
       .attr('dy', '2.2em')
-      .attr('fill', 'rgba(255,255,255,0.25)')
+      .attr('fill', tc.textMuted)
       .style('font-size', '8px')
       .style('pointer-events', 'none');
 
