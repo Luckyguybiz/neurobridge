@@ -85,6 +85,16 @@ function IconProtocols() {
   );
 }
 
+function IconConstructor() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+      <rect x="3" y="3" width="14" height="14" rx="2" />
+      <path d="M7 8h6M7 12h4" />
+      <circle cx="15" cy="15" r="3" fill="currentColor" stroke="none" opacity="0.4" />
+    </svg>
+  );
+}
+
 function IconLive() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" className="w-4 h-4">
@@ -116,6 +126,7 @@ const NAV = [
   { href: '/dashboard/experiments',  label: 'Experiments',  Icon: IconExperiments },
   { href: '/dashboard/protocols',    label: 'Protocols',    Icon: IconProtocols },
   { href: '/dashboard/publish',      label: 'Publish',      Icon: IconPublish },
+  { href: '/dashboard/constructor',  label: 'Constructor',  Icon: IconConstructor },
   { href: '/dashboard/live',         label: 'Live',         Icon: IconLive },
 ];
 
