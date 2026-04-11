@@ -5,8 +5,10 @@
 const API_BASE = typeof window !== 'undefined'
   ? window.location.hostname === 'neurocomputers.io' || window.location.hostname === 'www.neurocomputers.io'
     ? 'https://api.neurocomputers.io'
-    : '' // Local dev: use Next.js API routes
-  : '';
+    : window.location.hostname === 'localhost'
+      ? 'http://localhost:8847'
+      : `http://${window.location.hostname}:8847`
+  : 'http://localhost:8847';
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
