@@ -50,13 +50,13 @@ export default function HomePage() {
         <div className="max-w-[1200px] mx-auto flex items-center justify-between px-6 h-14">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center text-[10px] font-bold text-black">N</div>
-            <span className="font-medium text-[14px] tracking-tight text-white/80">NeuroBridge</span>
+            <span className="font-medium text-[14px] tracking-tight" style={{ color: 'var(--text-primary)' }}>Neurocomputers</span>
           </Link>
-          <div className="hidden md:flex items-center gap-8 text-[13px] text-white/30">
-            <a href="#capabilities" className="hover:text-white/60 transition-colors duration-500">Capabilities</a>
-            <a href="#workflow" className="hover:text-white/60 transition-colors duration-500">Workflow</a>
+          <div className="hidden md:flex items-center gap-8 text-[13px]" style={{ color: 'var(--text-muted)' }}>
+            <a href="#capabilities" className="hover:opacity-70 transition-colors duration-500">Capabilities</a>
+            <a href="#workflow" className="hover:opacity-70 transition-colors duration-500">Workflow</a>
           </div>
-          <Link href="/dashboard" className="text-[12px] px-4 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.06] transition-all duration-500 text-white/60 hover:text-white/90">
+          <Link href="/dashboard" className="text-[12px] px-4 py-1.5 rounded-lg transition-all duration-500" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
             Dashboard
           </Link>
         </div>
@@ -75,7 +75,8 @@ export default function HomePage() {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.3 }}
-            className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-white/[0.06] bg-white/[0.02] text-[11px] tracking-[0.15em] uppercase text-white/30 mb-12"
+            className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full text-[11px] tracking-[0.15em] uppercase mb-12"
+            style={{ border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-muted)' }}
           >
             <span className="relative flex h-1.5 w-1.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -102,7 +103,8 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-8 text-[16px] text-white/25 max-w-md mx-auto leading-[1.8]"
+            className="mt-8 text-[16px] max-w-md mx-auto leading-[1.8]"
+            style={{ color: 'var(--text-muted)' }}
           >
             One API to access, visualize, and experiment on brain organoids. AI-powered tools for the next era of computing.
           </motion.p>
@@ -117,7 +119,7 @@ export default function HomePage() {
               <span className="relative z-10">Try Live Dashboard</span>
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-violet-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </Link>
-            <a href="https://github.com/Luckyguybiz/neurobridge-api" target="_blank" rel="noopener" className="px-8 py-3.5 rounded-full border border-white/[0.06] text-[13px] text-white/30 hover:text-white/60 hover:border-white/[0.12] transition-all duration-500">
+            <a href="https://github.com/Luckyguybiz/neurobridge-api" target="_blank" rel="noopener" className="px-8 py-3.5 rounded-full text-[13px] transition-all duration-500" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
               View on GitHub
             </a>
           </motion.div>
@@ -153,7 +155,7 @@ export default function HomePage() {
       {/* ═══════════ STATS ═══════════ */}
       <section className="py-28">
         <div className="max-w-[1100px] mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-0 md:divide-x md:divide-white/[0.04]">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-0 md:divide-x" style={{ borderColor: 'var(--border)' }}>
             {[
               { value: '125', label: 'API Endpoints' },
               { value: '57', label: 'Analysis Modules' },
@@ -161,10 +163,10 @@ export default function HomePage() {
               { value: '16', label: 'Live Organoids' },
             ].map((s, i) => (
               <ScrollReveal key={s.label} delay={i * 0.1} className="text-center px-4">
-                <div className="text-[clamp(2rem,4vw,3.5rem)] font-display text-white/85 tracking-tight">
+                <div className="text-[clamp(2rem,4vw,3.5rem)] font-display tracking-tight" style={{ color: 'var(--text-primary)' }}>
                   <AnimatedCounter value={s.value} suffix={'suffix' in s ? (s as Record<string, string>).suffix : ''} />
                 </div>
-                <div className="text-[11px] text-white/20 mt-2 tracking-[0.2em] uppercase">{s.label}</div>
+                <div className="text-[11px] mt-2 tracking-[0.2em] uppercase" style={{ color: 'var(--text-faint)' }}>{s.label}</div>
               </ScrollReveal>
             ))}
           </div>
@@ -188,13 +190,13 @@ export default function HomePage() {
                 {/* Text */}
                 <ScrollReveal variant={i % 2 === 0 ? 'fade-left' : 'fade-right'} className="flex-1">
                   <div className="space-y-5">
-                    <span className="text-[10px] uppercase tracking-[0.3em] text-white/20">{cap.tag}</span>
+                    <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: 'var(--text-faint)' }}>{cap.tag}</span>
                     <h3 className="text-[clamp(1.5rem,3vw,2.5rem)] font-display leading-[1.15] tracking-tight">
                       {cap.title}{' '}
                       <span className="italic bg-gradient-to-r from-cyan-300 to-violet-300 bg-clip-text text-transparent">{cap.titleAccent}</span>
                     </h3>
-                    <p className="text-[14px] text-white/25 leading-[1.8] max-w-sm">{cap.desc}</p>
-                    <Link href="/dashboard" className="inline-flex items-center gap-2 text-[12px] text-white/20 hover:text-cyan-400/70 transition-colors duration-500 pt-2 group">
+                    <p className="text-[14px] leading-[1.8] max-w-sm" style={{ color: 'var(--text-muted)' }}>{cap.desc}</p>
+                    <Link href="/dashboard" className="inline-flex items-center gap-2 text-[12px] hover:text-cyan-400/70 transition-colors duration-500 pt-2 group" style={{ color: 'var(--text-faint)' }}>
                       Explore in dashboard
                       <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -237,13 +239,13 @@ export default function HomePage() {
           <div>
             {steps.map((step, i) => (
               <ScrollReveal key={step.title} delay={i * 0.08}>
-                <div className="group flex items-start gap-8 py-10 border-t border-white/[0.04] hover:border-white/[0.08] transition-all duration-700">
-                  <span className="text-[11px] font-mono text-white/10 group-hover:text-cyan-400/40 transition-colors duration-700 pt-1 shrink-0 tabular-nums">
+                <div className="group flex items-start gap-8 py-10 transition-all duration-700" style={{ borderTop: '1px solid var(--border)' }}>
+                  <span className="text-[11px] font-mono group-hover:text-cyan-400/40 transition-colors duration-700 pt-1 shrink-0 tabular-nums" style={{ color: 'var(--text-faint)' }}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   <div>
-                    <h3 className="text-[20px] font-display text-white/60 group-hover:text-white/90 transition-colors duration-500">{step.title}</h3>
-                    <p className="text-[13px] text-white/15 group-hover:text-white/30 mt-2 leading-[1.7] max-w-md transition-colors duration-500">{step.desc}</p>
+                    <h3 className="text-[20px] font-display transition-colors duration-500" style={{ color: 'var(--text-secondary)' }}>{step.title}</h3>
+                    <p className="text-[13px] mt-2 leading-[1.7] max-w-md transition-colors duration-500" style={{ color: 'var(--text-faint)' }}>{step.desc}</p>
                   </div>
                 </div>
               </ScrollReveal>
@@ -261,7 +263,7 @@ export default function HomePage() {
             Ready to program{' '}
             <span className="italic bg-gradient-to-r from-cyan-300 to-violet-300 bg-clip-text text-transparent">biology</span>?
           </h2>
-          <p className="text-[14px] text-white/20 mb-14 leading-[1.8]">
+          <p className="text-[14px] mb-14 leading-[1.8]" style={{ color: 'var(--text-muted)' }}>
             Join researchers building the future of biological computing.
           </p>
           <Link href="/dashboard" className="group inline-flex items-center gap-3 px-10 py-4 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 font-medium text-[13px] transition-all duration-500 hover:shadow-[0_0_80px_rgba(34,211,238,0.2)]">
@@ -274,13 +276,13 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════ FOOTER ═══════════ */}
-      <footer className="border-t border-white/[0.03] px-6 py-8">
+      <footer className="px-6 py-8" style={{ borderTop: '1px solid var(--border)' }}>
         <div className="max-w-[1100px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-gradient-to-br from-cyan-400 to-violet-500" />
-            <span className="text-[11px] text-white/15 tracking-wider">NEUROBRIDGE</span>
+            <span className="text-[11px] tracking-wider" style={{ color: 'var(--text-faint)' }}>NEUROCOMPUTERS</span>
           </div>
-          <span className="text-[11px] text-white/10">Biocomputing-as-a-Service</span>
+          <span className="text-[11px]" style={{ color: 'var(--text-faint)' }}>Biocomputing-as-a-Service</span>
         </div>
       </footer>
     </div>

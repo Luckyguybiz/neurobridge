@@ -138,10 +138,15 @@ select option { background: var(--bg-secondary); color: var(--text-primary); }
 
 /* ─── Light mode overrides for Tailwind dark-only classes ─── */
 /* These cascade-override text-white variants when .light is active */
-.light .text-white\/85, .light .text-white\/80, .light .text-white\/90 { color: var(--text-primary) !important; }
-.light .text-white\/70, .light .text-white\/60 { color: var(--text-secondary) !important; }
-.light .text-white\/50, .light .text-white\/40, .light .text-white\/35 { color: var(--text-muted) !important; }
-.light .text-white\/30, .light .text-white\/25, .light .text-white\/20, .light .text-white\/15 { color: var(--text-faint) !important; }
+html.light .text-white\/85, html.light .text-white\/80, html.light .text-white\/90 { color: var(--text-primary) !important; }
+html.light .text-white\/70, html.light .text-white\/60 { color: var(--text-secondary) !important; }
+html.light .text-white\/50, html.light .text-white\/40, html.light .text-white\/35 { color: var(--text-muted) !important; }
+html.light .text-white\/30, html.light .text-white\/25, html.light .text-white\/20, html.light .text-white\/15 { color: var(--text-faint) !important; }
+/* Attribute selectors as fallback for Tailwind v4 compiled names */
+html.light [class*="text-white/8"], html.light [class*="text-white/9"] { color: var(--text-primary) !important; }
+html.light [class*="text-white/6"], html.light [class*="text-white/7"] { color: var(--text-secondary) !important; }
+html.light [class*="text-white/4"], html.light [class*="text-white/5"] { color: var(--text-muted) !important; }
+html.light [class*="text-white/1"], html.light [class*="text-white/2"], html.light [class*="text-white/3"] { color: var(--text-faint) !important; }
 
 /* Background overrides */
 .light .bg-white\/\[0\.03\], .light .bg-white\/\[0\.02\] { background: var(--bg-card) !important; }

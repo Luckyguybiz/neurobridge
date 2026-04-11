@@ -21,9 +21,9 @@ function JsonRows({ data, max = 10 }: { data: Record<string, unknown>; max?: num
   return (
     <div className="space-y-1 font-mono text-[10px] mt-2">
       {entries.map(([k, v]) => (
-        <div key={k} className="flex gap-2 py-0.5 border-b border-white/[0.03]">
-          <span className="text-white/25 w-32 truncate shrink-0">{k}:</span>
-          <span className="text-cyan-400/60 truncate">
+        <div key={k} className="flex gap-2 py-0.5" style={{ borderBottom: '1px solid var(--border)' }}>
+          <span className="w-32 truncate shrink-0" style={{ color: 'var(--text-muted)' }}>{k}:</span>
+          <span className="truncate" style={{ color: 'var(--accent-cyan)' }}>
             {typeof v === 'number'   ? (Number.isInteger(v) ? v : Number(v).toFixed(5)) :
              typeof v === 'boolean'  ? (v ? '✓ true' : '✗ false') :
              typeof v === 'string'   ? v :
@@ -34,7 +34,7 @@ function JsonRows({ data, max = 10 }: { data: Record<string, unknown>; max?: num
         </div>
       ))}
       {Object.keys(data).length > max && (
-        <div className="text-white/20">+ {Object.keys(data).length - max} more</div>
+        <div style={{ color: 'var(--text-faint)' }}>+ {Object.keys(data).length - max} more</div>
       )}
     </div>
   );
@@ -158,7 +158,7 @@ function AttractorsCard({ data }: { data: Record<string, unknown> }) {
       {stability > 0 && (
         <div>
           <div className="flex justify-between text-[10px] mb-1">
-            <span className="text-white/30">Mean Attractor Stability</span>
+            <span style={{ color: "var(--text-muted)" }}>Mean Attractor Stability</span>
             <span className="text-white/60 tabular-nums">{(stability * 100).toFixed(1)}%</span>
           </div>
           <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
@@ -178,7 +178,7 @@ function AttractorsCard({ data }: { data: Record<string, unknown> }) {
           <span className="text-white/20 w-4">#{i + 1}</span>
           {Object.entries(a).slice(0, 3).map(([k, v]) => (
             <span key={k}>
-              <span className="text-white/25">{k}: </span>
+              <span style={{ color: "var(--text-faint)" }}>{k}: </span>
               <span className="text-violet-400/70">
                 {typeof v === 'number' ? Number(v).toFixed(3) : String(v)}
               </span>
@@ -278,7 +278,7 @@ function ReplayCard({ data }: { data: Record<string, unknown> }) {
         <div key={i} className="text-[10px] font-mono py-1.5 px-2 rounded bg-white/[0.02] border border-white/[0.04]">
           {Object.entries(ev).slice(0, 3).map(([k, v]) => (
             <span key={k} className="mr-3">
-              <span className="text-white/25">{k}: </span>
+              <span style={{ color: "var(--text-faint)" }}>{k}: </span>
               <span className="text-pink-400/60">{typeof v === 'number' ? Number(v).toFixed(3) : String(v)}</span>
             </span>
           ))}
@@ -382,11 +382,11 @@ function SleepWakeCard({ data }: { data: Record<string, unknown> }) {
 
       <div className="grid grid-cols-2 gap-2 text-[11px]">
         <div className="px-2 py-1.5 rounded-md bg-white/[0.03]">
-          <div className="text-white/25">Transitions</div>
+          <div style={{ color: "var(--text-faint)" }}>Transitions</div>
           <div className="text-white/70 tabular-nums">{nTransitions}</div>
         </div>
         <div className="px-2 py-1.5 rounded-md bg-white/[0.03]">
-          <div className="text-white/25">Indicators</div>
+          <div style={{ color: "var(--text-faint)" }}>Indicators</div>
           <div className="text-white/70">
             {hasUpDown ? '✓' : '✗'} UP/DOWN
             {' '}
@@ -433,15 +433,15 @@ function HabituationCard({ data }: { data: Record<string, unknown> }) {
 
       <div className="grid grid-cols-3 gap-2 text-[10px]">
         <div className="px-2 py-1 rounded-md bg-white/[0.03]">
-          <div className="text-white/25">Events</div>
+          <div style={{ color: "var(--text-faint)" }}>Events</div>
           <div className="text-white/60 tabular-nums">{nEvents}</div>
         </div>
         <div className="px-2 py-1 rounded-md bg-white/[0.03]">
-          <div className="text-white/25">Decrease</div>
+          <div style={{ color: "var(--text-faint)" }}>Decrease</div>
           <div className="text-white/60 tabular-nums">{decreasePct.toFixed(1)}%</div>
         </div>
         <div className="px-2 py-1 rounded-md bg-white/[0.03]">
-          <div className="text-white/25">R²</div>
+          <div style={{ color: "var(--text-faint)" }}>R²</div>
           <div className="text-white/60 tabular-nums">{rSquared.toFixed(3)}</div>
         </div>
       </div>
@@ -494,15 +494,15 @@ function MetastabilityCard({ data }: { data: Record<string, unknown> }) {
 
       <div className="grid grid-cols-3 gap-2 text-[10px]">
         <div className="px-2 py-1 rounded-md bg-white/[0.03]">
-          <div className="text-white/25">Meta Index</div>
+          <div style={{ color: "var(--text-faint)" }}>Meta Index</div>
           <div className="text-white/60 tabular-nums">{metaIndex.toFixed(3)}</div>
         </div>
         <div className="px-2 py-1 rounded-md bg-white/[0.03]">
-          <div className="text-white/25">States</div>
+          <div style={{ color: "var(--text-faint)" }}>States</div>
           <div className="text-white/60 tabular-nums">{nStates}</div>
         </div>
         <div className="px-2 py-1 rounded-md bg-white/[0.03]">
-          <div className="text-white/25">Transitions</div>
+          <div style={{ color: "var(--text-faint)" }}>Transitions</div>
           <div className="text-white/60 tabular-nums">{nTrans}</div>
         </div>
       </div>
@@ -661,11 +661,11 @@ function EnergyLandscapeCard({ data }: { data: Record<string, unknown> }) {
 
       <div className="grid grid-cols-2 gap-2 text-[11px]">
         <div className="px-2 py-1.5 rounded-md bg-white/[0.03]">
-          <div className="text-white/25">Energy Range</div>
+          <div style={{ color: "var(--text-faint)" }}>Energy Range</div>
           <div className="text-white/70 tabular-nums">{energyRange.toFixed(3)}</div>
         </div>
         <div className="px-2 py-1.5 rounded-md bg-white/[0.03]">
-          <div className="text-white/25">Model Type</div>
+          <div style={{ color: "var(--text-faint)" }}>Model Type</div>
           <div className="text-white/70 capitalize">{modelType.replace(/_/g, ' ')}</div>
         </div>
       </div>
@@ -713,7 +713,7 @@ function WelfareCard({ data }: { data: Record<string, unknown> }) {
       </div>
 
       <div className="px-2 py-1.5 rounded-md bg-white/[0.03] text-[11px]">
-        <div className="text-white/25">Monitoring Status</div>
+        <div style={{ color: "var(--text-faint)" }}>Monitoring Status</div>
         <div className="text-white/70 capitalize">{monitoringStatus.replace(/_/g, ' ')}</div>
       </div>
 
@@ -909,9 +909,9 @@ export default function DiscoveryPage() {
               </div>
             </div>
             <div className="grid grid-cols-3 gap-2 text-[10px]">
-              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div className="text-white/25">Stability</div><div className="text-white/60 tabular-nums">{stability.toFixed(2)}</div></div>
-              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div className="text-white/25">Trend</div><div className="text-white/60">{trend}</div></div>
-              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div className="text-white/25">Compensations</div><div className="text-white/60 tabular-nums">{compensations}</div></div>
+              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div style={{ color: "var(--text-faint)" }}>Stability</div><div className="text-white/60 tabular-nums">{stability.toFixed(2)}</div></div>
+              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div style={{ color: "var(--text-faint)" }}>Trend</div><div className="text-white/60">{trend}</div></div>
+              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div style={{ color: "var(--text-faint)" }}>Compensations</div><div className="text-white/60 tabular-nums">{compensations}</div></div>
             </div>
           </div>
         );
@@ -983,8 +983,8 @@ export default function DiscoveryPage() {
             </div>
             <div className="text-[10px] text-white/40">{interp}</div>
             <div className="grid grid-cols-2 gap-2 text-[10px]">
-              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div className="text-white/25">Uniformity</div><div className="text-white/60 tabular-nums">{(uniformity * 100).toFixed(0)}%</div></div>
-              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div className="text-white/25">Active</div><div className="text-white/60 tabular-nums">{(activeFrac * 100).toFixed(0)}%</div></div>
+              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div style={{ color: "var(--text-faint)" }}>Uniformity</div><div className="text-white/60 tabular-nums">{(uniformity * 100).toFixed(0)}%</div></div>
+              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div style={{ color: "var(--text-faint)" }}>Active</div><div className="text-white/60 tabular-nums">{(activeFrac * 100).toFixed(0)}%</div></div>
             </div>
           </div>
         );
