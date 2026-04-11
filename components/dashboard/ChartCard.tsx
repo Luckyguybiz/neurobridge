@@ -34,7 +34,7 @@ export default function ChartCard({
             style={{ background: 'var(--accent-cyan)' }}
           />
         </div>
-        <div className="w-full">{children}</div>
+        <div className="w-full overflow-hidden">{children}</div>
       </div>
     </div>
   );

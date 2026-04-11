@@ -21,8 +21,11 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "NeuroBridge — The Platform for Living Neural Networks",
-  description: "Biocomputing-as-a-Service. One API to access, visualize, and experiment on brain organoids with AI-powered tools.",
+  title: "Neurocomputers — The Platform for Living Neural Networks",
+  description: "Biocomputing-as-a-Service. 130+ API endpoints, 61 analysis modules for brain organoid data. Organoid IQ, consciousness metrics, attractor mapping.",
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

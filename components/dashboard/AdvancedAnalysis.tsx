@@ -15,11 +15,11 @@ type AnalysisSection = {
 function JsonBlock({ data, maxKeys = 12 }: { data: Record<string, unknown>; maxKeys?: number }) {
   const entries = Object.entries(data).slice(0, maxKeys);
   return (
-    <div className="space-y-1.5 text-[11px] font-mono">
+    <div className="space-y-1.5 text-[11px] font-mono overflow-hidden">
       {entries.map(([k, v]) => (
-        <div key={k} className="flex gap-2">
-          <span className="text-white/30 shrink-0">{k}:</span>
-          <span className="text-cyan-400/70 truncate">
+        <div key={k} className="flex gap-2 min-w-0">
+          <span className="shrink-0" style={{ color: 'var(--text-muted)' }}>{k}:</span>
+          <span className="truncate" style={{ color: 'var(--accent-cyan)' }}>
             {typeof v === 'number' ? (Number.isInteger(v) ? v : Number(v).toFixed(4)) :
              typeof v === 'boolean' ? String(v) :
              typeof v === 'string' ? v :
@@ -82,8 +82,7 @@ function IQDisplay({ data }: { data: Record<string, unknown> }) {
 }
 
 function AttractorDisplay({ data }: { data: Record<string, unknown> }) {
-  const attractors = (data.attractors ?? []) as Array<Record<string, unknown>>;
-  const nAttractors = Number(data.n_attractors ?? attractors.length);
+  const nAttractors = Number(data.n_attractors ?? 0);
   const memoryCandidates = Number(data.n_memory_candidates ?? data.memory_candidates ?? 0);
 
   return (
@@ -91,14 +90,19 @@ function AttractorDisplay({ data }: { data: Record<string, unknown> }) {
       <div className="flex gap-6">
         <div>
           <div className="text-2xl font-bold text-violet-400 tabular-nums">{nAttractors}</div>
-          <div className="text-[10px] text-white/30">Attractors</div>
+          <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Attractors</div>
         </div>
         <div>
           <div className="text-2xl font-bold text-emerald-400 tabular-nums">{memoryCandidates}</div>
-          <div className="text-[10px] text-white/30">Memory Candidates</div>
+          <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Memory Candidates</div>
         </div>
       </div>
-      <JsonBlock data={data} maxKeys={8} />
+      <JsonBlock data={{
+        n_attractors: data.n_attractors,
+        n_memory_candidates: data.n_memory_candidates,
+        stability: data.mean_stability ?? data.stability,
+        max_basin_size: data.max_basin_size,
+      } as Record<string, unknown>} maxKeys={4} />
     </div>
   );
 }

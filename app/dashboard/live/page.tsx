@@ -23,8 +23,13 @@ export default function LivePage() {
   const windowSec = 10; // show last 10 seconds
 
   const connect = useCallback(() => {
-    const host = window.location.hostname === 'localhost' ? 'localhost:8847' : '57.128.254.111:8847';
-    const ws = new WebSocket(`ws://${host}/ws/spikes`);
+    const isDomain = window.location.hostname === 'neurocomputers.io' || window.location.hostname === 'www.neurocomputers.io';
+    const wsUrl = isDomain
+      ? 'wss://api.neurocomputers.io/ws/spikes'
+      : window.location.hostname === 'localhost'
+        ? 'ws://localhost:8847/ws/spikes'
+        : `ws://${window.location.hostname}:8847/ws/spikes`;
+    const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => setConnected(true);
     ws.onclose = () => setConnected(false);
