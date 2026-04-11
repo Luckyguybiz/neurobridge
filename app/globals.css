@@ -40,28 +40,28 @@
 
 /* Light theme */
 .light {
-  --bg-primary: #f8f9fc;
-  --bg-secondary: #eef0f5;
-  --bg-card: rgba(0,0,0,0.02);
-  --bg-card-hover: rgba(0,0,0,0.05);
-  --bg-input: rgba(0,0,0,0.04);
-  --border: rgba(0,0,0,0.08);
-  --border-hover: rgba(0,0,0,0.12);
-  --text-primary: rgba(0,0,0,0.85);
-  --text-secondary: rgba(0,0,0,0.60);
-  --text-muted: rgba(0,0,0,0.35);
-  --text-faint: rgba(0,0,0,0.12);
+  --bg-primary: #f5f6fa;
+  --bg-secondary: #ffffff;
+  --bg-card: rgba(255,255,255,0.9);
+  --bg-card-hover: rgba(255,255,255,1.0);
+  --bg-input: rgba(0,0,0,0.03);
+  --border: rgba(0,0,0,0.10);
+  --border-hover: rgba(0,0,0,0.18);
+  --text-primary: #1a1a2e;
+  --text-secondary: #4a4a6a;
+  --text-muted: #8888a8;
+  --text-faint: #b0b0c8;
   --accent-cyan: #0891b2;
   --accent-violet: #7c3aed;
   --accent-emerald: #059669;
   --accent-amber: #d97706;
   --accent-red: #dc2626;
-  --chart-grid: rgba(0,0,0,0.06);
-  --chart-axis: rgba(0,0,0,0.4);
+  --chart-grid: rgba(0,0,0,0.08);
+  --chart-axis: rgba(0,0,0,0.25);
   --chart-tick: rgba(0,0,0,0.5);
   --shadow: rgba(0,0,0,0.06);
-  --scrollbar-thumb: rgba(0,0,0,0.1);
-  --scrollbar-hover: rgba(0,0,0,0.2);
+  --scrollbar-thumb: rgba(0,0,0,0.12);
+  --scrollbar-hover: rgba(0,0,0,0.22);
   --grain-opacity: 0;
   --ambient-opacity: 0.04;
   --glow-cyan: rgba(8,145,178,0.08);
@@ -168,3 +168,26 @@ select option { background: var(--bg-secondary); color: var(--text-primary); }
 .light .hover\:bg-white\/\[0\.08\]:hover, .light .hover\:bg-white\/\[0\.1\]:hover {
   background: var(--bg-card-hover) !important;
 }
+
+/* Light mode: accent badges need visible backgrounds */
+.light .bg-cyan-500\/\[0\.08\], .light .bg-cyan-500\/15, .light .bg-cyan-400\/20 { background: rgba(8,145,178,0.1) !important; }
+.light .bg-violet-500\/\[0\.08\], .light .bg-violet-500\/15 { background: rgba(124,58,237,0.08) !important; }
+.light .bg-emerald-500\/\[0\.08\], .light .bg-emerald-500\/15 { background: rgba(5,150,105,0.08) !important; }
+.light .bg-amber-500\/\[0\.08\], .light .bg-amber-500\/15 { background: rgba(217,119,6,0.08) !important; }
+.light .bg-red-500\/\[0\.08\], .light .bg-red-500\/10, .light .bg-red-500\/15 { background: rgba(220,38,38,0.06) !important; }
+
+/* Light mode: ensure text on colored backgrounds stays visible */
+.light .text-cyan-400, .light .text-cyan-400\/80, .light .text-cyan-400\/90 { color: #0891b2 !important; }
+.light .text-violet-400, .light .text-violet-400\/60 { color: #7c3aed !important; }
+.light .text-emerald-400, .light .text-emerald-400\/80 { color: #059669 !important; }
+.light .text-amber-400, .light .text-amber-400\/80 { color: #d97706 !important; }
+.light .text-red-400, .light .text-red-400\/80, .light .text-red-400\/60 { color: #dc2626 !important; }
+
+/* Light mode: gradient border buttons */
+.light .from-cyan-500\/20 { --tw-gradient-from: rgba(8,145,178,0.15) !important; }
+.light .to-violet-500\/20 { --tw-gradient-to: rgba(124,58,237,0.12) !important; }
+.light .border-cyan-500\/20, .light .border-cyan-500\/\[0\.15\] { border-color: rgba(8,145,178,0.2) !important; }
+
+/* Light mode body */
+.light { color-scheme: light; }
+.light .grain::before { display: none; }

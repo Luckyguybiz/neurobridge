@@ -308,24 +308,24 @@ export async function getEthics(datasetId: string) {
 
 // ─── Experiments ───
 
-export async function runClosedLoop(datasetId: string, nTrials = 100) {
-  return apiFetch<Record<string, unknown>>(`/api/experiments/${datasetId}/closed-loop/simulate?n_trials=${nTrials}`, { method: 'POST' });
+export async function runClosedLoop(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/experiments/${datasetId}/closed-loop`);
 }
 
-export async function runPong(datasetId: string, nTrials = 200) {
-  return apiFetch<Record<string, unknown>>(`/api/experiments/${datasetId}/pong/simulate?n_trials=${nTrials}`, { method: 'POST' });
+export async function runPong(datasetId: string) {
+  return apiFetch<Record<string, unknown>>(`/api/experiments/${datasetId}/pong`);
 }
 
 export async function runLogicBenchmark(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/experiments/${datasetId}/logic/benchmark`, { method: 'POST' });
+  return apiFetch<Record<string, unknown>>(`/api/experiments/${datasetId}/xor`);
 }
 
 export async function runVowels(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/experiments/${datasetId}/vowels/simulate`, { method: 'POST' });
+  return apiFetch<Record<string, unknown>>(`/api/experiments/vowels/classify`);
 }
 
 export async function getMemoryTests(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/experiments/${datasetId}/memory-tests`);
+  return apiFetch<Record<string, unknown>>(`/api/experiments/${datasetId}/memory`);
 }
 
 export async function getProtocols() {
@@ -338,7 +338,7 @@ export async function getGrantMatch(datasetId?: string) {
 }
 
 export async function generateDraft(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/publish/draft/${datasetId}`, { method: 'POST' });
+  return apiFetch<Record<string, unknown>>(`/api/publish/${datasetId}`, { method: 'POST' });
 }
 
 // ─── Extended Analysis ───

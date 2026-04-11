@@ -93,7 +93,7 @@ function PongCard({ datasetId }: { datasetId: string }) {
     setLoading(true);
     setError('');
     try {
-      const data = await api.runPong(datasetId, 200);
+      const data = await api.runPong(datasetId);
       setResult(data);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Simulation failed');
@@ -445,7 +445,7 @@ function ClosedLoopCard({ datasetId }: { datasetId: string }) {
     setLoading(true);
     setError('');
     try {
-      const data = await api.runClosedLoop(datasetId, 100);
+      const data = await api.runClosedLoop(datasetId);
       setResult(data);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Simulation failed');
