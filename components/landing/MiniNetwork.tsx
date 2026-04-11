@@ -117,7 +117,8 @@ export default function MiniNetwork() {
           g.addColorStop(0, `${a.color}30`); g.addColorStop(1, `${b.color}30`);
           ctx.strokeStyle = g; ctx.lineWidth = 1.2;
         } else {
-          ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 0.5;
+          const isDk = document.documentElement.classList.contains('dark') || !document.documentElement.classList.contains('light');
+          ctx.strokeStyle = isDk ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.08)'; ctx.lineWidth = 0.5;
         }
         ctx.stroke();
       }

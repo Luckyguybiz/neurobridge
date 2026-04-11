@@ -72,7 +72,8 @@ export default function MiniRasterPlot() {
 
       // Channel lines
       for (let ch = 1; ch < channels; ch++) {
-        ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+        const isDark = document.documentElement.classList.contains('dark') || !document.documentElement.classList.contains('light');
+        ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.06)';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(0, ch * channelH);

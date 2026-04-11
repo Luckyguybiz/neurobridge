@@ -49,7 +49,7 @@ export default function HomePage() {
       <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl" style={{ background: 'color-mix(in srgb, var(--bg-primary) 60%, transparent)', borderBottom: '1px solid var(--border)' }}>
         <div className="max-w-[1200px] mx-auto flex items-center justify-between px-6 h-14">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center text-[10px] font-bold text-black">N</div>
+            <svg viewBox="0 0 32 32" className="w-7 h-7 shrink-0"><defs><radialGradient id="nav-core" cx="0.42" cy="0.38" r="0.55"><stop offset="0%" stopColor="#7dd3fc"/><stop offset="35%" stopColor="#22d3ee"/><stop offset="100%" stopColor="#7c3aed"/></radialGradient></defs><circle cx="16" cy="16" r="10" fill="url(#nav-core)"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2" fill="white" opacity="0.2" transform="rotate(-15 13 12.5)"/></svg>
             <span className="font-medium text-[14px] tracking-tight" style={{ color: 'var(--text-primary)' }}>Neurocomputers</span>
           </Link>
           <div className="hidden md:flex items-center gap-8 text-[13px]" style={{ color: 'var(--text-muted)' }}>
@@ -144,8 +144,8 @@ export default function HomePage() {
       <section className="py-4 px-6 max-w-[1100px] mx-auto">
         <ScrollReveal variant="scale">
           <div className="relative">
-            <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-cyan-500/10 via-transparent to-violet-500/10 border-glow" />
-            <div className="relative rounded-2xl border border-white/[0.04] bg-[var(--bg-secondary)] overflow-hidden">
+            <div className="absolute -inset-px rounded-2xl border-glow" style={{ background: 'linear-gradient(to right, color-mix(in srgb, var(--accent-cyan) 10%, transparent), transparent, color-mix(in srgb, var(--accent-violet) 10%, transparent))' }} />
+            <div className="relative rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
               <LiveSpikeTrace />
             </div>
           </div>
@@ -279,7 +279,7 @@ export default function HomePage() {
       <footer className="px-6 py-8" style={{ borderTop: '1px solid var(--border)' }}>
         <div className="max-w-[1100px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-gradient-to-br from-cyan-400 to-violet-500" />
+            <svg viewBox="0 0 32 32" className="w-4 h-4"><defs><radialGradient id="ft-core" cx="0.42" cy="0.38" r="0.55"><stop offset="0%" stopColor="#7dd3fc"/><stop offset="35%" stopColor="#22d3ee"/><stop offset="100%" stopColor="#7c3aed"/></radialGradient></defs><circle cx="16" cy="16" r="10" fill="url(#ft-core)"/></svg>
             <span className="text-[11px] tracking-wider" style={{ color: 'var(--text-faint)' }}>NEUROCOMPUTERS</span>
           </div>
           <span className="text-[11px]" style={{ color: 'var(--text-faint)' }}>Biocomputing-as-a-Service</span>

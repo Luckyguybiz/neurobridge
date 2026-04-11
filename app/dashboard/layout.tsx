@@ -315,7 +315,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           {/* Logo */}
           <div className="h-12 flex items-center justify-between px-4" style={{ borderBottom: '1px solid var(--border)' }}>
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center text-[9px] font-bold text-black shrink-0">N</div>
+              <svg viewBox="0 0 32 32" className="w-6 h-6 shrink-0"><defs><radialGradient id="sb-core" cx="0.42" cy="0.38" r="0.55"><stop offset="0%" stopColor="#7dd3fc"/><stop offset="35%" stopColor="#22d3ee"/><stop offset="100%" stopColor="#7c3aed"/></radialGradient></defs><circle cx="16" cy="16" r="10" fill="url(#sb-core)"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2" fill="white" opacity="0.2" transform="rotate(-15 13 12.5)"/></svg>
               <span className="text-[13px] font-medium tracking-tight transition-colors duration-300" style={{ color: 'var(--text-secondary)' }}>Neurocomputers</span>
             </Link>
             <button

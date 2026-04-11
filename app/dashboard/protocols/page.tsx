@@ -216,8 +216,8 @@ export default function ProtocolsPage() {
         className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
       >
         <div>
-          <h1 className="text-[18px] font-display text-white/80">Protocol Library</h1>
-          <p className="text-[12px] text-white/30 mt-0.5">
+          <h1 className="text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Protocol Library</h1>
+          <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
             Available stimulation protocols for organoid experiments
           </p>
         </div>
@@ -253,7 +253,7 @@ export default function ProtocolsPage() {
           transition={{ duration: 0.4 }}
           className="mb-4 px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20"
         >
-          <span className="text-[11px] text-white/40">AI Recommendation: </span>
+          <span className="text-[11px] " style={{ color: 'var(--text-muted)' }}>AI Recommendation: </span>
           <span className="text-[13px] font-medium text-emerald-400">{suggestedName}</span>
         </motion.div>
       )}
@@ -281,7 +281,7 @@ export default function ProtocolsPage() {
 
           {protocols.length === 0 && (
             <div className="col-span-full flex items-center justify-center py-20">
-              <div className="text-[13px] text-white/30">No protocols available</div>
+              <div className="text-[13px] " style={{ color: 'var(--text-muted)' }}>No protocols available</div>
             </div>
           )}
         </div>

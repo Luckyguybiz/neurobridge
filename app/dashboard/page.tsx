@@ -48,7 +48,7 @@ function QuickStats({ datasetId }: { datasetId: string }) {
     {
       label: 'Organoid IQ',
       value: iqScore > 0 ? `${iqScore.toFixed(0)} (${iqGrade})` : '...',
-      color: iqScore >= 60 ? 'text-cyan-400' : iqScore >= 40 ? 'text-amber-400' : 'text-white/50',
+      color: iqScore >= 60 ? 'text-cyan-400' : iqScore >= 40 ? 'text-amber-400' : 'text-amber-400',
       bg: 'from-cyan-500/8 border-cyan-500/10',
       href: '/dashboard/iq',
     },
@@ -69,8 +69,8 @@ function QuickStats({ datasetId }: { datasetId: string }) {
     {
       label: 'Modules',
       value: '57 analyses',
-      color: 'text-white/60',
-      bg: 'from-white/[0.03] border-white/[0.06]',
+      color: 'text-cyan-400',
+      bg: 'from-cyan-500/8 border-cyan-500/10',
       href: '/dashboard/experiments',
     },
   ];
@@ -86,7 +86,7 @@ function QuickStats({ datasetId }: { datasetId: string }) {
           onClick={() => router.push(card.href)}
           className={`px-3 py-2.5 rounded-xl bg-gradient-to-br ${card.bg} border cursor-pointer hover:scale-[1.02] transition-transform`}
         >
-          <div className="text-[9px] text-white/30 uppercase tracking-wider">{card.label}</div>
+          <div className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{card.label}</div>
           <div className={`text-[15px] font-bold tabular-nums ${card.color}`}>{card.value}</div>
         </motion.div>
       ))}
@@ -136,8 +136,9 @@ export default function DashboardPage() {
               className={`text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 ${
                 activeTab === tab.key
                   ? 'bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border border-cyan-500/20 text-cyan-400/90'
-                  : 'bg-white/[0.02] border border-white/[0.04] text-white/30 hover:text-white/50'
+                  : 'border'
               }`}
+              style={activeTab !== tab.key ? { background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-muted)' } : undefined}
             >
               {tab.label}
               {tab.count && <span className="ml-1 text-[9px] opacity-50">{tab.count}</span>}
@@ -159,7 +160,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-center py-32">
           <div className="text-center">
             <div className="w-8 h-8 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-[13px] text-white/30">Generating and analyzing neural data...</p>
+            <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>Generating and analyzing neural data...</p>
           </div>
         </div>
       )}
@@ -205,34 +206,33 @@ export default function DashboardPage() {
               <ChartCard title="Analysis Summary" description={`Dataset ${datasetId} · Neurocomputers API`}>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-[12px]">
                   <div>
-                    <div className="text-white/25 mb-1.5">Population</div>
-                    <div className="text-white/70">Mean rate: <span className="text-cyan-400">{String(pop?.mean_firing_rate_hz)} Hz</span></div>
-                    <div className="text-white/70">Most active: <span className="text-cyan-400">E{String(pop?.most_active_electrode)}</span></div>
-                    <div className="text-white/70">Mean amp: <span className="text-cyan-400">{(pop?.mean_amplitude_uv as number)?.toFixed(1)} µV</span></div>
+                    <div className="mb-1.5" style={{ color: 'var(--text-faint)' }}>Population</div>
+                    <div style={{ color: 'var(--text-secondary)' }}>Mean rate: <span className="text-cyan-400">{String(pop?.mean_firing_rate_hz)} Hz</span></div>
+                    <div style={{ color: 'var(--text-secondary)' }}>Most active: <span className="text-cyan-400">E{String(pop?.most_active_electrode)}</span></div>
+                    <div style={{ color: 'var(--text-secondary)' }}>Mean amp: <span className="text-cyan-400">{(pop?.mean_amplitude_uv as number)?.toFixed(1)} µV</span></div>
                   </div>
                   <div>
-                    <div className="text-white/25 mb-1.5">Bursts</div>
-                    <div className="text-white/70">Detected: <span className="text-violet-400">{burstInfo.n_bursts}</span></div>
-                    <div className="text-white/70">Rate: <span className="text-violet-400">{burstInfo.burst_rate_per_min.toFixed(1)}/min</span></div>
-                    <div className="text-white/70">Mean dur: <span className="text-violet-400">{burstInfo.mean_duration_ms.toFixed(0)} ms</span></div>
+                    <div className="mb-1.5" style={{ color: 'var(--text-faint)' }}>Bursts</div>
+                    <div style={{ color: 'var(--text-secondary)' }}>Detected: <span className="text-violet-400">{burstInfo.n_bursts}</span></div>
+                    <div style={{ color: 'var(--text-secondary)' }}>Rate: <span className="text-violet-400">{burstInfo.burst_rate_per_min.toFixed(1)}/min</span></div>
+                    <div style={{ color: 'var(--text-secondary)' }}>Mean dur: <span className="text-violet-400">{burstInfo.mean_duration_ms.toFixed(0)} ms</span></div>
                   </div>
                   <div>
-                    <div className="text-white/25 mb-1.5">Dataset</div>
-                    <div className="text-white/70">ID: <span className="text-white/50 font-mono text-[11px]">{datasetId}</span></div>
-                    <div className="text-white/70">Electrodes: <span className="text-white/50">{nElectrodes}</span></div>
-                    <div className="text-white/70">Duration: <span className="text-white/50">{duration.toFixed(1)}s</span></div>
+                    <div className="mb-1.5" style={{ color: 'var(--text-faint)' }}>Dataset</div>
+                    <div style={{ color: 'var(--text-secondary)' }}>ID: <span className="font-mono text-[11px]" style={{ color: 'var(--text-muted)' }}>{datasetId}</span></div>
+                    <div style={{ color: 'var(--text-secondary)' }}>Electrodes: <span style={{ color: 'var(--text-muted)' }}>{nElectrodes}</span></div>
+                    <div style={{ color: 'var(--text-secondary)' }}>Duration: <span style={{ color: 'var(--text-muted)' }}>{duration.toFixed(1)}s</span></div>
                   </div>
                   <div>
-                    <div className="text-white/25 mb-1.5">API</div>
-                    <div className="text-white/70">
+                    <div className="mb-1.5" style={{ color: 'var(--text-faint)' }}>API</div>
+                    <div style={{ color: 'var(--text-secondary)' }}>
                       <a href={api.getSwaggerUrl()} target="_blank" rel="noopener" className="text-cyan-400/60 hover:text-cyan-400 underline">Swagger UI</a>
                     </div>
                     {datasetId && (
-                      <div className="text-white/70">
+                      <div style={{ color: 'var(--text-secondary)' }}>
                         <a href={api.getExportCSVUrl(datasetId)} className="text-cyan-400/60 hover:text-cyan-400 underline">Download CSV</a>
                       </div>
                     )}
-                    <div className="text-white/70">Duration: <span className="text-white/50">{(dataset?.duration_s as number)?.toFixed(1)}s</span></div>
                   </div>
                 </div>
               </ChartCard>

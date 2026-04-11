@@ -85,7 +85,8 @@ export default function LiveSpikeTrace() {
 
         // Separator line
         if (ch > 0) {
-          ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+          const isDark = document.documentElement.classList.contains('dark') || !document.documentElement.classList.contains('light');
+          ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)';
           ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.moveTo(0, channelH * ch);
