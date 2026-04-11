@@ -49,8 +49,7 @@ export default function HomePage() {
       <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl" style={{ background: 'color-mix(in srgb, var(--bg-primary) 60%, transparent)', borderBottom: '1px solid var(--border)' }}>
         <div className="max-w-[1200px] mx-auto flex items-center justify-between px-6 h-14">
           <Link href="/" className="flex items-center gap-2.5">
-            <svg viewBox="0 0 32 32" className="w-7 h-7 shrink-0"><defs><radialGradient id="nav-core" cx="0.42" cy="0.38" r="0.55"><stop offset="0%" stopColor="#7dd3fc"/><stop offset="35%" stopColor="#22d3ee"/><stop offset="100%" stopColor="#7c3aed"/></radialGradient></defs><circle cx="16" cy="16" r="10" fill="url(#nav-core)"/><ellipse cx="13" cy="12.5" rx="3.5" ry="2" fill="white" opacity="0.2" transform="rotate(-15 13 12.5)"/></svg>
-            <span className="font-medium text-[14px] tracking-tight" style={{ color: 'var(--text-primary)' }}>Neurocomputers</span>
+            <span className="font-bold text-[16px] tracking-tight" style={{ color: 'var(--text-primary)' }}>neuro<span className="bg-gradient-to-r from-cyan-400 to-violet-500 bg-clip-text text-transparent">computers</span></span>
           </Link>
           <div className="hidden md:flex items-center gap-8 text-[13px]" style={{ color: 'var(--text-muted)' }}>
             <a href="#capabilities" className="hover:opacity-70 transition-colors duration-500">Capabilities</a>
@@ -279,8 +278,7 @@ export default function HomePage() {
       <footer className="px-6 py-8" style={{ borderTop: '1px solid var(--border)' }}>
         <div className="max-w-[1100px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <svg viewBox="0 0 32 32" className="w-4 h-4"><defs><radialGradient id="ft-core" cx="0.42" cy="0.38" r="0.55"><stop offset="0%" stopColor="#7dd3fc"/><stop offset="35%" stopColor="#22d3ee"/><stop offset="100%" stopColor="#7c3aed"/></radialGradient></defs><circle cx="16" cy="16" r="10" fill="url(#ft-core)"/></svg>
-            <span className="text-[11px] tracking-wider" style={{ color: 'var(--text-faint)' }}>NEUROCOMPUTERS</span>
+            <span className="text-[11px] font-bold tracking-wider" style={{ color: 'var(--text-faint)' }}>NEURO<span className="bg-gradient-to-r from-cyan-400 to-violet-500 bg-clip-text text-transparent">COMPUTERS</span></span>
           </div>
           <span className="text-[11px]" style={{ color: 'var(--text-faint)' }}>Biocomputing-as-a-Service</span>
         </div>
