@@ -61,9 +61,8 @@ export async function loadLocalDataset(filename: string, samplingRate = 437) {
     n_spikes: number;
     n_electrodes: number;
     duration_s: number;
-  }>('/api/load-local', {
+  }>(`/api/load-local?filename=${encodeURIComponent(filename)}&sampling_rate=${samplingRate}`, {
     method: 'POST',
-    body: JSON.stringify({ filename, sampling_rate: samplingRate }),
   });
 }
 

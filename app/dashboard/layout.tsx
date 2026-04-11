@@ -445,6 +445,37 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               {/* Controls */}
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
+                  onClick={async () => {
+                    setStatus('loading');
+                    setError('');
+                    try {
+                      const result = await api.loadLocalDataset('SpikeDataToShare_fs437data.csv', 437);
+                      setDatasetId(result.dataset_id);
+                      setDuration(result.duration_s);
+                      setNElectrodes(result.n_electrodes);
+                      const spikeData = await api.getSpikes(result.dataset_id, { limit: 15000 });
+                      const spikeArr: Spike[] = spikeData.times.map((t: number, i: number) => ({
+                        time: t, electrode: spikeData.electrodes[i], amplitude: spikeData.amplitudes[i], waveform: [],
+                      }));
+                      setSpikes(spikeArr);
+                      const [summaryData, burstData] = await Promise.all([
+                        api.getFullSummary(result.dataset_id),
+                        api.getBursts(result.dataset_id),
+                      ]);
+                      setSummary(summaryData);
+                      setBurstInfo(burstData as BurstInfo);
+                      setStatus('ready');
+                    } catch (e) {
+                      setError(e instanceof Error ? e.message : 'Failed to load FinalSpark data');
+                      setStatus('error');
+                    }
+                  }}
+                  disabled={status === 'loading'}
+                  className="text-[11px] px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 border border-emerald-500/20 text-emerald-400/80 hover:text-emerald-300 transition-all duration-300 disabled:opacity-40"
+                >
+                  FinalSpark
+                </button>
+                <button
                   onClick={() => generateData(30, 8)}
                   disabled={status === 'loading'}
                   className="text-[11px] px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border border-cyan-500/20 text-cyan-400/80 hover:text-cyan-300 transition-all duration-300 disabled:opacity-40"
