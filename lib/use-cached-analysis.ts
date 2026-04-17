@@ -1,13 +1,16 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { getCached, setCached } from './analysis-cache';
+import { useState, useEffect } from 'react';
+import { getCached, getOrFetch } from './analysis-cache';
 
 /**
  * Hook for fetching and caching analysis API data.
+ *
+ * KEY BEHAVIOR:
  * - Returns cached data instantly if available (no loading flash)
- * - Fetches and caches if not available
- * - Cache persists across page navigation within same dataset
+ * - If a fetch is already in-flight (started on another page), reattaches to it
+ * - Navigating away does NOT cancel the fetch — it continues in the background
+ * - When you come back, you get the result instantly from cache
  * - Cache auto-clears on dataset change
  *
  * @param datasetId — current dataset ID
@@ -20,45 +23,52 @@ export function useCachedAnalysis<T = Record<string, unknown>>(
   cacheKey: string,
   fetcher: () => Promise<T>,
 ): { data: T | null; loading: boolean; error: string } {
-  // Check cache synchronously for instant return
+  // Check cache synchronously for instant return (no loading flash)
   const cached = datasetId ? getCached<T>(datasetId, cacheKey) : undefined;
 
   const [data, setData] = useState<T | null>(cached ?? null);
   const [loading, setLoading] = useState(!cached && !!datasetId);
   const [error, setError] = useState('');
-  const fetchedRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!datasetId) return;
 
-    // Already have cached data for this dataset+key
+    // Already have cached data — show immediately
     const hit = getCached<T>(datasetId, cacheKey);
-    if (hit) {
+    if (hit !== undefined) {
       setData(hit);
       setLoading(false);
       setError('');
-      fetchedRef.current = `${datasetId}:${cacheKey}`;
       return;
     }
 
-    // Already fetching this exact combo
-    if (fetchedRef.current === `${datasetId}:${cacheKey}`) return;
-    fetchedRef.current = `${datasetId}:${cacheKey}`;
-
+    // Use getOrFetch — reattaches to existing in-flight promise if one exists,
+    // otherwise starts a new fetch. Either way, the promise is stored at module
+    // level so navigating away won't lose it.
+    let cancelled = false;
     setLoading(true);
     setError('');
 
-    fetcher()
+    getOrFetch<T>(datasetId, cacheKey, fetcher)
       .then((result) => {
-        setCached(datasetId, cacheKey, result);
-        setData(result);
-        setLoading(false);
+        if (!cancelled) {
+          setData(result);
+          setLoading(false);
+        }
       })
       .catch((e) => {
-        setError(e instanceof Error ? e.message : 'Failed');
-        setLoading(false);
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : 'Failed');
+          setLoading(false);
+        }
       });
-  }, [datasetId, cacheKey]); // eslint-disable-line react-hooks/exhaustive-deps -- fetcher is stable by convention
+
+    return () => {
+      // Mark as cancelled so we don't setState on unmounted component.
+      // But the fetch itself continues in the background (stored in inflight map).
+      cancelled = true;
+    };
+  }, [datasetId, cacheKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { data, loading, error };
 }
