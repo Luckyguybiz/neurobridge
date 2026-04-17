@@ -22,6 +22,7 @@ export interface LiveSpike {
 
 export interface LiveState {
   connected: boolean;
+  paused: boolean;
   spikeCount: number;
   elapsed: number;
   spikes: LiveSpike[];
@@ -54,6 +55,8 @@ export interface DashboardContextValue {
   // Live WebSocket
   live: LiveState;
   liveConnect: () => void;
+  livePause: () => void;
+  liveResume: () => void;
   liveDisconnect: () => void;
 }
 

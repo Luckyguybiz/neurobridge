@@ -9,11 +9,11 @@ import { ELECTRODE_COLORS } from '@/lib/utils';
 const WINDOW_SEC = 10;
 
 export default function LivePage() {
-  const { live, liveConnect, liveDisconnect } = useDashboardContext();
+  const { live, liveConnect, livePause, liveResume, liveDisconnect } = useDashboardContext();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
 
-  // Canvas rendering loop — reads live.spikes from context
+  // Canvas rendering loop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -82,12 +82,25 @@ export default function LivePage() {
       }
       ctx.globalAlpha = 1;
 
+      // Paused overlay
+      if (live.paused) {
+        ctx.fillStyle = isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.4)';
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
+        ctx.font = 'bold 14px system-ui';
+        ctx.textAlign = 'center';
+        ctx.fillText('⏸ PAUSED', w / 2, h / 2);
+      }
+
       animRef.current = requestAnimationFrame(render);
     };
 
     animRef.current = requestAnimationFrame(render);
     return () => cancelAnimationFrame(animRef.current);
-  }, [live.spikes, live.connected]);
+  }, [live.spikes, live.connected, live.paused]);
+
+  const statusText = live.paused ? 'PAUSED' : live.connected ? 'STREAMING' : live.spikeCount > 0 ? 'STOPPED' : 'DISCONNECTED';
+  const statusColor = live.paused ? 'text-amber-400' : live.connected ? 'text-emerald-400' : 'text-red-400';
 
   return (
     <div className="p-3 sm:p-4 space-y-3">
@@ -97,16 +110,40 @@ export default function LivePage() {
             <h1 className="text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Live Stream</h1>
             <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Real-time spike streaming via WebSocket</p>
           </div>
-          <button
-            onClick={live.connected ? liveDisconnect : liveConnect}
-            className={`text-[11px] px-4 py-2 rounded-lg font-medium transition-all ${
-              live.connected
-                ? 'bg-red-500/15 border border-red-500/20 text-red-400'
-                : 'bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border border-cyan-500/20 text-cyan-400'
-            }`}
-          >
-            {live.connected ? 'Disconnect' : 'Connect'}
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Connect / Resume */}
+            {!live.connected ? (
+              <button
+                onClick={liveConnect}
+                className="text-[11px] px-4 py-2 rounded-lg font-medium transition-all bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border border-cyan-500/20 text-cyan-400 hover:border-cyan-400/40"
+              >
+                Connect
+              </button>
+            ) : live.paused ? (
+              <button
+                onClick={liveResume}
+                className="text-[11px] px-4 py-2 rounded-lg font-medium transition-all bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 hover:border-emerald-400/40"
+              >
+                ▶ Resume
+              </button>
+            ) : (
+              <button
+                onClick={livePause}
+                className="text-[11px] px-4 py-2 rounded-lg font-medium transition-all bg-amber-500/15 border border-amber-500/20 text-amber-400 hover:border-amber-400/40"
+              >
+                ⏸ Pause
+              </button>
+            )}
+            {/* Disconnect — only when connected or paused */}
+            {live.connected && (
+              <button
+                onClick={liveDisconnect}
+                className="text-[11px] px-3 py-2 rounded-lg font-medium transition-all bg-red-500/10 border border-red-500/15 text-red-400/70 hover:text-red-400 hover:border-red-400/30"
+              >
+                ✕
+              </button>
+            )}
+          </div>
         </div>
       </motion.div>
 
@@ -114,9 +151,7 @@ export default function LivePage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <div className="px-3 py-2 rounded-lg" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
           <div className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-faint)' }}>Status</div>
-          <div className={`text-[13px] font-medium ${live.connected ? 'text-emerald-400' : 'text-red-400'}`}>
-            {live.connected ? 'STREAMING' : live.spikeCount > 0 ? 'PAUSED' : 'DISCONNECTED'}
-          </div>
+          <div className={`text-[13px] font-medium ${statusColor}`}>{statusText}</div>
         </div>
         <div className="px-3 py-2 rounded-lg" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
           <div className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-faint)' }}>Spikes</div>

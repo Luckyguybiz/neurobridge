@@ -184,11 +184,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   // ── Live WebSocket state (persists across page navigation) ────────────
   const [liveConnected, setLiveConnected] = useState(false);
+  const [livePaused, setLivePaused] = useState(false);
   const [liveSpikeCount, setLiveSpikeCount] = useState(0);
   const [liveElapsed, setLiveElapsed] = useState(0);
   const [liveSpikes, setLiveSpikes] = useState<LiveSpike[]>([]);
   const [liveRates, setLiveRates] = useState<number[]>(new Array(8).fill(0));
   const wsRef = useRef<WebSocket | null>(null);
+  const pausedRef = useRef(false); // ref for use inside WS callback (no stale closure)
   const liveWindowSec = 10;
 
   const liveConnect = useCallback(() => {
@@ -198,12 +200,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
     // Close any lingering socket before opening a new one
     if (wsRef.current) {
-      wsRef.current.onclose = null; // prevent state flicker
+      wsRef.current.onclose = null;
       wsRef.current.close();
       wsRef.current = null;
     }
 
     // Reset state for fresh session
+    setLivePaused(false);
+    pausedRef.current = false;
     setLiveSpikes([]);
     setLiveSpikeCount(0);
     setLiveElapsed(0);
@@ -220,6 +224,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     ws.onopen = () => setLiveConnected(true);
     ws.onclose = () => {
       setLiveConnected(false);
+      setLivePaused(false);
+      pausedRef.current = false;
       if (wsRef.current === ws) wsRef.current = null;
     };
     ws.onerror = () => {
@@ -228,6 +234,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     };
 
     ws.onmessage = (event) => {
+      // Skip processing when paused — data stays frozen on screen
+      if (pausedRef.current) return;
+
       const data = JSON.parse(event.data);
       const newSpikes = (data.spikes ?? []) as LiveSpike[];
       const now = (data.timestamp ?? 0) as number;
@@ -239,7 +248,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       setLiveSpikeCount((prev) => prev + newSpikes.length);
       setLiveElapsed(Math.floor(now));
 
-      // Update per-electrode rates
       const counts = new Array(8).fill(0);
       for (const s of newSpikes) counts[s.electrode % 8]++;
       setLiveRates((prev) => prev.map((r, i) => r * 0.9 + counts[i] * 10 * 0.1));
@@ -248,13 +256,25 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     wsRef.current = ws;
   }, []);
 
+  const livePause = useCallback(() => {
+    pausedRef.current = true;
+    setLivePaused(true);
+  }, []);
+
+  const liveResume = useCallback(() => {
+    pausedRef.current = false;
+    setLivePaused(false);
+  }, []);
+
   const liveDisconnect = useCallback(() => {
     if (wsRef.current) {
-      wsRef.current.onclose = null; // prevent double state update
+      wsRef.current.onclose = null;
       wsRef.current.close();
       wsRef.current = null;
     }
     setLiveConnected(false);
+    setLivePaused(false);
+    pausedRef.current = false;
     setLiveSpikes([]);
     setLiveSpikeCount(0);
     setLiveElapsed(0);
@@ -268,6 +288,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   const live: LiveState = {
     connected: liveConnected,
+    paused: livePaused,
     spikeCount: liveSpikeCount,
     elapsed: liveElapsed,
     spikes: liveSpikes,
@@ -443,7 +464,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       summary, burstInfo, cached: { iq: cachedIQ, health: cachedHealth, consciousness: cachedConsciousness },
       status, error, elapsed,
       generateData, uploadData, loadLocalData,
-      live, liveConnect, liveDisconnect,
+      live, liveConnect, livePause, liveResume, liveDisconnect,
     }}>
       <div className="min-h-screen grain flex" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
         {/* Ambient blobs */}
