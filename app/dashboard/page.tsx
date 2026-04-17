@@ -76,7 +76,7 @@ function QuickStats() {
     {
       label: 'Modules',
       loading: false,
-      value: '61 analyses',
+      value: '64 analyses',
       color: 'text-cyan-400',
       bg: 'from-cyan-500/8 border-cyan-500/10',
       href: '/dashboard/experiments',

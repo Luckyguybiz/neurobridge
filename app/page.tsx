@@ -158,7 +158,7 @@ export default function HomePage() {
         <div className="max-w-[1100px] mx-auto px-6">
           <div className="stats-grid grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-0 md:divide-x">
             {[
-              { value: '132', label: 'API Endpoints' },
+              { value: '137', label: 'API Endpoints' },
               { value: '61', label: 'Analysis Modules' },
               { value: '11', label: 'Dashboard Pages' },
               { value: '2.6M', label: 'Spikes Analyzed' },

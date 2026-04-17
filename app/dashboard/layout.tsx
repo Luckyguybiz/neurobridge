@@ -275,12 +275,16 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         mean_duration_ms: b?.summary?.mean_duration_ms ?? b?.mean_duration_ms ?? 0,
         total_burst_time_pct: b?.summary?.total_burst_time_pct ?? b?.total_burst_time_pct ?? 0,
       });
-    }).catch(() => {});
+    }).catch((err) => {
+      console.error('[Dashboard] Summary/Bursts load failed:', err);
+      setSummary(null);
+      setBurstInfo(null);
+    });
 
     // QuickStats (IQ, health, consciousness) — cached, no refetch on navigation
-    api.getOrganoidIQ(dsId).then(setCachedIQ).catch(() => setCachedIQ(null));
-    api.getHealth(dsId).then(setCachedHealth).catch(() => setCachedHealth(null));
-    api.getConsciousness(dsId).then(setCachedConsciousness).catch(() => setCachedConsciousness(null));
+    api.getOrganoidIQ(dsId).then(setCachedIQ).catch((err) => { console.error('[Dashboard] IQ load failed:', err); setCachedIQ(null); });
+    api.getHealth(dsId).then(setCachedHealth).catch((err) => { console.error('[Dashboard] Health load failed:', err); setCachedHealth(null); });
+    api.getConsciousness(dsId).then(setCachedConsciousness).catch((err) => { console.error('[Dashboard] Consciousness load failed:', err); setCachedConsciousness(null); });
   }, []);
 
   // ── Generate ───────────────────────────────────────────────────────────
