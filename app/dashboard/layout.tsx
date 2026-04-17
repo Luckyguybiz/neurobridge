@@ -192,7 +192,23 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const liveWindowSec = 10;
 
   const liveConnect = useCallback(() => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) return;
+    // Prevent multiple connections: check CONNECTING (0) and OPEN (1)
+    const rs = wsRef.current?.readyState;
+    if (rs === WebSocket.OPEN || rs === WebSocket.CONNECTING) return;
+
+    // Close any lingering socket before opening a new one
+    if (wsRef.current) {
+      wsRef.current.onclose = null; // prevent state flicker
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+
+    // Reset state for fresh session
+    setLiveSpikes([]);
+    setLiveSpikeCount(0);
+    setLiveElapsed(0);
+    setLiveRates(new Array(8).fill(0));
+
     const isDomain = typeof window !== 'undefined' && (window.location.hostname === 'neurocomputers.io' || window.location.hostname === 'www.neurocomputers.io');
     const wsUrl = isDomain
       ? 'wss://api.neurocomputers.io/ws/spikes'
@@ -202,8 +218,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => setLiveConnected(true);
-    ws.onclose = () => setLiveConnected(false);
-    ws.onerror = () => setLiveConnected(false);
+    ws.onclose = () => {
+      setLiveConnected(false);
+      if (wsRef.current === ws) wsRef.current = null;
+    };
+    ws.onerror = () => {
+      setLiveConnected(false);
+      if (wsRef.current === ws) wsRef.current = null;
+    };
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -227,9 +249,16 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }, []);
 
   const liveDisconnect = useCallback(() => {
-    wsRef.current?.close();
-    wsRef.current = null;
+    if (wsRef.current) {
+      wsRef.current.onclose = null; // prevent double state update
+      wsRef.current.close();
+      wsRef.current = null;
+    }
     setLiveConnected(false);
+    setLiveSpikes([]);
+    setLiveSpikeCount(0);
+    setLiveElapsed(0);
+    setLiveRates(new Array(8).fill(0));
   }, []);
 
   // Clean up WebSocket on full unmount (layout unmount = leave dashboard entirely)
