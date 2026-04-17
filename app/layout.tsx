@@ -22,7 +22,7 @@ const instrumentSerif = Instrument_Serif({
 
 export const metadata: Metadata = {
   title: "Neurocomputers — The Platform for Living Neural Networks",
-  description: "Biocomputing-as-a-Service. 130+ API endpoints, 61 analysis modules for brain organoid data. Organoid IQ, consciousness metrics, attractor mapping.",
+  description: "Biocomputing-as-a-Service. 132+ API endpoints, 61 analysis modules for brain organoid data. Organoid IQ, consciousness metrics, predictive coding, circadian rhythms.",
   icons: {
     icon: '/favicon.svg',
   },

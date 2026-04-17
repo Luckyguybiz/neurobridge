@@ -31,6 +31,23 @@
   --glow-cyan: rgba(34,211,238,0.15);
   --glow-violet: rgba(167,139,250,0.1);
 
+  /* Landing-specific */
+  --gradient-text-from: #67e8f9;
+  --gradient-text-via: #a5f3fc;
+  --gradient-text-to: #c4b5fd;
+  --gradient-text-alt-from: #c4b5fd;
+  --gradient-text-alt-to: #f0abfc;
+  --section-label-cyan: rgba(34,211,238,0.4);
+  --section-label-violet: rgba(167,139,250,0.4);
+  --ambient-blob-opacity: 0.04;
+  --card-border: rgba(255,255,255,0.04);
+  --card-border-hover: rgba(255,255,255,0.08);
+  --card-glow-from: rgba(34,211,238,0.1);
+  --card-glow-to: rgba(167,139,250,0.1);
+  --scroll-indicator: rgba(255,255,255,0.2);
+  --divider-color: rgba(255,255,255,0.04);
+  --card-shadow: none;
+
   /* Legacy vars */
   --background: var(--bg-primary);
   --foreground: var(--text-primary);
@@ -66,6 +83,23 @@
   --ambient-opacity: 0.04;
   --glow-cyan: rgba(8,145,178,0.08);
   --glow-violet: rgba(124,58,237,0.06);
+
+  /* Landing-specific */
+  --gradient-text-from: #0e7490;
+  --gradient-text-via: #0891b2;
+  --gradient-text-to: #7c3aed;
+  --gradient-text-alt-from: #7c3aed;
+  --gradient-text-alt-to: #c026d3;
+  --section-label-cyan: rgba(8,145,178,0.5);
+  --section-label-violet: rgba(124,58,237,0.5);
+  --ambient-blob-opacity: 0.06;
+  --card-border: rgba(0,0,0,0.08);
+  --card-border-hover: rgba(0,0,0,0.14);
+  --card-glow-from: rgba(8,145,178,0.08);
+  --card-glow-to: rgba(124,58,237,0.06);
+  --scroll-indicator: rgba(0,0,0,0.12);
+  --divider-color: rgba(0,0,0,0.08);
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03);
 
   --background: var(--bg-primary);
   --foreground: var(--text-primary);
@@ -136,17 +170,29 @@ html, body {
 
 select option { background: var(--bg-secondary); color: var(--text-primary); }
 
+/* ─── Theme-safe text utility classes ─── */
+.text-th-primary   { color: var(--text-primary); }
+.text-th-secondary { color: var(--text-secondary); }
+.text-th-muted     { color: var(--text-muted); }
+.text-th-faint     { color: var(--text-faint); }
+
 /* ─── Light mode overrides for Tailwind dark-only classes ─── */
-/* These cascade-override text-white variants when .light is active */
+/* Tailwind v4 text-white/NN classes generate inline --tw-text-opacity.
+   Override the white color itself when light theme is active. */
 html.light .text-white\/85, html.light .text-white\/80, html.light .text-white\/90 { color: var(--text-primary) !important; }
 html.light .text-white\/70, html.light .text-white\/60 { color: var(--text-secondary) !important; }
 html.light .text-white\/50, html.light .text-white\/40, html.light .text-white\/35 { color: var(--text-muted) !important; }
 html.light .text-white\/30, html.light .text-white\/25, html.light .text-white\/20, html.light .text-white\/15 { color: var(--text-faint) !important; }
-/* Attribute selectors as fallback for Tailwind v4 compiled names */
+/* Attribute selectors — match both escaped and unescaped class names */
 html.light [class*="text-white/8"], html.light [class*="text-white/9"] { color: var(--text-primary) !important; }
 html.light [class*="text-white/6"], html.light [class*="text-white/7"] { color: var(--text-secondary) !important; }
 html.light [class*="text-white/4"], html.light [class*="text-white/5"] { color: var(--text-muted) !important; }
 html.light [class*="text-white/1"], html.light [class*="text-white/2"], html.light [class*="text-white/3"] { color: var(--text-faint) !important; }
+/* Turbopack may inline color via style attr — override any rgba(255,255,255,*) in light mode */
+html.light [style*="color: rgb(255"] { color: var(--text-muted) !important; }
+html.light [style*="color:rgb(255"] { color: var(--text-muted) !important; }
+html.light [style*="color: rgba(255"] { color: var(--text-muted) !important; }
+html.light [style*="color:rgba(255"] { color: var(--text-muted) !important; }
 
 /* Background overrides */
 .light .bg-white\/\[0\.03\], .light .bg-white\/\[0\.02\] { background: var(--bg-card) !important; }
@@ -188,6 +234,9 @@ html.light [class*="text-white/1"], html.light [class*="text-white/2"], html.lig
 .light .text-amber-400, .light .text-amber-400\/80 { color: #d97706 !important; }
 .light .text-red-400, .light .text-red-400\/80, .light .text-red-400\/60 { color: #dc2626 !important; }
 
+/* Light mode: cyan/violet hover links */
+.light .hover\:text-cyan-400\/70:hover, .light .hover\:text-cyan-400\/60:hover { color: var(--accent-cyan) !important; }
+
 /* Light mode: gradient border buttons */
 .light .from-cyan-500\/20 { --tw-gradient-from: rgba(8,145,178,0.15) !important; }
 .light .to-violet-500\/20 { --tw-gradient-to: rgba(124,58,237,0.12) !important; }
@@ -204,3 +253,6 @@ html.light [class*="text-white/1"], html.light [class*="text-white/2"], html.lig
 /* Light mode body */
 .light { color-scheme: light; }
 .light .grain::before { display: none; }
+
+/* Stats dividers use theme-aware color */
+.stats-grid > :not(:first-child) { border-color: var(--divider-color); }

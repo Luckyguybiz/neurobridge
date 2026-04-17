@@ -117,11 +117,13 @@ function PongCard({ datasetId }: { datasetId: string }) {
     );
   }
 
-  const hitRate = Number(result.hit_rate ?? result.hit_rate_pct ?? result.final_hit_rate ?? 0);
-  const trials = Number(result.trials_completed ?? result.n_trials ?? result.total_trials ?? 200);
-  const scores = (result.scores ?? result.score_history ?? result.trial_scores ?? []) as number[];
-  const learningCurve = (result.learning_curve ?? scores) as number[];
-  const maxScore = Math.max(...learningCurve.map(Number), 1);
+  const hitRate = Number(result.hit_rate ?? result.mean_hit_rate ?? result.hit_rate_pct ?? result.final_hit_rate ?? 0);
+  const trials = Number(result.trials_completed ?? result.n_trials ?? result.n_games ?? result.total_trials ?? 200);
+  const scoresRaw = result.scores ?? result.score_history ?? result.trial_scores ?? [];
+  const scores = Array.isArray(scoresRaw) ? scoresRaw : [];
+  const lcRaw = result.learning_curve ?? scores;
+  const learningCurve = Array.isArray(lcRaw) ? lcRaw.map(Number) : [];
+  const maxScore = learningCurve.length > 0 ? Math.max(...learningCurve, 1) : 1;
 
   // Show last N bars for the learning curve
   const barData = learningCurve.length > 20
@@ -209,7 +211,7 @@ function LogicCard({ datasetId }: { datasetId: string }) {
   }
 
   const gates = (result.gates ?? result.gate_results ?? result.results ?? {}) as Record<string, unknown>;
-  const overall = Number(result.overall_accuracy ?? result.overall_score ?? result.mean_accuracy ?? 0);
+  const overall = Number(result.overall_accuracy ?? result.xor_accuracy ?? result.overall_score ?? result.mean_accuracy ?? 0);
 
   // Parse per-gate accuracy
   const gateEntries = Object.entries(gates).map(([name, val]) => ({
@@ -290,8 +292,10 @@ function VowelCard({ datasetId }: { datasetId: string }) {
 
   const accuracy = Number(result.accuracy ?? result.test_accuracy ?? result.classification_accuracy ?? 0);
   const baseline = Number(result.random_baseline ?? result.baseline ?? result.chance_level ?? 0.2);
-  const confMatrix = (result.confusion_matrix ?? result.conf_matrix ?? []) as number[][];
-  const vowels = (result.vowel_labels ?? result.labels ?? result.classes ?? ['a', 'i', 'u', 'e', 'o']) as string[];
+  const cmRaw = result.confusion_matrix ?? result.conf_matrix ?? [];
+  const confMatrix = Array.isArray(cmRaw) ? cmRaw : [];
+  const vowelsRaw = result.vowel_labels ?? result.labels ?? result.classes ?? ['a', 'i', 'u', 'e', 'o'];
+  const vowels = Array.isArray(vowelsRaw) ? vowelsRaw : ['a', 'i', 'u', 'e', 'o'];
 
   return (
     <div className="space-y-3">
@@ -332,8 +336,9 @@ function VowelCard({ datasetId }: { datasetId: string }) {
               {confMatrix.slice(0, vowels.length).map((row, ri) => (
                 <>
                   <div key={`l-${ri}`} className="text-[8px] p-1 font-mono" style={{ color: 'var(--text-muted)' }}>{vowels[ri] ?? ri}</div>
-                  {(row as number[]).slice(0, vowels.length).map((cell, ci) => {
-                    const maxCell = Math.max(...confMatrix.flat().map(Number), 1);
+                  {(Array.isArray(row) ? row : []).slice(0, vowels.length).map((cell, ci) => {
+                    const flatCells = confMatrix.flatMap((r: unknown) => Array.isArray(r) ? r.map(Number) : []);
+                    const maxCell = flatCells.length > 0 ? Math.max(...flatCells, 1) : 1;
                     const intensity = Number(cell) / maxCell;
                     return (
                       <div
@@ -396,12 +401,13 @@ function MemoryCard({ datasetId }: { datasetId: string }) {
     );
   }
 
-  const overall = Number(result.overall_score ?? result.memory_score ?? result.total_score ?? 0);
+  const subs = (typeof result.subscores === 'object' && result.subscores !== null ? result.subscores : {}) as Record<string, unknown>;
+  const overall = Number(result.overall_score ?? result.composite_score ?? result.memory_score ?? result.total_score ?? 0);
   const tests = [
-    { name: 'Working', value: Number(result.working_memory ?? (result.working as Record<string, unknown>)?.score ?? 0) },
-    { name: 'Short-term', value: Number(result.short_term ?? (result.short_term_memory as Record<string, unknown>)?.score ?? 0) },
-    { name: 'Long-term', value: Number(result.long_term ?? (result.long_term_memory as Record<string, unknown>)?.score ?? 0) },
-    { name: 'Associative', value: Number(result.associative ?? (result.associative_memory as Record<string, unknown>)?.score ?? 0) },
+    { name: 'Working', value: Number(subs.working_memory ?? result.working_memory ?? (result.working as Record<string, unknown>)?.score ?? 0) },
+    { name: 'Short-term', value: Number(subs.short_term_memory ?? result.short_term ?? (result.short_term_memory as Record<string, unknown>)?.score ?? 0) },
+    { name: 'Long-term', value: Number(subs.long_term_memory ?? result.long_term ?? (result.long_term_memory as Record<string, unknown>)?.score ?? 0) },
+    { name: 'Associative', value: Number(subs.associative_memory ?? result.associative ?? (result.associative_memory as Record<string, unknown>)?.score ?? 0) },
   ];
 
   const maxVal = Math.max(...tests.map((t) => t.value <= 1 ? t.value * 100 : t.value), 1);
@@ -468,10 +474,11 @@ function ClosedLoopCard({ datasetId }: { datasetId: string }) {
     );
   }
 
-  const performance = Number(result.performance_score ?? result.final_performance ?? result.score ?? 0);
+  const performance = Number(result.performance_score ?? result.success_rate ?? result.final_performance ?? result.mean_score ?? result.score ?? 0);
   const improvement = Number(result.improvement_pct ?? result.improvement ?? result.learning_improvement ?? 0);
-  const trialResults = (result.trial_results ?? result.trials ?? result.performance_curve ?? []) as number[];
-  const maxTrial = Math.max(...trialResults.map(Number), 1);
+  const trRaw = result.trial_results ?? result.learning_curve ?? result.trials ?? result.performance_curve ?? [];
+  const trialResults = Array.isArray(trRaw) ? trRaw.map(Number) : [];
+  const maxTrial = trialResults.length > 0 ? Math.max(...trialResults, 1) : 1;
 
   return (
     <div className="space-y-3">

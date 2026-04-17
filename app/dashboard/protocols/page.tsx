@@ -36,6 +36,7 @@ interface Protocol {
   name: string;
   description: string;
   reference_paper?: string;
+  reference?: string;
   parameters?: Record<string, unknown>;
 }
 
@@ -73,9 +74,9 @@ function ProtocolItem({
           )}
 
           {/* Reference paper */}
-          {protocol.reference_paper && (
-            <p className="text-[10px] text-white/30 italic leading-relaxed">
-              {protocol.reference_paper}
+          {(protocol.reference_paper ?? protocol.reference) && (
+            <p className="text-[10px] italic leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+              {protocol.reference_paper ?? protocol.reference}
             </p>
           )}
 
@@ -98,14 +99,14 @@ function ProtocolItem({
                 className="overflow-hidden"
               >
                 <div className="space-y-1 pt-1">
-                  <div className="text-[9px] text-white/20 uppercase tracking-widest">Parameters</div>
+                  <div className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>Parameters</div>
                   <div className="grid grid-cols-2 gap-1">
                     {paramEntries.map(([key, val]) => (
                       <div
                         key={key}
                         className="px-2 py-1.5 rounded-md bg-white/[0.03] border border-white/[0.04]"
                       >
-                        <div className="text-[8px] text-white/25 capitalize">
+                        <div className="text-[8px] capitalize" style={{ color: 'var(--text-faint)' }}>
                           {key.replace(/_/g, ' ')}
                         </div>
                         <div className="text-[11px] text-cyan-400/70 tabular-nums font-mono">
@@ -135,7 +136,7 @@ function ProtocolItem({
                 transition={{ duration: 0.3 }}
                 className="overflow-hidden"
               >
-                <div className="text-[10px] text-white/20 pt-1">No parameters available</div>
+                <div className="text-[10px] pt-1" style={{ color: 'var(--text-faint)' }}>No parameters available</div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -163,12 +164,24 @@ export default function ProtocolsPage() {
     setError('');
     try {
       const data = await api.getProtocols();
-      // API may return { protocols: [...] } or an array directly
-      const list = Array.isArray(data)
-        ? data
-        : Array.isArray((data as Record<string, unknown>).protocols)
-          ? ((data as Record<string, unknown>).protocols as Protocol[])
-          : Object.values(data).flat();
+      // API may return:
+      // 1. array of protocols directly
+      // 2. { protocols: [...] }
+      // 3. { protocols: { name1: {name, description}, name2: {...} } }
+      let list: Protocol[];
+      if (Array.isArray(data)) {
+        list = data;
+      } else {
+        const prots = (data as Record<string, unknown>).protocols;
+        if (Array.isArray(prots)) {
+          list = prots;
+        } else if (typeof prots === 'object' && prots !== null) {
+          // Dict of protocol objects — convert to array
+          list = Object.values(prots) as Protocol[];
+        } else {
+          list = [];
+        }
+      }
       setProtocols(list as Protocol[]);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load protocols');

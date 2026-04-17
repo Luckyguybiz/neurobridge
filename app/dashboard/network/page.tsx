@@ -1,21 +1,23 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 import { motion } from 'framer-motion';
 import { useDashboardContext } from '@/lib/dashboard-context';
+import { useCachedAnalysis } from '@/lib/use-cached-analysis';
 import * as api from '@/lib/api';
 import ChartCard from '@/components/dashboard/ChartCard';
-import ConnectivityGraph from '@/components/dashboard/ConnectivityGraph';
 import { ELECTRODE_COLORS, getThemeColors } from '@/lib/utils';
+import type { Spike } from '@/lib/types';
 
 // ─── Transfer Entropy Matrix ──────────────────────────────────────────────────
 
 type TEData = {
   te_matrix: number[][];
   electrode_ids: number[];
-  max_te_pair: { source: number; target: number; value: number };
-  mean_te: number;
+  max_te_pair?: { source: number; target: number; value: number };
+  mean_te?: number;
+  dominant_direction?: Record<string, unknown>;
 };
 
 function TEMatrix({ data }: { data: TEData }) {
@@ -83,6 +85,7 @@ function TEMatrix({ data }: { data: TEData }) {
     });
 
     // Highlight max TE pair
+    if (data.max_te_pair) {
     const { source: s, target: t } = data.max_te_pair;
     const si = data.electrode_ids.indexOf(s);
     const ti = data.electrode_ids.indexOf(t);
@@ -97,6 +100,7 @@ function TEMatrix({ data }: { data: TEData }) {
         .attr('stroke-width', 2)
         .attr('rx', 2);
     }
+    }
   }, [data]);
 
   return (
@@ -104,12 +108,18 @@ function TEMatrix({ data }: { data: TEData }) {
       <div className="flex gap-4 mb-3 text-[11px]">
         <div>
           <span style={{ color: 'var(--text-muted)' }}>Max TE: </span>
-          <span className="text-cyan-400">E{data.max_te_pair.source} → E{data.max_te_pair.target}</span>
-          <span className="ml-1" style={{ color: 'var(--text-muted)' }}>({data.max_te_pair.value.toFixed(4)} bits)</span>
+          <span className="text-cyan-400">
+            {data.max_te_pair
+              ? `E${data.max_te_pair.source} → E${data.max_te_pair.target}`
+              : '—'}
+          </span>
+          {data.max_te_pair && (
+            <span className="ml-1" style={{ color: 'var(--text-muted)' }}>({data.max_te_pair.value.toFixed(4)} bits)</span>
+          )}
         </div>
         <div>
           <span style={{ color: 'var(--text-muted)' }}>Mean TE: </span>
-          <span className="text-violet-400">{data.mean_te.toFixed(4)}</span>
+          <span className="text-violet-400">{(data.mean_te ?? 0).toFixed(4)}</span>
         </div>
       </div>
       <svg ref={svgRef} className="w-full" style={{ height: 220 }} />
@@ -119,16 +129,8 @@ function TEMatrix({ data }: { data: TEData }) {
 
 // ─── Cross-Correlation Heatmap (pairwise) ─────────────────────────────────────
 
-function CrossCorrHeatmap({ datasetId, nElectrodes }: { datasetId: string; nElectrodes: number }) {
+function CrossCorrHeatmap({ data, nElectrodes }: { data: Record<string, unknown>; nElectrodes: number }) {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    api.getCrossCorrelation(datasetId, 50, 1)
-      .then(setData)
-      .catch((e) => setError(e instanceof Error ? e.message : 'Failed'));
-  }, [datasetId]);
 
   useEffect(() => {
     if (!svgRef.current || !data) return;
@@ -184,13 +186,6 @@ function CrossCorrHeatmap({ datasetId, nElectrodes }: { datasetId: string; nElec
     });
   }, [data, nElectrodes]);
 
-  if (error) return <div className="text-[11px] text-red-400/60 py-4">{error}</div>;
-  if (!data) return (
-    <div className="flex items-center justify-center py-8">
-      <div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
-    </div>
-  );
-
   return (
     <div className="relative">
       <svg ref={svgRef} className="w-full" style={{ height: 220 }} />
@@ -200,7 +195,7 @@ function CrossCorrHeatmap({ datasetId, nElectrodes }: { datasetId: string; nElec
           {Object.entries(data).slice(0, 8).map(([k, v]) => (
             <div key={k} className="flex gap-2">
               <span style={{ color: 'var(--text-muted)' }}>{k}:</span>
-              <span className="text-cyan-400/60 truncate">
+              <span className="text-cyan-400/60 break-all">
                 {Array.isArray(v) ? `[${(v as unknown[]).length} items]` :
                  typeof v === 'object' && v !== null ? `{${Object.keys(v).length} keys}` :
                  String(v)}
@@ -215,30 +210,14 @@ function CrossCorrHeatmap({ datasetId, nElectrodes }: { datasetId: string; nElec
 
 // ─── Weights JSON ─────────────────────────────────────────────────────────────
 
-function WeightsDisplay({ datasetId }: { datasetId: string }) {
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    api.getWeights(datasetId)
-      .then(setData)
-      .catch((e) => setError(e instanceof Error ? e.message : 'Failed'));
-  }, [datasetId]);
-
-  if (error) return <div className="text-[11px] text-red-400/60">{error}</div>;
-  if (!data) return (
-    <div className="flex items-center justify-center py-8">
-      <div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
-    </div>
-  );
-
+function WeightsDisplay({ data }: { data: Record<string, unknown> }) {
   const entries = Object.entries(data).slice(0, 14);
   return (
     <div className="space-y-1.5 font-mono text-[11px]">
       {entries.map(([k, v]) => (
         <div key={k} className="flex gap-2 py-0.5 border-b border-white/[0.03]">
-          <span className="shrink-0 w-28 truncate" style={{ color: 'var(--text-muted)' }}>{k}:</span>
-          <span className="text-cyan-400/70 truncate">
+          <span className="shrink-0 min-w-[80px]" style={{ color: 'var(--text-muted)' }}>{k}:</span>
+          <span className="text-cyan-400/70 break-all">
             {typeof v === 'number'   ? (Number.isInteger(v) ? v : Number(v).toFixed(4)) :
              typeof v === 'boolean'  ? String(v) :
              typeof v === 'string'   ? v :
@@ -257,26 +236,24 @@ function WeightsDisplay({ datasetId }: { datasetId: string }) {
 
 // ─── Network Stats ────────────────────────────────────────────────────────────
 
-function NetworkStats({ datasetId }: { datasetId: string }) {
-  const [data, setData] = useState<{
-    nodes: Array<{ id: number; n_spikes: number; firing_rate_hz: number; degree: number; strength: number }>;
-    edges: Array<{ source: number; target: number; weight: number }>;
-    n_edges: number;
-    density: number;
-    mean_clustering: number;
-  } | null>(null);
+function NetworkStats({ data }: { data: Record<string, unknown> }) {
+  if (!data || data.error) return null;
 
-  useEffect(() => {
-    api.getConnectivity(datasetId).then(setData).catch(() => {});
-  }, [datasetId]);
-
-  if (!data) return null;
+  // Support both old format {nodes, edges, n_edges, density} and new ConnectivityResult dataclass
+  const nodesRaw = data.nodes ?? [];
+  const nodes = Array.isArray(nodesRaw) ? nodesRaw as Array<Record<string, unknown>> : [];
+  const edgesRaw = data.edges ?? [];
+  const edges = Array.isArray(edgesRaw) ? edgesRaw as Array<Record<string, unknown>> : [];
+  const nEdges = Number(data.n_edges ?? data.num_edges ?? edges.length ?? 0);
+  const density = Number(data.density ?? data.graph_density ?? 0);
+  const clustering = Number(data.mean_clustering ?? data.clustering_coefficient ?? data.avg_clustering ?? 0);
+  const nNodes = nodes.length || Number(data.n_nodes ?? data.num_nodes ?? 0);
 
   const stats = [
-    { label: 'Edges',       value: String(data.n_edges) },
-    { label: 'Density',     value: data.density.toFixed(3) },
-    { label: 'Clustering',  value: data.mean_clustering.toFixed(3) },
-    { label: 'Nodes',       value: String(data.nodes.length) },
+    { label: 'Edges',       value: String(nEdges) },
+    { label: 'Density',     value: density.toFixed(3) },
+    { label: 'Clustering',  value: clustering.toFixed(3) },
+    { label: 'Nodes',       value: String(nNodes) },
   ];
 
   return (
@@ -291,156 +268,9 @@ function NetworkStats({ datasetId }: { datasetId: string }) {
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
-export default function NetworkPage() {
-  const { datasetId, spikes, nElectrodes, status } = useDashboardContext();
-  const [teData, setTEData] = useState<TEData | null>(null);
-  const [teError, setTEError] = useState('');
-
-  useEffect(() => {
-    if (!datasetId) return;
-    api.getTransferEntropy(datasetId)
-      .then((d) => setTEData(d as unknown as TEData))
-      .catch((e) => setTEError(e instanceof Error ? e.message : 'Failed'));
-  }, [datasetId]);
-
-  if (status === 'loading' && spikes.length === 0) {
-    return (
-      <div className="flex items-center justify-center py-40">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>Loading network data...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (spikes.length === 0) return null;
-
-  return (
-    <div className="p-3 sm:p-4 space-y-3">
-      {/* Large connectivity graph */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <ChartCard title="Functional Connectivity Graph" description="Force-directed layout · nodes = electrodes · edges = co-firing strength">
-          <div className="w-full" style={{ height: 300 }}>
-            <LargeConnectivityGraph spikes={spikes} electrodes={nElectrodes} />
-          </div>
-          {datasetId && <NetworkStats datasetId={datasetId} />}
-        </ChartCard>
-      </motion.div>
-
-      {/* Bottom row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        {/* Cross-correlation heatmap */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.08 }}
-          className="lg:col-span-1"
-        >
-          <ChartCard title="Cross-Correlation Matrix" description="Pairwise electrode correlation">
-            {datasetId
-              ? <CrossCorrHeatmap datasetId={datasetId} nElectrodes={nElectrodes} />
-              : <div className="text-[11px] py-4" style={{ color: 'var(--text-muted)' }}>No dataset loaded</div>}
-          </ChartCard>
-        </motion.div>
-
-        {/* Transfer entropy */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.12 }}
-          className="lg:col-span-1"
-        >
-          <ChartCard title="Transfer Entropy Matrix" description="Directed information flow between electrodes (bits)">
-            {teError
-              ? <div className="text-[11px] text-red-400/60 py-4">{teError}</div>
-              : teData
-                ? <TEMatrix data={teData} />
-                : (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
-                  </div>
-                )
-            }
-          </ChartCard>
-        </motion.div>
-
-        {/* Synaptic weights */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.16 }}
-          className="lg:col-span-1"
-        >
-          <ChartCard title="Synaptic Weights" description="Inferred connectome from spike timing">
-            {datasetId
-              ? <WeightsDisplay datasetId={datasetId} />
-              : <div className="text-[11px] py-4" style={{ color: 'var(--text-muted)' }}>No dataset loaded</div>}
-          </ChartCard>
-        </motion.div>
-      </div>
-
-      {/* Network Motifs + Information Flow row */}
-      {datasetId && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
-            <ChartCard title="Network Motifs" description="3-node subgraph patterns vs random networks">
-              <MotifsCard datasetId={datasetId} />
-            </ChartCard>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.24 }}>
-            <ChartCard title="Information Flow (Granger)" description="Directed causal information flow between electrodes">
-              <InfoFlowCard datasetId={datasetId} />
-            </ChartCard>
-          </motion.div>
-        </div>
-      )}
-
-      {/* Connectomics row */}
-      {datasetId && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.28 }}>
-            <ChartCard title="Graph Theory" description="Rich-club, small-world, efficiency, centrality">
-              <GraphTheoryCard datasetId={datasetId} />
-            </ChartCard>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.32 }}>
-            <ChartCard title="Communities" description="Network modules via spectral clustering">
-              <CommunitiesCard datasetId={datasetId} />
-            </ChartCard>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.36 }}>
-            <ChartCard title="Topology (TDA)" description="Betti numbers — topological data analysis">
-              <TopologyCard datasetId={datasetId} />
-            </ChartCard>
-          </motion.div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ─── Motifs Card ─────────────────────────────────────────────────────────────
 
-function MotifsCard({ datasetId }: { datasetId: string }) {
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    api.getMotifs(datasetId)
-      .then(setData)
-      .catch((e) => setError(e instanceof Error ? e.message : 'Failed'));
-  }, [datasetId]);
-
-  if (error) return <div className="text-[11px] text-red-400/60 py-4">{error}</div>;
-  if (!data) return <div className="flex items-center justify-center py-6"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>;
-
+function MotifsCard({ data }: { data: Record<string, unknown> }) {
   const counts = (data.motif_counts ?? {}) as Record<string, number>;
   const zScore = Number(data.triangle_z_score ?? 0);
   const enrichment = String(data.triangle_enrichment ?? 'unknown');
@@ -492,15 +322,9 @@ function MotifsCard({ datasetId }: { datasetId: string }) {
   );
 }
 
-// ─── Information Flow Card ───────────────────────────────────────────────────
+// ─── Graph Theory Card ──────────────────────────────────────────────────────
 
-function GraphTheoryCard({ datasetId }: { datasetId: string }) {
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
-  const [error, setError] = useState('');
-  useEffect(() => { api.getGraphTheory(datasetId).then(setData).catch(e => setError(e instanceof Error ? e.message : 'Failed')); }, [datasetId]);
-  if (error) return <div className="text-[11px] text-red-400/60 py-4">{error}</div>;
-  if (!data) return <div className="flex items-center justify-center py-6"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>;
-
+function GraphTheoryCard({ data }: { data: Record<string, unknown> }) {
   const metrics = [
     { label: 'Small-World', key: 'small_world_sigma', fmt: (v: number) => v.toFixed(2) },
     { label: 'Global Efficiency', key: 'global_efficiency', fmt: (v: number) => v.toFixed(3) },
@@ -526,16 +350,17 @@ function GraphTheoryCard({ datasetId }: { datasetId: string }) {
   );
 }
 
-function CommunitiesCard({ datasetId }: { datasetId: string }) {
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
-  const [error, setError] = useState('');
-  useEffect(() => { api.getCommunities(datasetId).then(setData).catch(e => setError(e instanceof Error ? e.message : 'Failed')); }, [datasetId]);
-  if (error) return <div className="text-[11px] text-red-400/60 py-4">{error}</div>;
-  if (!data) return <div className="flex items-center justify-center py-6"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>;
+// ─── Communities Card ───────────────────────────────────────────────────────
 
+function CommunitiesCard({ data }: { data: Record<string, unknown> }) {
   const nCommunities = Number(data.n_communities ?? data.n_clusters ?? 0);
   const modularity = Number(data.modularity ?? data.modularity_score ?? 0);
-  const assignments = (data.community_assignments ?? data.labels ?? data.assignments ?? []) as number[];
+  const assRaw = data.community_assignments ?? data.labels ?? data.assignments ?? [];
+  const assignments = Array.isArray(assRaw)
+    ? assRaw.map(Number)
+    : (typeof assRaw === 'object' && assRaw !== null)
+      ? Object.keys(assRaw as Record<string, unknown>).sort((a, b) => Number(a) - Number(b)).map(k => Number((assRaw as Record<string, unknown>)[k]))
+      : [];
   const colors = ['#22d3ee', '#a78bfa', '#34d399', '#fbbf24', '#f87171', '#818cf8', '#fb923c', '#e879f9'];
 
   return (
@@ -558,17 +383,14 @@ function CommunitiesCard({ datasetId }: { datasetId: string }) {
   );
 }
 
-function TopologyCard({ datasetId }: { datasetId: string }) {
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
-  const [error, setError] = useState('');
-  useEffect(() => { api.getTopology(datasetId).then(setData).catch(e => setError(e instanceof Error ? e.message : 'Failed')); }, [datasetId]);
-  if (error) return <div className="text-[11px] text-red-400/60 py-4">{error}</div>;
-  if (!data) return <div className="flex items-center justify-center py-6"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>;
+// ─── Topology Card ──────────────────────────────────────────────────────────
 
+function TopologyCard({ data }: { data: Record<string, unknown> }) {
+  const bn = Array.isArray(data.betti_numbers) ? data.betti_numbers : [];
   const betti = [
-    { label: 'B0 (components)', value: Number(data.beta_0 ?? data.betti_0 ?? (data.betti_numbers as number[])?.[0] ?? 0) },
-    { label: 'B1 (loops)', value: Number(data.beta_1 ?? data.betti_1 ?? (data.betti_numbers as number[])?.[1] ?? 0) },
-    { label: 'B2 (cavities)', value: Number(data.beta_2 ?? data.betti_2 ?? (data.betti_numbers as number[])?.[2] ?? 0) },
+    { label: 'B0 (components)', value: Number(data.beta_0 ?? data.betti_0 ?? bn[0] ?? 0) },
+    { label: 'B1 (loops)', value: Number(data.beta_1 ?? data.betti_1 ?? bn[1] ?? 0) },
+    { label: 'B2 (cavities)', value: Number(data.beta_2 ?? data.betti_2 ?? bn[2] ?? 0) },
   ];
   const maxB = Math.max(...betti.map(b => b.value), 1);
 
@@ -597,24 +419,15 @@ function TopologyCard({ datasetId }: { datasetId: string }) {
   );
 }
 
-function InfoFlowCard({ datasetId }: { datasetId: string }) {
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
-  const [error, setError] = useState('');
+// ─── Information Flow Card ───────────────────────────────────────────────────
 
-  useEffect(() => {
-    api.getInformationFlow(datasetId)
-      .then(setData)
-      .catch((e) => setError(e instanceof Error ? e.message : 'Failed'));
-  }, [datasetId]);
-
-  if (error) return <div className="text-[11px] text-red-400/60 py-4">{error}</div>;
-  if (!data) return <div className="flex items-center justify-center py-6"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>;
-
+function InfoFlowCard({ data }: { data: Record<string, unknown> }) {
   const hubElectrode = Number(data.hub_electrode ?? 0);
   const hubStrength = Number(data.hub_out_strength ?? 0);
   const meanGC = Number(data.mean_gc ?? 0);
   const asymmetry = Number(data.flow_asymmetry ?? 0);
-  const topPairs = (data.top_pairs ?? []) as Array<{ source: number; target: number; gc_value: number }>;
+  const tpRaw = data.top_pairs ?? [];
+  const topPairs = Array.isArray(tpRaw) ? tpRaw as Array<{ source: number; target: number; gc_value: number }> : [];
 
   return (
     <div className="space-y-3">
@@ -654,8 +467,6 @@ function InfoFlowCard({ datasetId }: { datasetId: string }) {
 }
 
 // ─── Large connectivity graph (taller version) ────────────────────────────────
-
-import type { Spike } from '@/lib/types';
 
 interface SimNode extends d3.SimulationNodeDatum { id: number; label: string }
 interface SimLink extends d3.SimulationLinkDatum<SimNode> { strength: number }
@@ -772,4 +583,167 @@ function LargeConnectivityGraph({ spikes, electrodes }: { spikes: Spike[]; elect
   }, [spikes, electrodes]);
 
   return <svg ref={svgRef} className="w-full h-full" />;
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+export default function NetworkPage() {
+  const { datasetId, spikes, nElectrodes, status } = useDashboardContext();
+
+  // All data fetching via useCachedAnalysis — survives navigation
+  const te = useCachedAnalysis<TEData>(
+    datasetId, 'transfer-entropy',
+    () => api.getTransferEntropy(datasetId!) as Promise<TEData>,
+  );
+
+  const crossCorr = useCachedAnalysis<Record<string, unknown>>(
+    datasetId, 'cross-correlation',
+    () => api.getCrossCorrelation(datasetId!, 50, 1),
+  );
+
+  const connectivity = useCachedAnalysis<Record<string, unknown>>(
+    datasetId, 'connectivity',
+    () => api.getConnectivity(datasetId!) as Promise<Record<string, unknown>>,
+  );
+
+  const weights = useCachedAnalysis<Record<string, unknown>>(
+    datasetId, 'weights',
+    () => api.getWeights(datasetId!) as Promise<Record<string, unknown>>,
+  );
+
+  const motifs = useCachedAnalysis<Record<string, unknown>>(
+    datasetId, 'motifs',
+    () => api.getMotifs(datasetId!) as Promise<Record<string, unknown>>,
+  );
+
+  const infoFlow = useCachedAnalysis<Record<string, unknown>>(
+    datasetId, 'information-flow',
+    () => api.getInformationFlow(datasetId!) as Promise<Record<string, unknown>>,
+  );
+
+  const graphTheory = useCachedAnalysis<Record<string, unknown>>(
+    datasetId, 'graph-theory',
+    () => api.getGraphTheory(datasetId!) as Promise<Record<string, unknown>>,
+  );
+
+  const communities = useCachedAnalysis<Record<string, unknown>>(
+    datasetId, 'communities',
+    () => api.getCommunities(datasetId!) as Promise<Record<string, unknown>>,
+  );
+
+  const topology = useCachedAnalysis<Record<string, unknown>>(
+    datasetId, 'topology',
+    () => api.getTopology(datasetId!) as Promise<Record<string, unknown>>,
+  );
+
+  if (status === 'loading' && spikes.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-40">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>Loading network data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (spikes.length === 0) return null;
+
+  return (
+    <div className="p-3 sm:p-4 space-y-3">
+      {/* Large connectivity graph */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <ChartCard title="Functional Connectivity Graph" description="Force-directed layout · nodes = electrodes · edges = co-firing strength" loading={connectivity.loading} error={connectivity.error}>
+          <div className="w-full" style={{ height: 300 }}>
+            <LargeConnectivityGraph spikes={spikes} electrodes={nElectrodes} />
+          </div>
+          {connectivity.data && <NetworkStats data={connectivity.data} />}
+        </ChartCard>
+      </motion.div>
+
+      {/* Bottom row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        {/* Cross-correlation heatmap */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.08 }}
+          className="lg:col-span-1"
+        >
+          <ChartCard title="Cross-Correlation Matrix" description="Pairwise electrode correlation" loading={crossCorr.loading} error={crossCorr.error}>
+            {crossCorr.data
+              ? <CrossCorrHeatmap data={crossCorr.data} nElectrodes={nElectrodes} />
+              : !crossCorr.loading && <div className="text-[11px] py-4" style={{ color: 'var(--text-muted)' }}>No dataset loaded</div>}
+          </ChartCard>
+        </motion.div>
+
+        {/* Transfer entropy */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.12 }}
+          className="lg:col-span-1"
+        >
+          <ChartCard title="Transfer Entropy Matrix" description="Directed information flow between electrodes (bits)" loading={te.loading} error={te.error}>
+            {te.data && <TEMatrix data={te.data} />}
+          </ChartCard>
+        </motion.div>
+
+        {/* Synaptic weights */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.16 }}
+          className="lg:col-span-1"
+        >
+          <ChartCard title="Synaptic Weights" description="Inferred connectome from spike timing" loading={weights.loading} error={weights.error}>
+            {weights.data
+              ? <WeightsDisplay data={weights.data} />
+              : !weights.loading && <div className="text-[11px] py-4" style={{ color: 'var(--text-muted)' }}>No dataset loaded</div>}
+          </ChartCard>
+        </motion.div>
+      </div>
+
+      {/* Network Motifs + Information Flow row */}
+      {datasetId && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+            <ChartCard title="Network Motifs" description="3-node subgraph patterns vs random networks" loading={motifs.loading} error={motifs.error}>
+              {motifs.data && <MotifsCard data={motifs.data} />}
+            </ChartCard>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.24 }}>
+            <ChartCard title="Information Flow (Granger)" description="Directed causal information flow between electrodes" loading={infoFlow.loading} error={infoFlow.error}>
+              {infoFlow.data && <InfoFlowCard data={infoFlow.data} />}
+            </ChartCard>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Connectomics row */}
+      {datasetId && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.28 }}>
+            <ChartCard title="Graph Theory" description="Rich-club, small-world, efficiency, centrality" loading={graphTheory.loading} error={graphTheory.error}>
+              {graphTheory.data && <GraphTheoryCard data={graphTheory.data} />}
+            </ChartCard>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.32 }}>
+            <ChartCard title="Communities" description="Network modules via spectral clustering" loading={communities.loading} error={communities.error}>
+              {communities.data && <CommunitiesCard data={communities.data} />}
+            </ChartCard>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.36 }}>
+            <ChartCard title="Topology (TDA)" description="Betti numbers — topological data analysis" loading={topology.loading} error={topology.error}>
+              {topology.data && <TopologyCard data={topology.data} />}
+            </ChartCard>
+          </motion.div>
+        </div>
+      )}
+    </div>
+  );
 }

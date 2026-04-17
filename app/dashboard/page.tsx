@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import * as api from '@/lib/api';
@@ -24,51 +24,59 @@ const cardVariants = {
   }),
 };
 
-function QuickStats({ datasetId }: { datasetId: string }) {
-  const router = useRouter();
-  const [iq, setIQ] = useState<Record<string, unknown> | null>(null);
-  const [health, setHealth] = useState<Record<string, unknown> | null>(null);
-  const [consciousness, setConsciousness] = useState<Record<string, unknown> | null>(null);
-  const [welfare, setWelfare] = useState<Record<string, unknown> | null>(null);
+/** Shimmer bar for loading stat values */
+function StatShimmer() {
+  return (
+    <div className="h-[18px] w-16 rounded-md mt-0.5" style={{
+      background: 'linear-gradient(90deg, var(--border) 25%, rgba(255,255,255,0.08) 50%, var(--border) 75%)',
+      backgroundSize: '200% 100%',
+      animation: 'stat-shimmer 1.5s ease-in-out infinite',
+    }} />
+  );
+}
 
-  useEffect(() => {
-    api.getOrganoidIQ(datasetId).then(setIQ).catch(() => {});
-    api.getHealth(datasetId).then(setHealth).catch(() => {});
-    api.getConsciousness(datasetId).then(setConsciousness).catch(() => {});
-    api.getHealth(datasetId).then(d => setWelfare(d)).catch(() => {});
-  }, [datasetId]);
+function QuickStats() {
+  const router = useRouter();
+  const { cached } = useDashboardContext();
+  const { iq, health, consciousness } = cached;
 
   const iqScore = Number(iq?.iq_score ?? iq?.score ?? 0);
   const iqGrade = String(iq?.grade ?? '?');
-  const healthScore = Number(health?.health_score ?? health?.overall_score ?? 0);
-  const consScore = Number(consciousness?.consciousness_score ?? (consciousness?.sentience_risk as Record<string,unknown>)?.overall_score ?? 0);
+  const healthRaw = Number(health?.health_score ?? health?.overall_score ?? 0);
+  const healthScore = healthRaw > 1 ? healthRaw : healthRaw * 100; // normalize: API may return 80 or 0.80
+  const consRaw = Number(consciousness?.consciousness_score ?? (consciousness?.sentience_risk as Record<string,unknown>)?.overall_score ?? 0);
+  const consScore = consRaw > 1 ? consRaw : consRaw * 100; // normalize
   const consRisk = String(consciousness?.overall_risk_level ?? consciousness?.interpretation ?? '?');
 
   const cards = [
     {
       label: 'Organoid IQ',
-      value: iqScore > 0 ? `${iqScore.toFixed(0)} (${iqGrade})` : '...',
+      loading: iq === undefined,
+      value: iqScore > 0 ? `${iqScore.toFixed(0)} (${iqGrade})` : iq === null ? '—' : '',
       color: iqScore >= 60 ? 'text-cyan-400' : iqScore >= 40 ? 'text-amber-400' : 'text-amber-400',
       bg: 'from-cyan-500/8 border-cyan-500/10',
       href: '/dashboard/iq',
     },
     {
       label: 'Health',
-      value: healthScore > 0 ? `${(healthScore * 100).toFixed(0)}%` : '...',
-      color: healthScore >= 0.7 ? 'text-emerald-400' : healthScore >= 0.4 ? 'text-amber-400' : 'text-red-400',
+      loading: health === undefined,
+      value: healthScore > 0 ? `${healthScore.toFixed(0)}%` : health === null ? '—' : '',
+      color: healthScore >= 70 ? 'text-emerald-400' : healthScore >= 40 ? 'text-amber-400' : 'text-red-400',
       bg: 'from-emerald-500/8 border-emerald-500/10',
       href: '/dashboard/iq',
     },
     {
       label: 'Consciousness',
-      value: consScore > 0 ? `${(consScore * 100).toFixed(0)}% ${consRisk}` : '...',
-      color: consScore > 0.5 ? 'text-red-400' : consScore > 0.3 ? 'text-amber-400' : 'text-emerald-400',
+      loading: consciousness === undefined,
+      value: consScore > 0 ? `${consScore.toFixed(0)}% ${consRisk}` : consciousness === null ? '—' : '',
+      color: consScore > 50 ? 'text-red-400' : consScore > 30 ? 'text-amber-400' : 'text-emerald-400',
       bg: 'from-violet-500/8 border-violet-500/10',
       href: '/dashboard/discovery',
     },
     {
       label: 'Modules',
-      value: '57 analyses',
+      loading: false,
+      value: '61 analyses',
       color: 'text-cyan-400',
       bg: 'from-cyan-500/8 border-cyan-500/10',
       href: '/dashboard/experiments',
@@ -76,26 +84,37 @@ function QuickStats({ datasetId }: { datasetId: string }) {
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-3">
-      {cards.map((card, i) => (
-        <motion.div
-          key={card.label}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.05, duration: 0.4 }}
-          onClick={() => router.push(card.href)}
-          className={`px-3 py-2.5 rounded-xl bg-gradient-to-br ${card.bg} border cursor-pointer hover:scale-[1.02] transition-transform`}
-        >
-          <div className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{card.label}</div>
-          <div className={`text-[15px] font-bold tabular-nums ${card.color}`}>{card.value}</div>
-        </motion.div>
-      ))}
-    </div>
+    <>
+      <style jsx global>{`
+        @keyframes stat-shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-3">
+        {cards.map((card, i) => (
+          <motion.div
+            key={card.label}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05, duration: 0.4 }}
+            onClick={() => router.push(card.href)}
+            className={`px-3 py-2.5 rounded-xl bg-gradient-to-br ${card.bg} border cursor-pointer hover:scale-[1.02] transition-transform`}
+          >
+            <div className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{card.label}</div>
+            {card.loading
+              ? <StatShimmer />
+              : <div className={`text-[15px] font-bold tabular-nums ${card.color}`}>{card.value}</div>
+            }
+          </motion.div>
+        ))}
+      </div>
+    </>
   );
 }
 
 export default function DashboardPage() {
-  const { datasetId, spikes, duration, nElectrodes, summary, burstInfo, status } = useDashboardContext();
+  const { datasetId, spikes, duration, nElectrodes, summary, burstInfo, status, loadingStep } = useDashboardContext();
   const [activeTab, setActiveTab] = useState<Tab>('visualizations');
   const [reportLoading, setReportLoading] = useState(false);
 
@@ -121,7 +140,7 @@ export default function DashboardPage() {
   return (
     <div className="p-3 sm:p-4">
       {/* Quick Stats */}
-      {status === 'ready' && datasetId && <QuickStats datasetId={datasetId} />}
+      {status === 'ready' && datasetId && <QuickStats />}
 
       {/* Tab navigation */}
       {status === 'ready' && datasetId && (
@@ -159,8 +178,13 @@ export default function DashboardPage() {
       {status === 'loading' && spikes.length === 0 && (
         <div className="flex items-center justify-center py-32">
           <div className="text-center">
-            <div className="w-8 h-8 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>Generating and analyzing neural data...</p>
+            <div className="w-10 h-10 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-[13px] font-medium" style={{ color: 'var(--text-secondary)' }}>
+              {loadingStep || 'Preparing...'}
+            </p>
+            <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>
+              First load may take longer while the app compiles
+            </p>
           </div>
         </div>
       )}
@@ -179,24 +203,27 @@ export default function DashboardPage() {
           {activeTab === 'visualizations' && (
             <>
               {([
-                { title: 'Raster Plot',          desc: `${spikes.length.toLocaleString()} spikes · ${nElectrodes} electrodes`, span: 'lg:col-span-2 xl:col-span-2' },
-                { title: 'Network Connectivity', desc: 'Co-firing functional connections',                                      span: '' },
-                { title: 'Firing Rate Heatmap',  desc: 'Spike frequency over time per electrode',                              span: 'lg:col-span-2' },
-                { title: 'Spike Waveforms',      desc: 'Overlaid spike shapes per electrode',                                  span: '' },
-                { title: 'ISI Distribution',     desc: 'Inter-spike interval histogram (log scale)',                           span: '' },
-                { title: 'Cross-Correlogram',    desc: 'Temporal correlation between electrode pairs',                         span: '' },
-              ]).map((card, i) => (
-                <motion.div key={card.title} custom={i} initial="hidden" animate="visible" variants={cardVariants} className={card.span}>
-                  <ChartCard title={card.title} description={card.desc}>
-                    {i === 0 && <RasterPlot       spikes={spikes} duration={duration}    electrodes={nElectrodes} />}
-                    {i === 1 && <ConnectivityGraph spikes={spikes}                        electrodes={nElectrodes} />}
-                    {i === 2 && <FiringRateHeatmap spikes={spikes} duration={duration}    electrodes={nElectrodes} />}
-                    {i === 3 && <SpikeWaveforms    spikes={spikes}                        electrodes={nElectrodes} />}
-                    {i === 4 && <ISIHistogram      spikes={spikes}                        electrodes={nElectrodes} />}
-                    {i === 5 && <CrossCorrelogram  spikes={spikes}                        electrodes={nElectrodes} />}
-                  </ChartCard>
-                </motion.div>
-              ))}
+                { title: 'Raster Plot',          desc: `${spikes.length.toLocaleString()} spikes · ${nElectrodes} electrodes`, span: 'lg:col-span-2 xl:col-span-2', size: 'lg' as const },
+                { title: 'Network Connectivity', desc: 'Co-firing functional connections',                                      span: '', size: 'md' as const },
+                { title: 'Firing Rate Heatmap',  desc: 'Spike frequency over time per electrode',                              span: 'lg:col-span-2', size: 'md' as const },
+                { title: 'Spike Waveforms',      desc: 'Overlaid spike shapes per electrode',                                  span: '', size: 'md' as const },
+                { title: 'ISI Distribution',     desc: 'Inter-spike interval histogram (log scale)',                           span: '', size: 'md' as const },
+                { title: 'Cross-Correlogram',    desc: 'Temporal correlation between electrode pairs',                         span: '', size: 'md' as const },
+              ]).map((card, i) => {
+                const isLoading = status === 'loading' && spikes.length === 0;
+                return (
+                  <motion.div key={card.title} custom={i} initial="hidden" animate="visible" variants={cardVariants} className={card.span}>
+                    <ChartCard title={card.title} description={card.desc} loading={isLoading} skeletonSize={card.size}>
+                      {i === 0 && <RasterPlot       spikes={spikes} duration={duration}    electrodes={nElectrodes} />}
+                      {i === 1 && <ConnectivityGraph spikes={spikes}                        electrodes={nElectrodes} />}
+                      {i === 2 && <FiringRateHeatmap spikes={spikes} duration={duration}    electrodes={nElectrodes} />}
+                      {i === 3 && <SpikeWaveforms    spikes={spikes}                        electrodes={nElectrodes} />}
+                      {i === 4 && <ISIHistogram      spikes={spikes}                        electrodes={nElectrodes} />}
+                      {i === 5 && <CrossCorrelogram  spikes={spikes}                        electrodes={nElectrodes} />}
+                    </ChartCard>
+                  </motion.div>
+                );
+              })}
             </>
           )}
 
@@ -207,9 +234,9 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-[12px]">
                   <div>
                     <div className="mb-1.5" style={{ color: 'var(--text-faint)' }}>Population</div>
-                    <div style={{ color: 'var(--text-secondary)' }}>Mean rate: <span className="text-cyan-400">{String(pop?.mean_firing_rate_hz)} Hz</span></div>
-                    <div style={{ color: 'var(--text-secondary)' }}>Most active: <span className="text-cyan-400">E{String(pop?.most_active_electrode)}</span></div>
-                    <div style={{ color: 'var(--text-secondary)' }}>Mean amp: <span className="text-cyan-400">{(pop?.mean_amplitude_uv as number)?.toFixed(1)} µV</span></div>
+                    <div style={{ color: 'var(--text-secondary)' }}>Mean rate: <span className="text-cyan-400">{String(pop?.mean_firing_rate_hz ?? '—')} Hz</span></div>
+                    <div style={{ color: 'var(--text-secondary)' }}>Most active: <span className="text-cyan-400">E{String(pop?.most_active_electrode ?? '—')}</span></div>
+                    <div style={{ color: 'var(--text-secondary)' }}>Mean amp: <span className="text-cyan-400">{(pop?.mean_amplitude_uv as number | undefined)?.toFixed(1) ?? '—'} µV</span></div>
                   </div>
                   <div>
                     <div className="mb-1.5" style={{ color: 'var(--text-faint)' }}>Bursts</div>

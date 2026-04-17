@@ -7,8 +7,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import * as api from '@/lib/api';
 import { DashboardContext } from '@/lib/dashboard-context';
 import type { Spike } from '@/lib/types';
-import type { BurstInfo, DashboardStatus } from '@/lib/dashboard-context';
+import type { BurstInfo, DashboardStatus, DatasetSource, LiveSpike, LiveState } from '@/lib/dashboard-context';
 import { ThemeToggle } from '@/lib/theme-context';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import DebugPanel from '@/components/dashboard/DebugPanel';
+import { clearCache } from '@/lib/analysis-cache';
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
 
@@ -159,6 +162,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [debugOpen, setDebugOpen] = useState(false);
 
   // ── State (shared via context) ──────────────────────────────────────────
   const [status, setStatus]           = useState<DashboardStatus>('idle');
@@ -170,6 +174,76 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [summary, setSummary]         = useState<Record<string, unknown> | null>(null);
   const [burstInfo, setBurstInfo]     = useState<BurstInfo | null>(null);
   const [elapsed, setElapsed]         = useState(0);
+  const [datasetSource, setDatasetSource] = useState<DatasetSource>(null);
+  const [loadingStep, setLoadingStep] = useState('');
+
+  // ── Cached analysis (persists across page navigation) ─────────────────
+  const [cachedIQ, setCachedIQ] = useState<Record<string, unknown> | null | undefined>(undefined);
+  const [cachedHealth, setCachedHealth] = useState<Record<string, unknown> | null | undefined>(undefined);
+  const [cachedConsciousness, setCachedConsciousness] = useState<Record<string, unknown> | null | undefined>(undefined);
+
+  // ── Live WebSocket state (persists across page navigation) ────────────
+  const [liveConnected, setLiveConnected] = useState(false);
+  const [liveSpikeCount, setLiveSpikeCount] = useState(0);
+  const [liveElapsed, setLiveElapsed] = useState(0);
+  const [liveSpikes, setLiveSpikes] = useState<LiveSpike[]>([]);
+  const [liveRates, setLiveRates] = useState<number[]>(new Array(8).fill(0));
+  const wsRef = useRef<WebSocket | null>(null);
+  const liveWindowSec = 10;
+
+  const liveConnect = useCallback(() => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) return;
+    const isDomain = typeof window !== 'undefined' && (window.location.hostname === 'neurocomputers.io' || window.location.hostname === 'www.neurocomputers.io');
+    const wsUrl = isDomain
+      ? 'wss://api.neurocomputers.io/ws/spikes'
+      : typeof window !== 'undefined' && window.location.hostname === 'localhost'
+        ? 'ws://localhost:8847/ws/spikes'
+        : `ws://${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}:8847/ws/spikes`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => setLiveConnected(true);
+    ws.onclose = () => setLiveConnected(false);
+    ws.onerror = () => setLiveConnected(false);
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      const newSpikes = (data.spikes ?? []) as LiveSpike[];
+      const now = (data.timestamp ?? 0) as number;
+
+      setLiveSpikes((prev) => {
+        const cutoff = now - liveWindowSec;
+        return [...prev, ...newSpikes].filter((s) => s.time > cutoff);
+      });
+      setLiveSpikeCount((prev) => prev + newSpikes.length);
+      setLiveElapsed(Math.floor(now));
+
+      // Update per-electrode rates
+      const counts = new Array(8).fill(0);
+      for (const s of newSpikes) counts[s.electrode % 8]++;
+      setLiveRates((prev) => prev.map((r, i) => r * 0.9 + counts[i] * 10 * 0.1));
+    };
+
+    wsRef.current = ws;
+  }, []);
+
+  const liveDisconnect = useCallback(() => {
+    wsRef.current?.close();
+    wsRef.current = null;
+    setLiveConnected(false);
+  }, []);
+
+  // Clean up WebSocket on full unmount (layout unmount = leave dashboard entirely)
+  useEffect(() => {
+    return () => { wsRef.current?.close(); };
+  }, []);
+
+  const live: LiveState = {
+    connected: liveConnected,
+    spikeCount: liveSpikeCount,
+    elapsed: liveElapsed,
+    spikes: liveSpikes,
+    rates: liveRates,
+  };
 
   // ── Timer ──────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -178,17 +252,51 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     return () => clearInterval(timer);
   }, [status]);
 
+  /** Fetch background analysis after dataset loads (summary, bursts, IQ, health, consciousness).
+   *  Results cached in context — persist across page navigation. */
+  const fetchBackgroundAnalysis = useCallback((dsId: string) => {
+    // Reset all cached analysis for new dataset
+    clearCache();
+    setCachedIQ(undefined);
+    setCachedHealth(undefined);
+    setCachedConsciousness(undefined);
+
+    // Summary + bursts
+    Promise.all([
+      api.getFullSummary(dsId),
+      api.getBursts(dsId),
+    ]).then(([summaryData, burstData]) => {
+      setSummary(summaryData);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const b = burstData as any;
+      setBurstInfo({
+        n_bursts: b?.summary?.n_network_bursts ?? b?.n_bursts ?? b?.network?.n_bursts ?? 0,
+        burst_rate_per_min: b?.summary?.burst_rate_per_min ?? b?.burst_rate_per_min ?? 0,
+        mean_duration_ms: b?.summary?.mean_duration_ms ?? b?.mean_duration_ms ?? 0,
+        total_burst_time_pct: b?.summary?.total_burst_time_pct ?? b?.total_burst_time_pct ?? 0,
+      });
+    }).catch(() => {});
+
+    // QuickStats (IQ, health, consciousness) — cached, no refetch on navigation
+    api.getOrganoidIQ(dsId).then(setCachedIQ).catch(() => setCachedIQ(null));
+    api.getHealth(dsId).then(setCachedHealth).catch(() => setCachedHealth(null));
+    api.getConsciousness(dsId).then(setCachedConsciousness).catch(() => setCachedConsciousness(null));
+  }, []);
+
   // ── Generate ───────────────────────────────────────────────────────────
   const generateData = useCallback(async (dur = 30, electrodes = 8, burstProb = 0.15) => {
     setStatus('loading');
     setError('');
     setElapsed(0);
+    setDatasetSource(dur <= 30 ? 'synthetic-30' : 'synthetic-120');
+    setLoadingStep('Generating neural data...');
     try {
       const result = await api.generateDataset({ duration: dur, n_electrodes: electrodes, burst_probability: burstProb });
       setDatasetId(result.dataset_id);
       setDuration(result.duration_s);
       setNElectrodes(result.n_electrodes);
 
+      setLoadingStep('Loading spikes...');
       const spikeData = await api.getSpikes(result.dataset_id, { limit: 15000 });
       const spikeArr: Spike[] = spikeData.times.map((t: number, i: number) => ({
         time: t,
@@ -198,24 +306,24 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       }));
       setSpikes(spikeArr);
 
-      const [summaryData, burstData] = await Promise.all([
-        api.getFullSummary(result.dataset_id),
-        api.getBursts(result.dataset_id),
-      ]);
-      setSummary(summaryData);
-      setBurstInfo(burstData as unknown as BurstInfo);
+      // Show dashboard immediately — analysis loads in background
+      setLoadingStep('');
       setStatus('ready');
+      fetchBackgroundAnalysis(result.dataset_id);
     } catch (e) {
+      setLoadingStep('');
       setError(e instanceof Error ? e.message : 'Failed to generate data');
       setStatus('error');
     }
-  }, []);
+  }, [fetchBackgroundAnalysis]);
 
   // ── Upload ─────────────────────────────────────────────────────────────
   const uploadData = useCallback(async (file: File) => {
     setStatus('loading');
     setError('');
     setElapsed(0);
+    setDatasetSource('upload');
+    setLoadingStep(`Uploading ${file.name}...`);
     try {
       const result = await api.uploadDataset(file);
       setDatasetId(result.dataset_id);
@@ -231,24 +339,23 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       }));
       setSpikes(spikeArr);
 
-      const [summaryData, burstData] = await Promise.all([
-        api.getFullSummary(result.dataset_id),
-        api.getBursts(result.dataset_id),
-      ]);
-      setSummary(summaryData);
-      setBurstInfo(burstData as unknown as BurstInfo);
+      setLoadingStep('');
       setStatus('ready');
+      fetchBackgroundAnalysis(result.dataset_id);
     } catch (e) {
+      setLoadingStep('');
       setError(e instanceof Error ? e.message : 'Upload failed');
       setStatus('error');
     }
-  }, []);
+  }, [fetchBackgroundAnalysis]);
 
   // ── Load local CSV ─────────────────────────────────────────────────────
   const loadLocalData = useCallback(async (filename: string) => {
     setStatus('loading');
     setError('');
     setElapsed(0);
+    setDatasetSource(filename.includes('fs437') ? 'fs437' : 'upload');
+    setLoadingStep('Loading dataset from server...');
     try {
       const result = await api.loadLocalDataset(filename);
       setDatasetId(result.dataset_id);
@@ -264,21 +371,30 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       }));
       setSpikes(spikeArr);
 
-      const [summaryData, burstData] = await Promise.all([
-        api.getFullSummary(result.dataset_id),
-        api.getBursts(result.dataset_id),
-      ]);
-      setSummary(summaryData);
-      setBurstInfo(burstData as unknown as BurstInfo);
+      setLoadingStep('');
       setStatus('ready');
+      fetchBackgroundAnalysis(result.dataset_id);
     } catch (e) {
+      setLoadingStep('');
       setError(e instanceof Error ? e.message : 'Failed to load local data');
       setStatus('error');
     }
-  }, []);
+  }, [fetchBackgroundAnalysis]);
 
   // ── Auto-generate on mount ─────────────────────────────────────────────
   useEffect(() => { generateData(30, 8); }, [generateData]);
+
+  // ── Debug panel keyboard shortcut (Ctrl+Shift+D) ──────────────────────
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+        e.preventDefault();
+        setDebugOpen((v) => !v);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   const pop     = summary?.population as Record<string, unknown> | undefined;
   const dataset = summary?.dataset    as Record<string, unknown> | undefined;
@@ -290,9 +406,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   return (
     <DashboardContext.Provider value={{
-      datasetId, spikes, duration, nElectrodes,
-      summary, burstInfo, status, error, elapsed,
+      datasetId, datasetSource, loadingStep, spikes, duration, nElectrodes,
+      summary, burstInfo, cached: { iq: cachedIQ, health: cachedHealth, consciousness: cachedConsciousness },
+      status, error, elapsed,
       generateData, uploadData, loadLocalData,
+      live, liveConnect, liveDisconnect,
     }}>
       <div className="min-h-screen grain flex" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
         {/* Ambient blobs */}
@@ -389,6 +507,20 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Theme</span>
               <ThemeToggle />
             </div>
+            <button
+              onClick={() => setDebugOpen((v) => !v)}
+              className={`flex items-center gap-2 w-full px-3 py-2 rounded-xl text-[12px] transition-all duration-300 mb-1 ${
+                debugOpen ? 'bg-cyan-500/10 border border-cyan-500/15' : 'hover:bg-[var(--bg-card-hover)]'
+              }`}
+              style={{ color: debugOpen ? 'var(--accent-cyan)' : 'var(--text-muted)' }}
+              title="Toggle API Debug Panel (Ctrl+Shift+D)"
+            >
+              <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="8" cy="8" r="6" />
+                <path d="M8 5v3l2 1" />
+              </svg>
+              API Debug
+            </button>
             <Link
               href="/"
               className="flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] hover:bg-[var(--bg-card-hover)] transition-all duration-300"
@@ -431,8 +563,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 )}
                 {status === 'loading' && (
                   <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/[0.08] border border-amber-500/[0.12] shrink-0">
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                    <span className="text-[10px] text-amber-400/80 font-medium">ANALYZING</span>
+                    <div className="w-3 h-3 border-[1.5px] border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
+                    <span className="text-[10px] text-amber-400/80 font-medium">
+                      {loadingStep || 'Loading...'}
+                    </span>
                   </div>
                 )}
                 {status === 'error' && (
@@ -458,6 +592,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   onClick={async () => {
                     setStatus('loading');
                     setError('');
+                    setDatasetSource('finalspark');
+                    setLoadingStep('Loading FinalSpark MEA data...');
                     try {
                       const result = await api.loadLocalDataset('SpikeDataToShare_fs437data.csv', 437);
                       setDatasetId(result.dataset_id);
@@ -468,48 +604,55 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                         time: t, electrode: spikeData.electrodes[i], amplitude: spikeData.amplitudes[i], waveform: [],
                       }));
                       setSpikes(spikeArr);
-                      const [summaryData, burstData] = await Promise.all([
-                        api.getFullSummary(result.dataset_id),
-                        api.getBursts(result.dataset_id),
-                      ]);
-                      setSummary(summaryData);
-                      setBurstInfo(burstData as BurstInfo);
+                      setLoadingStep('');
                       setStatus('ready');
+                      fetchBackgroundAnalysis(result.dataset_id);
                     } catch (e) {
+                      setLoadingStep('');
                       setError(e instanceof Error ? e.message : 'Failed to load FinalSpark data');
                       setStatus('error');
                     }
                   }}
                   disabled={status === 'loading'}
-                  className="text-[11px] px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 border border-emerald-500/20 text-emerald-400/80 hover:text-emerald-300 transition-all duration-300 disabled:opacity-40"
+                  className={`text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40 ${
+                    datasetSource === 'finalspark' && status === 'ready'
+                      ? 'bg-gradient-to-r from-emerald-500/25 to-cyan-500/25 border border-emerald-400/30 text-emerald-300 ring-1 ring-emerald-400/20'
+                      : 'bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 border border-emerald-500/20 text-emerald-400/80 hover:text-emerald-300'
+                  }`}
                 >
+                  {datasetSource === 'finalspark' && status === 'loading' && <span className="inline-block w-2.5 h-2.5 border-[1.5px] border-amber-400/30 border-t-amber-400 rounded-full animate-spin mr-1 align-middle" />}
                   FinalSpark
                 </button>
-                <button
-                  onClick={() => generateData(30, 8)}
-                  disabled={status === 'loading'}
-                  className="text-[11px] px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border border-cyan-500/20 text-cyan-400/80 hover:text-cyan-300 transition-all duration-300 disabled:opacity-40"
-                >
-                  30s
-                </button>
-                <button
-                  onClick={() => generateData(120, 8)}
-                  disabled={status === 'loading'}
-                  className="text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40"
-                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-                >
-                  120s
-                </button>
-                <button
-                  onClick={() => loadLocalData('SpikeDataToShare_fs437data.csv')}
-                  disabled={status === 'loading'}
-                  className="text-[11px] px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 border border-emerald-500/20 text-emerald-400/80 hover:text-emerald-300 transition-all duration-300 disabled:opacity-40"
-                >
-                  fs437
-                </button>
+                {([
+                  { src: 'synthetic-30' as DatasetSource, label: '30s', title: 'Generate 30s synthetic data', onClick: () => generateData(30, 8) },
+                  { src: 'synthetic-120' as DatasetSource, label: '120s', title: 'Generate 120s synthetic data', onClick: () => generateData(120, 8) },
+                ] as const).map((btn) => {
+                  const isActive = datasetSource === btn.src && status === 'ready';
+                  const isLoading = datasetSource === btn.src && status === 'loading';
+                  return (
+                    <button
+                      key={btn.src}
+                      onClick={btn.onClick}
+                      disabled={status === 'loading'}
+                      title={btn.title}
+                      className={`text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40 ${
+                        isActive
+                          ? 'bg-gradient-to-r from-cyan-500/25 to-violet-500/25 border border-cyan-400/30 text-cyan-300 ring-1 ring-cyan-400/20'
+                          : isLoading
+                            ? 'bg-gradient-to-r from-amber-500/15 to-amber-500/10 border border-amber-500/20 text-amber-400/80'
+                            : 'hover:text-cyan-300'
+                      }`}
+                      style={!isActive && !isLoading ? { background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' } : undefined}
+                    >
+                      {isLoading && <span className="inline-block w-2.5 h-2.5 border-[1.5px] border-amber-400/30 border-t-amber-400 rounded-full animate-spin mr-1 align-middle" />}
+                      {btn.label}
+                    </button>
+                  );
+                })}
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={status === 'loading'}
+                  title="Upload your own MEA dataset (CSV, HDF5, Parquet)"
                   className="text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40"
                   style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
                 >
@@ -537,7 +680,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
           {/* Page content */}
           <main className="flex-1 relative z-10 min-h-0">
-            {children}
+            <ErrorBoundary>{children}</ErrorBoundary>
           </main>
         </div>
 
@@ -548,6 +691,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           className="hidden"
           onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadData(f); }}
         />
+
+        <DebugPanel open={debugOpen} onClose={() => setDebugOpen(false)} />
       </div>
     </DashboardContext.Provider>
   );

@@ -1,20 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useDashboardContext } from '@/lib/dashboard-context';
+import { useCachedAnalysis } from '@/lib/use-cached-analysis';
 import * as api from '@/lib/api';
 import ChartCard from '@/components/dashboard/ChartCard';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function Spinner() {
-  return (
-    <div className="flex items-center justify-center py-6">
-      <div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
-    </div>
-  );
-}
 
 function JsonRows({ data, max = 10 }: { data: Record<string, unknown>; max?: number }) {
   const entries = Object.entries(data).slice(0, max);
@@ -22,8 +14,8 @@ function JsonRows({ data, max = 10 }: { data: Record<string, unknown>; max?: num
     <div className="space-y-1 font-mono text-[10px] mt-2">
       {entries.map(([k, v]) => (
         <div key={k} className="flex gap-2 py-0.5" style={{ borderBottom: '1px solid var(--border)' }}>
-          <span className="w-32 truncate shrink-0" style={{ color: 'var(--text-muted)' }}>{k}:</span>
-          <span className="truncate" style={{ color: 'var(--accent-cyan)' }}>
+          <span className="w-auto min-w-[80px] shrink-0" style={{ color: 'var(--text-muted)' }}>{k}:</span>
+          <span className="break-all" style={{ color: 'var(--accent-cyan)' }}>
             {typeof v === 'number'   ? (Number.isInteger(v) ? v : Number(v).toFixed(5)) :
              typeof v === 'boolean'  ? (v ? '✓ true' : '✗ false') :
              typeof v === 'string'   ? v :
@@ -43,7 +35,7 @@ function JsonRows({ data, max = 10 }: { data: Record<string, unknown>; max?: num
 // ─── Emergence (Phi) ─────────────────────────────────────────────────────────
 
 function EmergenceCard({ data }: { data: Record<string, unknown> }) {
-  const phi = Number(data.phi ?? data.phi_value ?? data.causal_emergence ?? 0);
+  const phi = Number(data.phi ?? data.phi_value ?? data.causal_emergence ?? data.effective_information ?? 0);
 
   const label = phi > 2 ? 'Very high — strong macro-level causation'
               : phi > 1 ? 'High — significant causal emergence'
@@ -58,13 +50,13 @@ function EmergenceCard({ data }: { data: Record<string, unknown> }) {
       <div className="flex items-end gap-3">
         <div className="text-5xl font-bold tabular-nums text-cyan-400">{phi.toFixed(4)}</div>
         <div className="pb-1">
-          <div className="text-[10px] text-white/25 uppercase tracking-widest">bits · Φ</div>
+          <div className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>bits · Φ</div>
         </div>
       </div>
 
       {/* Visual bar */}
       <div className="space-y-1">
-        <div className="flex justify-between text-[9px] text-white/25">
+        <div className="flex justify-between text-[9px]" style={{ color: 'var(--text-faint)' }}>
           <span>0</span><span>1</span><span>2</span><span>3+</span>
         </div>
         <div className="h-3 bg-white/[0.04] rounded-full overflow-hidden relative">
@@ -77,7 +69,7 @@ function EmergenceCard({ data }: { data: Record<string, unknown> }) {
         </div>
       </div>
 
-      <div className="text-[11px] text-white/40 leading-relaxed">{label}</div>
+      <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>{label}</div>
       <JsonRows data={data} max={6} />
     </div>
   );
@@ -86,8 +78,8 @@ function EmergenceCard({ data }: { data: Record<string, unknown> }) {
 // ─── Predictive Coding ────────────────────────────────────────────────────────
 
 function PredictiveCodingCard({ data }: { data: Record<string, unknown> }) {
-  const active    = Boolean(data.predictive_coding_active ?? data.is_predictive ?? data.active ?? false);
-  const freeEnergy = Number(data.free_energy ?? data.prediction_error ?? 0);
+  const active    = Boolean(data.predictive_coding_active ?? data.has_predictive_coding ?? data.is_predictive ?? data.active ?? false);
+  const freeEnergy = Number(data.free_energy ?? data.prediction_error ?? data.surprise_ratio ?? 0);
   const evidence   = Number(data.evidence ?? data.confidence ?? 0);
 
   return (
@@ -106,7 +98,7 @@ function PredictiveCodingCard({ data }: { data: Record<string, unknown> }) {
         </div>
       </div>
 
-      <div className="text-[11px] text-white/40 leading-relaxed">
+      <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
         {active
           ? 'Organoid exhibits free energy minimization — actively predicts and corrects sensory inputs, consistent with predictive processing theory.'
           : 'No evidence of predictive processing. Neural activity does not show hierarchical prediction-error minimization patterns.'}
@@ -116,13 +108,13 @@ function PredictiveCodingCard({ data }: { data: Record<string, unknown> }) {
         <div className="flex gap-4">
           {freeEnergy > 0 && (
             <div>
-              <div className="text-[9px] text-white/25 uppercase tracking-widest mb-1">Free Energy</div>
+              <div className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'var(--text-faint)' }}>Free Energy</div>
               <div className="text-[15px] font-medium text-amber-400 tabular-nums">{freeEnergy.toFixed(4)}</div>
             </div>
           )}
           {evidence > 0 && (
             <div>
-              <div className="text-[9px] text-white/25 uppercase tracking-widest mb-1">Evidence</div>
+              <div className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'var(--text-faint)' }}>Evidence</div>
               <div className="text-[15px] font-medium text-violet-400 tabular-nums">{(evidence * 100).toFixed(1)}%</div>
             </div>
           )}
@@ -137,7 +129,8 @@ function PredictiveCodingCard({ data }: { data: Record<string, unknown> }) {
 // ─── Attractors ───────────────────────────────────────────────────────────────
 
 function AttractorsCard({ data }: { data: Record<string, unknown> }) {
-  const attractors  = (data.attractors ?? []) as Array<Record<string, unknown>>;
+  const attrRaw = data.attractors ?? [];
+  const attractors  = Array.isArray(attrRaw) ? attrRaw as Array<Record<string, unknown>> : [];
   const nAttractors = Number(data.n_attractors ?? attractors.length);
   const nMemory     = Number(data.n_memory_candidates ?? data.memory_candidates ?? 0);
   const stability   = Number(data.mean_stability ?? data.stability ?? 0);
@@ -147,11 +140,11 @@ function AttractorsCard({ data }: { data: Record<string, unknown> }) {
       <div className="flex gap-6">
         <div>
           <div className="text-4xl font-bold text-violet-400 tabular-nums">{nAttractors}</div>
-          <div className="text-[10px] text-white/30 mt-0.5">Attractors</div>
+          <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Attractors</div>
         </div>
         <div className="pl-4 border-l border-white/[0.06]">
           <div className="text-4xl font-bold text-cyan-400 tabular-nums">{nMemory}</div>
-          <div className="text-[10px] text-white/30 mt-0.5">Memory Candidates</div>
+          <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Memory Candidates</div>
         </div>
       </div>
 
@@ -159,7 +152,7 @@ function AttractorsCard({ data }: { data: Record<string, unknown> }) {
         <div>
           <div className="flex justify-between text-[10px] mb-1">
             <span style={{ color: "var(--text-muted)" }}>Mean Attractor Stability</span>
-            <span className="text-white/60 tabular-nums">{(stability * 100).toFixed(1)}%</span>
+            <span className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{(stability * 100).toFixed(1)}%</span>
           </div>
           <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
             <motion.div
@@ -175,7 +168,7 @@ function AttractorsCard({ data }: { data: Record<string, unknown> }) {
       {/* Individual attractors */}
       {attractors.slice(0, 4).map((a, i) => (
         <div key={i} className="flex gap-3 text-[11px] py-1.5 border-b border-white/[0.04]">
-          <span className="text-white/20 w-4">#{i + 1}</span>
+          <span className="w-4" style={{ color: 'var(--text-faint)' }}>#{i + 1}</span>
           {Object.entries(a).slice(0, 3).map(([k, v]) => (
             <span key={k}>
               <span style={{ color: "var(--text-faint)" }}>{k}: </span>
@@ -195,18 +188,19 @@ function AttractorsCard({ data }: { data: Record<string, unknown> }) {
 // ─── Phase Transitions ────────────────────────────────────────────────────────
 
 function PhaseTransitionsCard({ data }: { data: Record<string, unknown> }) {
-  const transitions = (data.transitions ?? data.phase_transitions ?? []) as Array<Record<string, unknown>>;
+  const transRaw = data.transitions ?? data.phase_transitions ?? [];
+  const transitions = Array.isArray(transRaw) ? transRaw as Array<Record<string, unknown>> : [];
   const nTrans      = Number(data.n_transitions ?? transitions.length);
-  const maxMag      = Math.max(...transitions.map((t) => Number(t.score ?? t.magnitude ?? t.strength ?? 0)), 0.001);
+  const maxMag      = transitions.length > 0 ? Math.max(...transitions.map((t) => Number(t.score ?? t.magnitude ?? t.strength ?? 0)), 0.001) : 0.001;
 
   return (
     <div className="space-y-3">
       <div className="flex items-baseline gap-2">
         <div className="text-4xl font-bold text-amber-400 tabular-nums">{nTrans}</div>
-        <div className="text-[12px] text-white/30">transitions detected</div>
+        <div className="text-[12px]" style={{ color: 'var(--text-muted)' }}>transitions detected</div>
       </div>
 
-      <div className="text-[11px] text-white/40">
+      <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
         {nTrans > 0
           ? `Network reorganized ${nTrans} time${nTrans !== 1 ? 's' : ''} during recording — optimal stimulation windows.`
           : 'No significant phase transitions detected in this recording window.'}
@@ -215,14 +209,14 @@ function PhaseTransitionsCard({ data }: { data: Record<string, unknown> }) {
       {/* Timeline bars */}
       {transitions.length > 0 && (
         <div className="space-y-1.5 mt-2">
-          <div className="text-[9px] text-white/20 uppercase tracking-widest">Transition Timeline</div>
+          <div className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>Transition Timeline</div>
           {transitions.slice(0, 6).map((t, i) => {
             const time = Number(t.time ?? t.time_sec ?? t.t ?? 0);
             const mag  = Number(t.score ?? t.magnitude ?? t.strength ?? 0);
             const pct  = (mag / maxMag) * 100;
             return (
               <div key={i} className="flex items-center gap-3 text-[10px]">
-                <span className="text-white/30 w-12 tabular-nums shrink-0">{time.toFixed(2)}s</span>
+                <span className="w-12 tabular-nums shrink-0" style={{ color: 'var(--text-muted)' }}>{time.toFixed(2)}s</span>
                 <div className="flex-1 h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
                   <motion.div
                     className="h-full rounded-full bg-amber-400/60"
@@ -236,7 +230,7 @@ function PhaseTransitionsCard({ data }: { data: Record<string, unknown> }) {
             );
           })}
           {transitions.length > 6 && (
-            <div className="text-[10px] text-white/20">+ {transitions.length - 6} more...</div>
+            <div className="text-[10px]" style={{ color: 'var(--text-faint)' }}>+ {transitions.length - 6} more...</div>
           )}
         </div>
       )}
@@ -249,7 +243,8 @@ function PhaseTransitionsCard({ data }: { data: Record<string, unknown> }) {
 // ─── Replay Events ────────────────────────────────────────────────────────────
 
 function ReplayCard({ data }: { data: Record<string, unknown> }) {
-  const events     = (data.replay_events ?? data.events ?? []) as Array<Record<string, unknown>>;
+  const evRaw = data.replay_events ?? data.events ?? [];
+  const events     = Array.isArray(evRaw) ? evRaw as Array<Record<string, unknown>> : [];
   const nEvents    = Number(data.n_replay_events ?? data.n_events ?? events.length);
   const replayRate = Number(data.replay_rate ?? data.events_per_min ?? 0);
 
@@ -258,17 +253,17 @@ function ReplayCard({ data }: { data: Record<string, unknown> }) {
       <div className="flex gap-6">
         <div>
           <div className="text-4xl font-bold text-pink-400 tabular-nums">{nEvents}</div>
-          <div className="text-[10px] text-white/30 mt-0.5">Replay Events</div>
+          <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Replay Events</div>
         </div>
         {replayRate > 0 && (
           <div className="pl-4 border-l border-white/[0.06]">
             <div className="text-4xl font-bold text-violet-400 tabular-nums">{replayRate.toFixed(1)}</div>
-            <div className="text-[10px] text-white/30 mt-0.5">Events/min</div>
+            <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Events/min</div>
           </div>
         )}
       </div>
 
-      <div className="text-[11px] text-white/40 leading-relaxed">
+      <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
         {nEvents > 0
           ? `Detected ${nEvents} offline memory consolidation event${nEvents !== 1 ? 's' : ''}. The organoid replays prior activity patterns during quiescent periods.`
           : 'No clear replay events detected. Recording may need longer duration or quiescent periods.'}
@@ -293,21 +288,37 @@ function ReplayCard({ data }: { data: Record<string, unknown> }) {
 // ─── Multiscale Complexity ────────────────────────────────────────────────────
 
 function MultiscaleCard({ data }: { data: Record<string, unknown> }) {
-  const complexities = (data.complexities ?? data.complexity_values ?? data.mse_values ?? []) as number[];
-  const timescales   = (data.timescales ?? data.scales ?? []) as number[];
-  const meanComp     = Number(data.mean_complexity ?? data.mean ?? (complexities.length > 0 ? complexities.reduce((a, b) => a + b, 0) / complexities.length : 0));
-  const maxComp      = Math.max(...complexities, 0.001);
+  // Handle both old format {complexities: number[], timescales: number[]}
+  // and new format {scales: [{scale_ms, entropy, lz_complexity, ...}]}
+  const scalesArr = Array.isArray(data.scales) ? data.scales : [];
+  const isObjectScales = scalesArr.length > 0 && typeof scalesArr[0] === 'object' && scalesArr[0] !== null;
+
+  let complexities: number[];
+  let timescales: number[];
+
+  if (isObjectScales) {
+    complexities = scalesArr.map((s: Record<string, unknown>) => Number(s.lz_complexity ?? s.entropy ?? 0));
+    timescales = scalesArr.map((s: Record<string, unknown>) => Number(s.scale_ms ?? 0));
+  } else {
+    const compRaw = data.complexities ?? data.complexity_values ?? data.mse_values ?? scalesArr;
+    complexities = Array.isArray(compRaw) ? compRaw.map(Number) : [];
+    const tsRaw = data.timescales ?? scalesArr;
+    timescales = Array.isArray(tsRaw) ? tsRaw.map(Number) : [];
+  }
+
+  const meanComp     = Number(data.mean_complexity ?? data.complexity_slope ?? data.mean ?? (complexities.length > 0 ? complexities.reduce((a, b) => a + b, 0) / complexities.length : 0));
+  const maxComp      = complexities.length > 0 ? Math.max(...complexities, 0.001) : 0.001;
 
   return (
     <div className="space-y-4">
       <div className="flex items-baseline gap-2">
         <div className="text-3xl font-bold text-emerald-400 tabular-nums">{meanComp.toFixed(4)}</div>
-        <div className="text-[11px] text-white/30">mean complexity</div>
+        <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>mean complexity</div>
       </div>
 
       {complexities.length > 0 && (
         <div className="space-y-2">
-          <div className="text-[9px] text-white/20 uppercase tracking-widest">
+          <div className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>
             Complexity at {complexities.length} timescales
           </div>
           <div className="flex items-end gap-0.5 h-16">
@@ -322,19 +333,19 @@ function MultiscaleCard({ data }: { data: Record<string, unknown> }) {
                     style={{ height: `${Math.max(4, pct)}%` }}
                   />
                   {i % 3 === 0 && (
-                    <div className="absolute -bottom-4 text-[8px] text-white/20 tabular-nums">{scale}</div>
+                    <div className="absolute -bottom-4 text-[8px] tabular-nums" style={{ color: 'var(--text-faint)' }}>{scale}</div>
                   )}
                 </div>
               );
             })}
           </div>
-          <div className="flex justify-between text-[9px] text-white/20 mt-4">
+          <div className="flex justify-between text-[9px] mt-4" style={{ color: 'var(--text-faint)' }}>
             <span>Fine (fast)</span><span>Coarse (slow)</span>
           </div>
         </div>
       )}
 
-      <div className="text-[11px] text-white/40 leading-relaxed">
+      <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
         {meanComp > 0.5
           ? 'High multi-timescale complexity — rich information processing across temporal hierarchies.'
           : meanComp > 0.2
@@ -353,20 +364,20 @@ function SleepWakeCard({ data }: { data: Record<string, unknown> }) {
   const upDown = (data.up_down_states ?? {}) as Record<string, unknown>;
   const upFraction = Number(upDown.up_fraction ?? 0);
   const nTransitions = Number(upDown.n_transitions ?? 0);
-  const score = Number(data.sleep_like_score ?? 0);
-  const hasUpDown = Boolean(data.has_up_down_states);
-  const hasSlowWaves = Boolean(data.has_slow_waves);
+  const score = Number(data.sleep_like_score ?? data.sleep_score ?? 0);
+  const hasUpDown = Boolean(data.has_up_down_states ?? upDown.detected ?? false);
+  const hasSlowWaves = Boolean(data.has_slow_waves ?? data.slow_waves_detected ?? false);
 
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-4">
         <div className="text-2xl font-bold tabular-nums text-violet-400">{(score * 100).toFixed(0)}%</div>
-        <div className="text-[11px] text-white/40">Sleep-like score</div>
+        <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Sleep-like score</div>
       </div>
 
       {/* UP/DOWN state bar */}
       <div className="space-y-1">
-        <div className="flex justify-between text-[10px] text-white/30">
+        <div className="flex justify-between text-[10px]" style={{ color: 'var(--text-muted)' }}>
           <span>DOWN (silent)</span>
           <span>UP (active)</span>
         </div>
@@ -374,7 +385,7 @@ function SleepWakeCard({ data }: { data: Record<string, unknown> }) {
           <div className="h-full bg-indigo-900/50" style={{ width: `${(1 - upFraction) * 100}%` }} />
           <div className="h-full bg-gradient-to-r from-cyan-500/40 to-violet-500/40" style={{ width: `${upFraction * 100}%` }} />
         </div>
-        <div className="flex justify-between text-[10px] tabular-nums text-white/25">
+        <div className="flex justify-between text-[10px] tabular-nums" style={{ color: 'var(--text-faint)' }}>
           <span>{((1 - upFraction) * 100).toFixed(0)}%</span>
           <span>{(upFraction * 100).toFixed(0)}%</span>
         </div>
@@ -383,11 +394,11 @@ function SleepWakeCard({ data }: { data: Record<string, unknown> }) {
       <div className="grid grid-cols-2 gap-2 text-[11px]">
         <div className="px-2 py-1.5 rounded-md bg-white/[0.03]">
           <div style={{ color: "var(--text-faint)" }}>Transitions</div>
-          <div className="text-white/70 tabular-nums">{nTransitions}</div>
+          <div className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{nTransitions}</div>
         </div>
         <div className="px-2 py-1.5 rounded-md bg-white/[0.03]">
           <div style={{ color: "var(--text-faint)" }}>Indicators</div>
-          <div className="text-white/70">
+          <div style={{ color: 'var(--text-secondary)' }}>
             {hasUpDown ? '✓' : '✗'} UP/DOWN
             {' '}
             {hasSlowWaves ? '✓' : '✗'} Slow waves
@@ -406,15 +417,16 @@ function HabituationCard({ data }: { data: Record<string, unknown> }) {
   const decreasePct = Number(data.amplitude_decrease_pct ?? 0);
   const fit = (data.decay_fit ?? {}) as Record<string, unknown>;
   const rSquared = Number(fit.r_squared ?? 0);
-  const amplitudes = (data.event_amplitudes ?? []) as number[];
+  const ampRaw = data.event_amplitudes ?? [];
+  const amplitudes = Array.isArray(ampRaw) ? ampRaw.map(Number) : [];
 
   // Mini sparkline of event amplitudes
-  const maxAmp = Math.max(...amplitudes.slice(0, 30), 1);
+  const maxAmp = amplitudes.length > 0 ? Math.max(...amplitudes.slice(0, 30), 1) : 1;
 
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3">
-        <div className={`text-lg font-bold ${detected ? 'text-emerald-400' : 'text-white/40'}`}>
+        <div className={`text-lg font-bold ${detected ? 'text-emerald-400' : ''}`} style={detected ? undefined : { color: 'var(--text-muted)' }}>
           {detected ? 'HABITUATION DETECTED' : 'NOT DETECTED'}
         </div>
       </div>
@@ -434,15 +446,15 @@ function HabituationCard({ data }: { data: Record<string, unknown> }) {
       <div className="grid grid-cols-3 gap-2 text-[10px]">
         <div className="px-2 py-1 rounded-md bg-white/[0.03]">
           <div style={{ color: "var(--text-faint)" }}>Events</div>
-          <div className="text-white/60 tabular-nums">{nEvents}</div>
+          <div className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{nEvents}</div>
         </div>
         <div className="px-2 py-1 rounded-md bg-white/[0.03]">
           <div style={{ color: "var(--text-faint)" }}>Decrease</div>
-          <div className="text-white/60 tabular-nums">{decreasePct.toFixed(1)}%</div>
+          <div className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{decreasePct.toFixed(1)}%</div>
         </div>
         <div className="px-2 py-1 rounded-md bg-white/[0.03]">
           <div style={{ color: "var(--text-faint)" }}>R²</div>
-          <div className="text-white/60 tabular-nums">{rSquared.toFixed(3)}</div>
+          <div className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{rSquared.toFixed(3)}</div>
         </div>
       </div>
     </div>
@@ -453,11 +465,11 @@ function HabituationCard({ data }: { data: Record<string, unknown> }) {
 
 function MetastabilityCard({ data }: { data: Record<string, unknown> }) {
   const kuramoto = (data.kuramoto ?? {}) as Record<string, unknown>;
-  const kMean = Number(kuramoto.kuramoto_mean ?? 0);
-  const metaIndex = Number(kuramoto.metastability_index ?? 0);
-  const syncLevel = String(kuramoto.synchronization_level ?? 'unknown');
-  const isMetastable = Boolean(data.is_metastable);
-  const transitions = (data.state_transitions ?? {}) as Record<string, unknown>;
+  const kMean = Number(kuramoto.kuramoto_mean ?? kuramoto.mean_r ?? data.kuramoto_mean ?? 0);
+  const metaIndex = Number(kuramoto.metastability_index ?? kuramoto.meta_index ?? data.metastability_index ?? 0);
+  const syncLevel = String(kuramoto.synchronization_level ?? kuramoto.sync_level ?? data.synchronization_level ?? 'unknown');
+  const isMetastable = Boolean(data.is_metastable ?? kuramoto.is_metastable ?? false);
+  const transitions = (data.state_transitions ?? data.transitions ?? {}) as Record<string, unknown>;
   const nStates = Number(transitions.n_states ?? 0);
   const nTrans = Number(transitions.n_transitions ?? 0);
 
@@ -466,18 +478,18 @@ function MetastabilityCard({ data }: { data: Record<string, unknown> }) {
       <div className="flex items-center gap-4">
         <div>
           <div className="text-2xl font-bold tabular-nums text-cyan-400">{kMean.toFixed(3)}</div>
-          <div className="text-[10px] text-white/25">Kuramoto R (synchronization)</div>
+          <div className="text-[10px]" style={{ color: 'var(--text-faint)' }}>Kuramoto R (synchronization)</div>
         </div>
         <div className={`px-2 py-0.5 rounded text-[10px] font-medium ${
-          isMetastable ? 'bg-emerald-500/15 text-emerald-400' : 'bg-white/[0.05] text-white/40'
-        }`}>
+          isMetastable ? 'bg-emerald-500/15 text-emerald-400' : 'bg-white/[0.05]'
+        }`} style={isMetastable ? undefined : { color: 'var(--text-muted)' }}>
           {isMetastable ? 'METASTABLE' : syncLevel.toUpperCase()}
         </div>
       </div>
 
       {/* Synchronization bar */}
       <div className="space-y-1">
-        <div className="flex justify-between text-[9px] text-white/20">
+        <div className="flex justify-between text-[9px]" style={{ color: 'var(--text-faint)' }}>
           <span>Desync</span><span>Critical</span><span>Full sync</span>
         </div>
         <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden relative">
@@ -495,15 +507,15 @@ function MetastabilityCard({ data }: { data: Record<string, unknown> }) {
       <div className="grid grid-cols-3 gap-2 text-[10px]">
         <div className="px-2 py-1 rounded-md bg-white/[0.03]">
           <div style={{ color: "var(--text-faint)" }}>Meta Index</div>
-          <div className="text-white/60 tabular-nums">{metaIndex.toFixed(3)}</div>
+          <div className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{metaIndex.toFixed(3)}</div>
         </div>
         <div className="px-2 py-1 rounded-md bg-white/[0.03]">
           <div style={{ color: "var(--text-faint)" }}>States</div>
-          <div className="text-white/60 tabular-nums">{nStates}</div>
+          <div className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{nStates}</div>
         </div>
         <div className="px-2 py-1 rounded-md bg-white/[0.03]">
           <div style={{ color: "var(--text-faint)" }}>Transitions</div>
-          <div className="text-white/60 tabular-nums">{nTrans}</div>
+          <div className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{nTrans}</div>
         </div>
       </div>
     </div>
@@ -537,7 +549,7 @@ function ConsciousnessCard({ data }: { data: Record<string, unknown> }) {
             />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-[13px] font-bold tabular-nums text-white/80">{(score * 100).toFixed(0)}</span>
+            <span className="text-[13px] font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>{(score * 100).toFixed(0)}</span>
           </div>
         </div>
         <div>
@@ -548,7 +560,7 @@ function ConsciousnessCard({ data }: { data: Record<string, unknown> }) {
           }`}>
             {riskLevel.toUpperCase()} RISK
           </div>
-          <div className="text-[10px] text-white/30">Consciousness assessment</div>
+          <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Consciousness assessment</div>
         </div>
       </div>
 
@@ -556,11 +568,11 @@ function ConsciousnessCard({ data }: { data: Record<string, unknown> }) {
         <div className="space-y-1">
           {indicatorEntries.slice(0, 6).map(([k, v]) => (
             <div key={k} className="flex items-center justify-between text-[10px] py-0.5">
-              <span className="text-white/30 capitalize">{k.replace(/_/g, ' ')}</span>
+              <span className="capitalize" style={{ color: 'var(--text-muted)' }}>{k.replace(/_/g, ' ')}</span>
               <span className={typeof v === 'boolean'
-                ? (v ? 'text-emerald-400' : 'text-white/20')
+                ? (v ? 'text-emerald-400' : '')
                 : 'text-cyan-400/60 tabular-nums'
-              }>
+              } style={typeof v === 'boolean' && !v ? { color: 'var(--text-faint)' } : undefined}>
                 {typeof v === 'boolean' ? (v ? '● Yes' : '○ No') :
                  typeof v === 'number' ? Number(v).toFixed(3) : String(v)}
               </span>
@@ -587,7 +599,7 @@ function TuringTestCard({ data }: { data: Record<string, unknown> }) {
       <div className="flex items-center gap-4">
         <div className="text-3xl font-bold tabular-nums text-cyan-400">{(score * 100).toFixed(1)}%</div>
         <div>
-          <div className="text-[10px] text-white/25 uppercase tracking-widest">Biological Realism</div>
+          <div className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>Biological Realism</div>
           <div className={`text-[13px] font-medium ${getColor(score)}`}>{verdict}</div>
         </div>
       </div>
@@ -607,7 +619,7 @@ function TuringTestCard({ data }: { data: Record<string, unknown> }) {
       {/* Feature comparison table */}
       {metrics.length > 0 && (
         <div className="space-y-1 mt-2">
-          <div className="flex gap-2 text-[9px] text-white/25 uppercase tracking-widest border-b border-white/[0.06] pb-1">
+          <div className="flex gap-2 text-[9px] uppercase tracking-widest border-b border-white/[0.06] pb-1" style={{ color: 'var(--text-faint)' }}>
             <span className="w-24 shrink-0">Metric</span>
             <span className="flex-1 text-center">Real</span>
             <span className="flex-1 text-center">Poisson</span>
@@ -617,7 +629,7 @@ function TuringTestCard({ data }: { data: Record<string, unknown> }) {
             const row = comparison[metric] ?? {};
             return (
               <div key={metric} className="flex gap-2 text-[10px] py-0.5 border-b border-white/[0.03]">
-                <span className="text-white/30 w-24 shrink-0 truncate capitalize">{metric.replace(/_/g, ' ')}</span>
+                <span className="w-24 shrink-0 truncate capitalize" style={{ color: 'var(--text-muted)' }}>{metric.replace(/_/g, ' ')}</span>
                 <span className="flex-1 text-center text-emerald-400/60 tabular-nums">
                   {typeof row.real === 'number' ? Number(row.real).toFixed(3) : String(row.real ?? '—')}
                 </span>
@@ -651,22 +663,22 @@ function EnergyLandscapeCard({ data }: { data: Record<string, unknown> }) {
       <div className="flex gap-6">
         <div>
           <div className="text-4xl font-bold text-amber-400 tabular-nums">{nAttractors}</div>
-          <div className="text-[10px] text-white/30 mt-0.5">Attractors</div>
+          <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Attractors</div>
         </div>
         <div className="pl-4 border-l border-white/[0.06]">
           <div className="text-2xl font-bold text-cyan-400 tabular-nums">{meanEnergy.toFixed(3)}</div>
-          <div className="text-[10px] text-white/30 mt-0.5">Mean Energy</div>
+          <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Mean Energy</div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-2 text-[11px]">
         <div className="px-2 py-1.5 rounded-md bg-white/[0.03]">
           <div style={{ color: "var(--text-faint)" }}>Energy Range</div>
-          <div className="text-white/70 tabular-nums">{energyRange.toFixed(3)}</div>
+          <div className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{energyRange.toFixed(3)}</div>
         </div>
         <div className="px-2 py-1.5 rounded-md bg-white/[0.03]">
           <div style={{ color: "var(--text-faint)" }}>Model Type</div>
-          <div className="text-white/70 capitalize">{modelType.replace(/_/g, ' ')}</div>
+          <div className="capitalize" style={{ color: 'var(--text-secondary)' }}>{modelType.replace(/_/g, ' ')}</div>
         </div>
       </div>
 
@@ -680,7 +692,8 @@ function EnergyLandscapeCard({ data }: { data: Record<string, unknown> }) {
 function WelfareCard({ data }: { data: Record<string, unknown> }) {
   const score = Number(data.welfare_score ?? 0);
   const level = String(data.welfare_level ?? data.level ?? '—');
-  const recommendations = (data.recommendations ?? []) as string[];
+  const recRaw = data.recommendations ?? [];
+  const recommendations = Array.isArray(recRaw) ? recRaw : [];
   const monitoringStatus = String(data.monitoring_status ?? data.monitoring ?? '—');
 
   const badgeColor = score >= 0.7 ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20'
@@ -690,7 +703,7 @@ function WelfareCard({ data }: { data: Record<string, unknown> }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-4">
-        <div className="text-3xl font-bold tabular-nums text-white/80">{(score * 100).toFixed(0)}%</div>
+        <div className="text-3xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>{(score * 100).toFixed(0)}%</div>
         <div className={`px-3 py-1 rounded-lg border text-[12px] font-bold ${badgeColor}`}>
           {level.toUpperCase()}
         </div>
@@ -714,16 +727,16 @@ function WelfareCard({ data }: { data: Record<string, unknown> }) {
 
       <div className="px-2 py-1.5 rounded-md bg-white/[0.03] text-[11px]">
         <div style={{ color: "var(--text-faint)" }}>Monitoring Status</div>
-        <div className="text-white/70 capitalize">{monitoringStatus.replace(/_/g, ' ')}</div>
+        <div className="capitalize" style={{ color: 'var(--text-secondary)' }}>{monitoringStatus.replace(/_/g, ' ')}</div>
       </div>
 
       {recommendations.length > 0 && (
         <div className="space-y-1">
-          <div className="text-[9px] text-white/25 uppercase tracking-widest">Recommendations</div>
+          <div className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>Recommendations</div>
           {recommendations.slice(0, 5).map((rec, i) => (
             <div key={i} className="flex gap-2 text-[10px] py-0.5">
-              <span className="text-white/20 shrink-0">-</span>
-              <span className="text-white/50">{rec}</span>
+              <span className="shrink-0" style={{ color: 'var(--text-faint)' }}>-</span>
+              <span style={{ color: 'var(--text-muted)' }}>{rec}</span>
             </div>
           ))}
         </div>
@@ -736,59 +749,26 @@ function WelfareCard({ data }: { data: Record<string, unknown> }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-type AnalysisState = {
-  data: Record<string, unknown> | null;
-  error: string;
-};
-
 export default function DiscoveryPage() {
   const { datasetId, status, spikes } = useDashboardContext();
 
-  const [emergence,      setEmergence]      = useState<AnalysisState>({ data: null, error: '' });
-  const [predictive,     setPredictive]     = useState<AnalysisState>({ data: null, error: '' });
-  const [attractors,     setAttractors]     = useState<AnalysisState>({ data: null, error: '' });
-  const [phase,          setPhase]          = useState<AnalysisState>({ data: null, error: '' });
-  const [replay,         setReplay]         = useState<AnalysisState>({ data: null, error: '' });
-  const [multiscale,     setMultiscale]     = useState<AnalysisState>({ data: null, error: '' });
-  const [sleepWake,      setSleepWake]      = useState<AnalysisState>({ data: null, error: '' });
-  const [habituation,    setHabituation]    = useState<AnalysisState>({ data: null, error: '' });
-  const [metastability,  setMetastability]  = useState<AnalysisState>({ data: null, error: '' });
-  const [consciousness,  setConsciousness]  = useState<AnalysisState>({ data: null, error: '' });
-  const [turingTest,     setTuringTest]     = useState<AnalysisState>({ data: null, error: '' });
-  const [energyLand,     setEnergyLand]     = useState<AnalysisState>({ data: null, error: '' });
-  const [welfare,        setWelfare]        = useState<AnalysisState>({ data: null, error: '' });
-  const [homeostasis,   setHomeostasis]   = useState<AnalysisState>({ data: null, error: '' });
-  const [forgetting,    setForgetting]    = useState<AnalysisState>({ data: null, error: '' });
-  const [transferL,     setTransferL]     = useState<AnalysisState>({ data: null, error: '' });
-  const [morphology,    setMorphology]    = useState<AnalysisState>({ data: null, error: '' });
-
-  useEffect(() => {
-    if (!datasetId) return;
-
-    const fetch = (fn: () => Promise<Record<string, unknown>>, setter: (s: AnalysisState) => void) => {
-      fn()
-        .then((data) => setter({ data, error: '' }))
-        .catch((e)   => setter({ data: null, error: e instanceof Error ? e.message : 'Failed' }));
-    };
-
-    fetch(() => api.getEmergence(datasetId),        setEmergence);
-    fetch(() => api.getPredictiveCoding(datasetId), setPredictive);
-    fetch(() => api.getAttractors(datasetId),       setAttractors);
-    fetch(() => api.getPhaseTransitions(datasetId), setPhase);
-    fetch(() => api.getReplay(datasetId),           setReplay);
-    fetch(() => api.getMultiscale(datasetId),       setMultiscale);
-    fetch(() => api.getSleepWake(datasetId),        setSleepWake);
-    fetch(() => api.getHabituation(datasetId),      setHabituation);
-    fetch(() => api.getMetastability(datasetId),    setMetastability);
-    fetch(() => api.getConsciousness(datasetId),    setConsciousness);
-    fetch(() => api.getTuringTest(datasetId),       setTuringTest);
-    fetch(() => api.getEnergyLandscape(datasetId),  setEnergyLand);
-    fetch(() => api.getWelfare(datasetId),          setWelfare);
-    fetch(() => api.getHomeostasis(datasetId),      setHomeostasis);
-    fetch(() => api.getForgetting(datasetId),       setForgetting);
-    fetch(() => api.getTransferLearning(datasetId), setTransferL);
-    fetch(() => api.getMorphology(datasetId),       setMorphology);
-  }, [datasetId]);
+  const emergence     = useCachedAnalysis(datasetId, 'emergence',       () => api.getEmergence(datasetId!));
+  const predictive    = useCachedAnalysis(datasetId, 'predictive',      () => api.getPredictiveCoding(datasetId!));
+  const attractors    = useCachedAnalysis(datasetId, 'attractors',      () => api.getAttractors(datasetId!));
+  const phase         = useCachedAnalysis(datasetId, 'phase',           () => api.getPhaseTransitions(datasetId!));
+  const replay        = useCachedAnalysis(datasetId, 'replay',          () => api.getReplay(datasetId!));
+  const multiscale    = useCachedAnalysis(datasetId, 'multiscale',      () => api.getMultiscale(datasetId!));
+  const sleepWake     = useCachedAnalysis(datasetId, 'sleep-wake',      () => api.getSleepWake(datasetId!));
+  const habituation   = useCachedAnalysis(datasetId, 'habituation',     () => api.getHabituation(datasetId!));
+  const metastability = useCachedAnalysis(datasetId, 'metastability',   () => api.getMetastability(datasetId!));
+  const consciousness = useCachedAnalysis(datasetId, 'consciousness',   () => api.getConsciousness(datasetId!));
+  const turingTest    = useCachedAnalysis(datasetId, 'turing-test',     () => api.getTuringTest(datasetId!));
+  const energyLand    = useCachedAnalysis(datasetId, 'energy-landscape',() => api.getEnergyLandscape(datasetId!));
+  const welfare       = useCachedAnalysis(datasetId, 'welfare',         () => api.getWelfare(datasetId!));
+  const homeostasis   = useCachedAnalysis(datasetId, 'homeostasis',     () => api.getHomeostasis(datasetId!));
+  const forgetting    = useCachedAnalysis(datasetId, 'forgetting',      () => api.getForgetting(datasetId!));
+  const transferL     = useCachedAnalysis(datasetId, 'transfer-learning',() => api.getTransferLearning(datasetId!));
+  const morphology    = useCachedAnalysis(datasetId, 'morphology',      () => api.getMorphology(datasetId!));
 
   if (status === 'loading' && spikes.length === 0) {
     return (
@@ -804,98 +784,126 @@ export default function DiscoveryPage() {
     {
       title: 'Causal Emergence (Φ)',
       desc:  'Integrated information — consciousness-like metric',
-      state: emergence,
+      data: emergence.data,
+      loading: emergence.loading,
+      error: emergence.error,
       render: (d: Record<string, unknown>) => <EmergenceCard data={d} />,
       wide: true,
     },
     {
       title: 'Predictive Coding',
       desc:  'Free energy minimization — does the organoid predict?',
-      state: predictive,
+      data: predictive.data,
+      loading: predictive.loading,
+      error: predictive.error,
       render: (d: Record<string, unknown>) => <PredictiveCodingCard data={d} />,
       wide: false,
     },
     {
       title: 'Attractor Landscape',
       desc:  'Memory as dynamical attractors (Hopfield theory)',
-      state: attractors,
+      data: attractors.data,
+      loading: attractors.loading,
+      error: attractors.error,
       render: (d: Record<string, unknown>) => <AttractorsCard data={d} />,
       wide: false,
     },
     {
       title: 'Phase Transitions',
       desc:  'Neural reorganization events + stimulation windows',
-      state: phase,
+      data: phase.data,
+      loading: phase.loading,
+      error: phase.error,
       render: (d: Record<string, unknown>) => <PhaseTransitionsCard data={d} />,
       wide: false,
     },
     {
       title: 'Neural Replay',
       desc:  'Offline memory consolidation events',
-      state: replay,
+      data: replay.data,
+      loading: replay.loading,
+      error: replay.error,
       render: (d: Record<string, unknown>) => <ReplayCard data={d} />,
       wide: false,
     },
     {
       title: 'Multiscale Complexity',
       desc:  'Information complexity across 12 temporal timescales',
-      state: multiscale,
+      data: multiscale.data,
+      loading: multiscale.loading,
+      error: multiscale.error,
       render: (d: Record<string, unknown>) => <MultiscaleCard data={d} />,
       wide: false,
     },
     {
       title: 'Sleep-Wake Cycles',
       desc:  'UP/DOWN state detection + slow-wave oscillations',
-      state: sleepWake,
+      data: sleepWake.data,
+      loading: sleepWake.loading,
+      error: sleepWake.error,
       render: (d: Record<string, unknown>) => <SleepWakeCard data={d} />,
       wide: false,
     },
     {
       title: 'Habituation',
       desc:  'Response decay to repeated patterns — simplest learning',
-      state: habituation,
+      data: habituation.data,
+      loading: habituation.loading,
+      error: habituation.error,
       render: (d: Record<string, unknown>) => <HabituationCard data={d} />,
       wide: false,
     },
     {
       title: 'Metastability',
       desc:  'Kuramoto synchronization + brain-like state switching',
-      state: metastability,
+      data: metastability.data,
+      loading: metastability.loading,
+      error: metastability.error,
       render: (d: Record<string, unknown>) => <MetastabilityCard data={d} />,
       wide: false,
     },
     {
       title: 'Consciousness Assessment',
       desc:  'Composite score: PCI + recurrence + Phi + ethical flags',
-      state: consciousness,
+      data: consciousness.data,
+      loading: consciousness.loading,
+      error: consciousness.error,
       render: (d: Record<string, unknown>) => <ConsciousnessCard data={d} />,
       wide: false,
     },
     {
       title: 'Turing Test',
       desc:  'Biological realism score — real vs Poisson vs LIF comparison',
-      state: turingTest,
+      data: turingTest.data,
+      loading: turingTest.loading,
+      error: turingTest.error,
       render: (d: Record<string, unknown>) => <TuringTestCard data={d} />,
       wide: true,
     },
     {
       title: 'Energy Landscape',
       desc:  'Attractor basins, energy surface + Hopfield model fit',
-      state: energyLand,
+      data: energyLand.data,
+      loading: energyLand.loading,
+      error: energyLand.error,
       render: (d: Record<string, unknown>) => <EnergyLandscapeCard data={d} />,
       wide: false,
     },
     {
       title: 'Welfare Report',
       desc:  'Organoid welfare assessment + monitoring recommendations',
-      state: welfare,
+      data: welfare.data,
+      loading: welfare.loading,
+      error: welfare.error,
       render: (d: Record<string, unknown>) => <WelfareCard data={d} />,
       wide: false,
     },
     {
       title: 'Homeostatic Plasticity',
       desc:  'Firing rate self-regulation — does the network stabilize itself?',
-      state: homeostasis,
+      data: homeostasis.data,
+      loading: homeostasis.loading,
+      error: homeostasis.error,
       render: (d: Record<string, unknown>) => {
         const active = Boolean(d.homeostasis_active);
         const stability = Number(d.stability_score ?? 0);
@@ -909,9 +917,9 @@ export default function DiscoveryPage() {
               </div>
             </div>
             <div className="grid grid-cols-3 gap-2 text-[10px]">
-              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div style={{ color: "var(--text-faint)" }}>Stability</div><div className="text-white/60 tabular-nums">{stability.toFixed(2)}</div></div>
-              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div style={{ color: "var(--text-faint)" }}>Trend</div><div className="text-white/60">{trend}</div></div>
-              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div style={{ color: "var(--text-faint)" }}>Compensations</div><div className="text-white/60 tabular-nums">{compensations}</div></div>
+              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div style={{ color: "var(--text-faint)" }}>Stability</div><div className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{stability.toFixed(2)}</div></div>
+              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div style={{ color: "var(--text-faint)" }}>Trend</div><div style={{ color: 'var(--text-secondary)' }}>{trend}</div></div>
+              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div style={{ color: "var(--text-faint)" }}>Compensations</div><div className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{compensations}</div></div>
             </div>
           </div>
         );
@@ -921,19 +929,22 @@ export default function DiscoveryPage() {
     {
       title: 'Catastrophic Forgetting',
       desc:  'Do early patterns survive over time?',
-      state: forgetting,
+      data: forgetting.data,
+      loading: forgetting.loading,
+      error: forgetting.error,
       render: (d: Record<string, unknown>) => {
-        const retention = (d.retention_scores ?? d.retention_curve ?? []) as number[];
+        const retRaw = d.retention_scores ?? d.retention_curve ?? [];
+        const retention = Array.isArray(retRaw) ? retRaw.map(Number) : [];
         const halfLife = Number(d.half_life_windows ?? 0);
         const decayType = String(d.decay_type ?? d.classification ?? 'unknown');
-        const maxR = Math.max(...retention, 0.01);
+        const maxR = retention.length > 0 ? Math.max(...retention, 0.01) : 0.01;
         return (
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <div className={`text-sm font-bold ${decayType === 'stable' ? 'text-emerald-400' : 'text-amber-400'}`}>
                 {decayType.toUpperCase()}
               </div>
-              {halfLife > 0 && <div className="text-[10px] text-white/30">half-life: {halfLife} windows</div>}
+              {halfLife > 0 && <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>half-life: {halfLife} windows</div>}
             </div>
             {retention.length > 1 && (
               <div className="flex items-end gap-px h-8">
@@ -950,16 +961,18 @@ export default function DiscoveryPage() {
     {
       title: 'Transfer Learning',
       desc:  'Does learning one pattern help with another?',
-      state: transferL,
+      data: transferL.data,
+      loading: transferL.loading,
+      error: transferL.error,
       render: (d: Record<string, unknown>) => {
         const hasTransfer = Boolean(d.positive_transfer ?? d.transfer_detected ?? false);
         const gainMean = Number(d.mean_transfer_gain ?? d.mean_gain ?? 0);
         return (
           <div className="space-y-2">
-            <div className={`text-sm font-bold ${hasTransfer ? 'text-emerald-400' : 'text-white/40'}`}>
+            <div className={`text-sm font-bold ${hasTransfer ? 'text-emerald-400' : ''}`} style={hasTransfer ? undefined : { color: 'var(--text-muted)' }}>
               {hasTransfer ? 'POSITIVE TRANSFER' : 'NO TRANSFER DETECTED'}
             </div>
-            <div className="text-[10px] text-white/40">Mean gain: <span className="text-cyan-400/70 tabular-nums">{gainMean.toFixed(4)}</span></div>
+            <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Mean gain: <span className="text-cyan-400/70 tabular-nums">{gainMean.toFixed(4)}</span></div>
             <JsonRows data={d} max={5} />
           </div>
         );
@@ -969,7 +982,9 @@ export default function DiscoveryPage() {
     {
       title: 'Morphological Computing',
       desc:  'How structure relates to computational ability',
-      state: morphology,
+      data: morphology.data,
+      loading: morphology.loading,
+      error: morphology.error,
       render: (d: Record<string, unknown>) => {
         const score = Number(d.morphological_score ?? 0);
         const uniformity = Number(d.spatial_uniformity ?? 0);
@@ -979,12 +994,12 @@ export default function DiscoveryPage() {
           <div className="space-y-2">
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-bold text-cyan-400 tabular-nums">{(score * 100).toFixed(0)}</span>
-              <span className="text-[11px] text-white/30">/ 100</span>
+              <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>/ 100</span>
             </div>
-            <div className="text-[10px] text-white/40">{interp}</div>
+            <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{interp}</div>
             <div className="grid grid-cols-2 gap-2 text-[10px]">
-              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div style={{ color: "var(--text-faint)" }}>Uniformity</div><div className="text-white/60 tabular-nums">{(uniformity * 100).toFixed(0)}%</div></div>
-              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div style={{ color: "var(--text-faint)" }}>Active</div><div className="text-white/60 tabular-nums">{(activeFrac * 100).toFixed(0)}%</div></div>
+              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div style={{ color: "var(--text-faint)" }}>Uniformity</div><div className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{(uniformity * 100).toFixed(0)}%</div></div>
+              <div className="px-2 py-1 rounded-md bg-white/[0.03]"><div style={{ color: "var(--text-faint)" }}>Active</div><div className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{(activeFrac * 100).toFixed(0)}%</div></div>
             </div>
           </div>
         );
@@ -1002,8 +1017,8 @@ export default function DiscoveryPage() {
         transition={{ duration: 0.4 }}
         className="mb-4"
       >
-        <h1 className="text-[18px] font-display text-white/80">Discovery Analysis</h1>
-        <p className="text-[12px] text-white/30 mt-0.5">13 advanced computational neuroscience metrics · {datasetId ?? 'no dataset'}</p>
+        <h1 className="text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Discovery Analysis</h1>
+        <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>13 advanced computational neuroscience metrics · {datasetId ?? 'no dataset'}</p>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -1015,13 +1030,8 @@ export default function DiscoveryPage() {
             transition={{ duration: 0.5, delay: 0.04 * i }}
             className={card.wide ? 'xl:col-span-1 lg:col-span-2' : ''}
           >
-            <ChartCard title={card.title} description={card.desc}>
-              {card.state.error
-                ? <div className="text-[11px] text-red-400/60 py-4">{card.state.error}</div>
-                : !card.state.data
-                  ? <Spinner />
-                  : card.render(card.state.data)
-              }
+            <ChartCard title={card.title} description={card.desc} loading={card.loading} error={card.error}>
+              {card.data && card.render(card.data)}
             </ChartCard>
           </motion.div>
         ))}

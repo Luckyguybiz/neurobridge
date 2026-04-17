@@ -1,17 +1,26 @@
 'use client';
 
 import { ReactNode } from 'react';
+import { ChartSkeleton, ErrorDisplay } from './shared';
 
 export default function ChartCard({
   title,
   description,
   children,
   className = '',
+  loading,
+  error,
+  onRetry,
+  skeletonSize = 'md',
 }: {
   title: string;
   description?: string;
   children: ReactNode;
   className?: string;
+  loading?: boolean;
+  error?: string;
+  onRetry?: () => void;
+  skeletonSize?: 'sm' | 'md' | 'lg';
 }) {
   return (
     <div
@@ -31,10 +40,18 @@ export default function ChartCard({
             {description && <p className="text-[10px] mt-0.5 tracking-wide" style={{ color: 'var(--text-muted)' }}>{description}</p>}
           </div>
           <div className="w-1.5 h-1.5 rounded-full transition-colors duration-700 mt-1.5 shrink-0"
-            style={{ background: 'var(--accent-cyan)' }}
+            style={{
+              background: loading ? 'var(--accent-amber, #fbbf24)' :
+                          error   ? 'var(--accent-red, #f87171)' :
+                                    'var(--accent-cyan)',
+            }}
           />
         </div>
-        <div className="w-full overflow-hidden">{children}</div>
+        <div className="w-full overflow-hidden">
+          {loading ? <ChartSkeleton size={skeletonSize} /> :
+           error  ? <ErrorDisplay message={error} onRetry={onRetry} /> :
+                    children}
+        </div>
       </div>
     </div>
   );

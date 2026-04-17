@@ -97,7 +97,7 @@ function PaperGenerator({ datasetId }: { datasetId: string }) {
       setDraft({
         title: String(data.title ?? data.paper_title ?? 'Untitled Draft'),
         word_count: Number(data.word_count ?? data.wordcount ?? data.words ?? 0) || undefined,
-        sections: (data.sections ?? data.section_titles ?? data.outline ?? []) as string[],
+        sections: (() => { const raw = data.sections ?? data.section_titles ?? data.outline ?? []; return Array.isArray(raw) ? raw : []; })() as string[],
         markdown: String(data.markdown ?? data.content ?? data.text ?? data.body ?? ''),
       });
     } catch (e) {
@@ -260,7 +260,8 @@ function GrantMatching({ datasetId }: { datasetId: string }) {
         const score = Number(grant.match_score) || 0;
         const isTop = i === 0;
         const scorePct = score <= 1 ? score * 100 : score;
-        const gaps = grant.gaps ?? [];
+        const gapsRaw = grant.gaps ?? [];
+        const gaps = Array.isArray(gapsRaw) ? gapsRaw : [];
 
         // Color based on score
         const barColor =

@@ -2,33 +2,57 @@
  * Neurocomputers API client — connects frontend dashboard to Python backend.
  */
 
+import { logStart, logSuccess, logError } from './api-logger';
+
 const API_BASE = typeof window !== 'undefined'
   ? window.location.hostname === 'neurocomputers.io' || window.location.hostname === 'www.neurocomputers.io'
     ? 'https://api.neurocomputers.io'
-    : window.location.hostname === 'localhost'
-      ? 'http://localhost:8847'
-      : `http://${window.location.hostname}:8847`
+    : `http://${window.location.hostname}:8847`
   : 'http://localhost:8847';
 
 export async function apiFetchRaw<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, options);
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || `API error: ${res.status}`);
+  const method = options?.method ?? 'GET';
+  const logId = logStart(path, method);
+  let logged = false;
+  try {
+    const res = await fetch(`${API_BASE}${path}`, options);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      const msg = err.detail || `API error: ${res.status}`;
+      logError(logId, msg, res.status);
+      logged = true;
+      throw new Error(msg);
+    }
+    logSuccess(logId, res.status);
+    return res.json();
+  } catch (e) {
+    if (!logged && e instanceof Error) logError(logId, e.message);
+    throw e;
   }
-  return res.json();
 }
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || `API error: ${res.status}`);
+  const method = options?.method ?? 'GET';
+  const logId = logStart(path, method);
+  let logged = false;
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers: { 'Content-Type': 'application/json', ...options?.headers },
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      const msg = err.detail || `API error: ${res.status}`;
+      logError(logId, msg, res.status);
+      logged = true;
+      throw new Error(msg);
+    }
+    logSuccess(logId, res.status);
+    return res.json();
+  } catch (e) {
+    if (!logged && e instanceof Error) logError(logId, e.message);
+    throw e;
   }
-  return res.json();
 }
 
 // ─── Data Management ───

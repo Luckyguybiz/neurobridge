@@ -121,12 +121,47 @@ function ProtocolCard({ protocol, datasetId }: { protocol: Protocol; datasetId: 
     setLoading(false);
   }, [datasetId, protocol.endpoint]);
 
-  // Extract learning curve from result
+  // Extract learning curve from result — handle multiple protocol formats
   const learningData = result
-    ? (result.hit_rates ?? result.match_rates ?? result.episode_durations ?? result.learning_curve ?? result.ca_distances ?? []) as number[]
+    ? (() => {
+        // Direct array fields
+        const raw = result.hit_rates ?? result.match_rates ?? result.episode_durations ?? result.learning_curve ?? result.ca_distances;
+        if (Array.isArray(raw)) return raw.map(Number);
+        // Center of Activity: simulation.trajectory → array of {x,y}
+        const sim = result.simulation as Record<string, unknown> | undefined;
+        const traj = sim?.trajectory;
+        if (Array.isArray(traj)) {
+          return traj.map((p: Record<string, unknown>) => {
+            const x = Number(p.x ?? 0), y = Number(p.y ?? 0);
+            return Math.sqrt(x * x + y * y);
+          });
+        }
+        return [];
+      })()
     : [];
 
-  const learningDetected = Boolean(result?.learning_detected ?? (result?.improvement_pct ? Number(result.improvement_pct) > 10 : false));
+  // Detect learning across different protocol response formats
+  const sim = result?.simulation as Record<string, unknown> | undefined;
+  const learningDetected = (() => {
+    if (!result) return false;
+    // Explicit API field
+    if (result.learning_detected === true) return true;
+    if (sim?.shift_detected === true) return true;
+    // Brainoware: accuracy above chance
+    if (result.accuracy != null) {
+      const acc = Number(result.accuracy);
+      const chance = Number(
+        (result.comparison_vs_random as Record<string, unknown>)?.chance_level ?? result.chance_level ?? 0.25
+      );
+      return acc > chance * 1.5;
+    }
+    // CartPole / others: any positive improvement
+    if (result.improvement_pct != null && Number(result.improvement_pct) > 0) return true;
+    if (result.improvement != null && Number(result.improvement) > 0.02) return true;
+    // Pong: hit rate above 40%
+    if (result.final_hit_rate != null && Number(result.final_hit_rate) > 0.4) return true;
+    return false;
+  })();
 
   return (
     <ChartCard title={protocol.name} description={`${protocol.origin} — ${protocol.description.slice(0, 80)}...`}>
@@ -199,19 +234,46 @@ function ProtocolCard({ protocol, datasetId }: { protocol: Protocol; datasetId: 
                 {result.accuracy != null && <StatRow label="Accuracy" value={`${(Number(result.accuracy) * 100).toFixed(1)}%`} color={protocol.color} />}
                 {result.best_episode != null && <StatRow label="Best Episode" value={`${Number(result.best_episode)}`} color={protocol.color} />}
                 {result.improvement_pct != null && <StatRow label="Improvement" value={`${Number(result.improvement_pct).toFixed(1)}%`} color={protocol.color} />}
-                {result.ca_shift_distance != null && <StatRow label="CA Shift" value={`${Number(result.ca_shift_distance).toFixed(3)}`} color={protocol.color} />}
-                {result.n_uv_events != null && <StatRow label="UV Events" value={`${Number(result.n_uv_events)}`} color={protocol.color} />}
+                {result.improvement != null && result.improvement_pct == null && <StatRow label="Improvement" value={`${(Number(result.improvement) * 100).toFixed(1)}%`} color={protocol.color} />}
+                {result.mean_duration != null && <StatRow label="Mean Duration" value={`${Number(result.mean_duration).toFixed(1)} steps`} color={protocol.color} />}
+                {result.n_uv_pulses != null && <StatRow label="UV Pulses" value={`${Number(result.n_uv_pulses)}`} color={protocol.color} />}
                 {result.final_match_rate != null && <StatRow label="Match Rate" value={`${(Number(result.final_match_rate) * 100).toFixed(1)}%`} color={protocol.color} />}
+                {/* Center of Activity results */}
+                {(() => {
+                  const sim = result.simulation as Record<string, unknown> | undefined;
+                  if (!sim) return null;
+                  const init = sim.initial_ca as Record<string, number> | undefined;
+                  const fin = sim.final_ca as Record<string, number> | undefined;
+                  if (!init || !fin) return null;
+                  const dist = Math.sqrt(Math.pow(fin.x - init.x, 2) + Math.pow(fin.y - init.y, 2));
+                  return (
+                    <>
+                      <StatRow label="CA Start" value={`(${init.x.toFixed(2)}, ${init.y.toFixed(2)})`} color={protocol.color} />
+                      <StatRow label="CA End" value={`(${fin.x.toFixed(2)}, ${fin.y.toFixed(2)})`} color={protocol.color} />
+                      <StatRow label="Shift Distance" value={dist.toFixed(3)} color={protocol.color} />
+                    </>
+                  );
+                })()}
 
                 {/* Learning badge */}
-                <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
                   <div className={`text-[10px] px-2 py-0.5 rounded font-medium ${learningDetected ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
-                    {learningDetected ? '✓ Learning Detected' : '○ No Learning'}
+                    {learningDetected ? '✓ Learning Detected' : '○ No Clear Learning'}
                   </div>
+                  {typeof result.trend === 'string' && result.trend && (
+                    <div className="text-[10px] px-2 py-0.5 rounded" style={{ background: 'var(--bg-card)', color: 'var(--text-muted)' }}>
+                      Trend: {result.trend}
+                    </div>
+                  )}
                   {typeof result._computation_time_ms === 'number' && (
                     <span className="text-[9px] tabular-nums" style={{ color: 'var(--text-faint)' }}>{result._computation_time_ms.toFixed(0)}ms</span>
                   )}
                 </div>
+                {!learningDetected && (
+                  <p className="text-[10px] mt-1" style={{ color: 'var(--text-faint)' }}>
+                    Try a longer dataset (120s) or real MEA data for more pronounced learning effects.
+                  </p>
+                )}
               </div>
             </motion.div>
           )}

@@ -49,7 +49,7 @@ export default function HomePage() {
       <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl" style={{ background: 'color-mix(in srgb, var(--bg-primary) 60%, transparent)', borderBottom: '1px solid var(--border)' }}>
         <div className="max-w-[1200px] mx-auto flex items-center justify-between px-6 h-14">
           <Link href="/" className="flex items-center gap-2.5">
-            <span className="font-bold text-[16px] tracking-tight" style={{ color: 'var(--text-primary)' }}>neuro<span className="bg-gradient-to-r from-cyan-400 to-violet-500 bg-clip-text text-transparent">computers</span></span>
+            <span className="font-bold text-[16px] tracking-tight" style={{ color: 'var(--text-primary)' }}>neuro<span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, var(--accent-cyan), var(--accent-violet))' }}>computers</span></span>
           </Link>
           <div className="hidden md:flex items-center gap-8 text-[13px]" style={{ color: 'var(--text-muted)' }}>
             <a href="#capabilities" className="hover:opacity-70 transition-colors duration-500">Capabilities</a>
@@ -66,8 +66,8 @@ export default function HomePage() {
         <NeuralBackground />
 
         {/* Ambient orbs */}
-        <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] rounded-full bg-cyan-500/[0.04] blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-violet-500/[0.04] blur-[100px] pointer-events-none" />
+        <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] rounded-full blur-[120px] pointer-events-none" style={{ background: 'var(--accent-cyan)', opacity: 'var(--ambient-blob-opacity)' }} />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full blur-[100px] pointer-events-none" style={{ background: 'var(--accent-violet)', opacity: 'var(--ambient-blob-opacity)' }} />
 
         <div className="relative z-10 text-center max-w-4xl mx-auto">
           <motion.div
@@ -92,7 +92,8 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="block text-[clamp(2.5rem,7vw,5.5rem)] font-display italic leading-[1.2] tracking-[-0.02em] pb-2 bg-gradient-to-r from-cyan-300 via-cyan-200 to-violet-300 bg-clip-text text-transparent"
+              className="block text-[clamp(2.5rem,7vw,5.5rem)] font-display italic leading-[1.2] tracking-[-0.02em] pb-2 bg-clip-text text-transparent"
+              style={{ backgroundImage: 'linear-gradient(to right, var(--gradient-text-from), var(--gradient-text-via), var(--gradient-text-to))' }}
             >
               living neural networks
             </motion.span>
@@ -134,7 +135,8 @@ export default function HomePage() {
           <motion.div
             animate={{ y: [0, 6, 0] }}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-            className="w-[1px] h-12 bg-gradient-to-b from-white/0 via-white/20 to-white/0"
+            className="w-[1px] h-12"
+            style={{ background: `linear-gradient(to bottom, transparent, var(--scroll-indicator), transparent)` }}
           />
         </motion.div>
       </section>
@@ -144,7 +146,7 @@ export default function HomePage() {
         <ScrollReveal variant="scale">
           <div className="relative">
             <div className="absolute -inset-px rounded-2xl border-glow" style={{ background: 'linear-gradient(to right, color-mix(in srgb, var(--accent-cyan) 10%, transparent), transparent, color-mix(in srgb, var(--accent-violet) 10%, transparent))' }} />
-            <div className="relative rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
+            <div className="relative rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border)', background: 'var(--bg-secondary)', boxShadow: 'var(--card-shadow)' }}>
               <LiveSpikeTrace />
             </div>
           </div>
@@ -154,12 +156,12 @@ export default function HomePage() {
       {/* ═══════════ STATS ═══════════ */}
       <section className="py-28">
         <div className="max-w-[1100px] mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-0 md:divide-x" style={{ borderColor: 'var(--border)' }}>
+          <div className="stats-grid grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-0 md:divide-x">
             {[
-              { value: '125', label: 'API Endpoints' },
-              { value: '57', label: 'Analysis Modules' },
-              { value: '9', label: 'Dashboard Pages' },
-              { value: '16', label: 'Live Organoids' },
+              { value: '132', label: 'API Endpoints' },
+              { value: '61', label: 'Analysis Modules' },
+              { value: '11', label: 'Dashboard Pages' },
+              { value: '2.6M', label: 'Spikes Analyzed' },
             ].map((s, i) => (
               <ScrollReveal key={s.label} delay={i * 0.1} className="text-center px-4">
                 <div className="text-[clamp(2rem,4vw,3.5rem)] font-display tracking-tight" style={{ color: 'var(--text-primary)' }}>
@@ -176,10 +178,10 @@ export default function HomePage() {
       <section id="capabilities" className="py-20 px-6">
         <div className="max-w-[1100px] mx-auto">
           <ScrollReveal variant="blur" className="mb-24">
-            <p className="text-[11px] uppercase tracking-[0.3em] text-cyan-400/40 mb-5">Capabilities</p>
+            <p className="text-[11px] uppercase tracking-[0.3em] mb-5" style={{ color: 'var(--section-label-cyan)' }}>Capabilities</p>
             <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-display leading-[1.15] tracking-tight max-w-lg">
               Everything you need to work with{' '}
-              <span className="italic bg-gradient-to-r from-cyan-300 to-violet-300 bg-clip-text text-transparent">biological intelligence</span>
+              <span className="italic bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, var(--gradient-text-from), var(--gradient-text-to))' }}>biological intelligence</span>
             </h2>
           </ScrollReveal>
 
@@ -192,7 +194,7 @@ export default function HomePage() {
                     <span className="text-[10px] uppercase tracking-[0.3em]" style={{ color: 'var(--text-faint)' }}>{cap.tag}</span>
                     <h3 className="text-[clamp(1.5rem,3vw,2.5rem)] font-display leading-[1.15] tracking-tight">
                       {cap.title}{' '}
-                      <span className="italic bg-gradient-to-r from-cyan-300 to-violet-300 bg-clip-text text-transparent">{cap.titleAccent}</span>
+                      <span className="italic bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, var(--gradient-text-from), var(--gradient-text-to))' }}>{cap.titleAccent}</span>
                     </h3>
                     <p className="text-[14px] leading-[1.8] max-w-sm" style={{ color: 'var(--text-muted)' }}>{cap.desc}</p>
                     <Link href="/dashboard" className="inline-flex items-center gap-2 text-[12px] hover:text-cyan-400/70 transition-colors duration-500 pt-2 group" style={{ color: 'var(--text-faint)' }}>
@@ -207,8 +209,8 @@ export default function HomePage() {
                 {/* Visualization */}
                 <ScrollReveal variant={i % 2 === 0 ? 'fade-right' : 'fade-left'} delay={0.15} className="flex-1 w-full">
                   <div className="relative group/card">
-                    <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-cyan-500/10 via-transparent to-violet-500/10 opacity-0 group-hover/card:opacity-100 transition-opacity duration-700" />
-                    <div className="relative rounded-2xl border border-white/[0.04] bg-[var(--bg-secondary)] p-4 overflow-hidden transition-colors duration-700 group-hover/card:border-white/[0.08]">
+                    <div className="absolute -inset-px rounded-2xl opacity-0 group-hover/card:opacity-100 transition-opacity duration-700" style={{ background: `linear-gradient(to bottom right, var(--card-glow-from), transparent, var(--card-glow-to))` }} />
+                    <div className="relative rounded-2xl bg-[var(--bg-secondary)] p-4 overflow-hidden transition-colors duration-700" style={{ border: '1px solid var(--card-border)', boxShadow: 'var(--card-shadow)' }}>
                       {cap.visual === 'raster' && <MiniRasterPlot />}
                       {cap.visual === 'heatmap' && <MiniHeatmap />}
                       {cap.visual === 'network' && <MiniNetwork />}
@@ -224,14 +226,14 @@ export default function HomePage() {
       {/* ═══════════ WORKFLOW ═══════════ */}
       <section id="workflow" className="py-32 px-6 relative">
         {/* Ambient */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-violet-500/[0.03] blur-[150px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[150px] pointer-events-none" style={{ background: 'var(--accent-violet)', opacity: 'var(--ambient-blob-opacity)' }} />
 
         <div className="max-w-[800px] mx-auto relative z-10">
           <ScrollReveal variant="blur" className="mb-20">
-            <p className="text-[11px] uppercase tracking-[0.3em] text-violet-400/40 mb-5">Workflow</p>
+            <p className="text-[11px] uppercase tracking-[0.3em] mb-5" style={{ color: 'var(--section-label-violet)' }}>Workflow</p>
             <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-display leading-[1.15] tracking-tight">
               From zero to{' '}
-              <span className="italic bg-gradient-to-r from-violet-300 to-fuchsia-300 bg-clip-text text-transparent">neural experiments</span>
+              <span className="italic bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, var(--gradient-text-alt-from), var(--gradient-text-alt-to))' }}>neural experiments</span>
             </h2>
           </ScrollReveal>
 
@@ -255,12 +257,12 @@ export default function HomePage() {
 
       {/* ═══════════ CTA ═══════════ */}
       <section className="py-40 px-6 relative">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-cyan-500/[0.03] blur-[130px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[130px] pointer-events-none" style={{ background: 'var(--accent-cyan)', opacity: 'var(--ambient-blob-opacity)' }} />
 
         <ScrollReveal variant="scale" className="text-center max-w-xl mx-auto relative z-10">
           <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-display leading-[1.15] tracking-tight mb-6">
             Ready to program{' '}
-            <span className="italic bg-gradient-to-r from-cyan-300 to-violet-300 bg-clip-text text-transparent">biology</span>?
+            <span className="italic bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, var(--gradient-text-from), var(--gradient-text-to))' }}>biology</span>?
           </h2>
           <p className="text-[14px] mb-14 leading-[1.8]" style={{ color: 'var(--text-muted)' }}>
             Join researchers building the future of biological computing.
@@ -275,12 +277,20 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════ FOOTER ═══════════ */}
-      <footer className="px-6 py-8" style={{ borderTop: '1px solid var(--border)' }}>
-        <div className="max-w-[1100px] mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold tracking-wider" style={{ color: 'var(--text-faint)' }}>NEURO<span className="bg-gradient-to-r from-cyan-400 to-violet-500 bg-clip-text text-transparent">COMPUTERS</span></span>
+      <footer className="px-6 py-10" style={{ borderTop: '1px solid var(--border)' }}>
+        <div className="max-w-[1100px] mx-auto">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold tracking-wider" style={{ color: 'var(--text-faint)' }}>NEURO<span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, var(--accent-cyan), var(--accent-violet))' }}>COMPUTERS</span></span>
+            </div>
+            <div className="flex items-center gap-6 text-[11px]" style={{ color: 'var(--text-faint)' }}>
+              <a href="https://github.com/Luckyguybiz/neurobridge-api" target="_blank" rel="noopener" className="hover:text-cyan-400/60 transition-colors">GitHub</a>
+              <a href="https://api.neurocomputers.io/docs" target="_blank" rel="noopener" className="hover:text-cyan-400/60 transition-colors">API Docs</a>
+              <a href="https://pypi.org/project/neurocomputers/" target="_blank" rel="noopener" className="hover:text-cyan-400/60 transition-colors">PyPI</a>
+              <Link href="/dashboard" className="hover:text-cyan-400/60 transition-colors">Dashboard</Link>
+            </div>
           </div>
-          <span className="text-[11px]" style={{ color: 'var(--text-faint)' }}>Biocomputing-as-a-Service</span>
+          <div className="mt-6 text-[10px]" style={{ color: 'var(--text-faint)' }}>Biocomputing-as-a-Service</div>
         </div>
       </footer>
     </div>

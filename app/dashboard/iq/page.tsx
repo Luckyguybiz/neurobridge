@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useDashboardContext } from '@/lib/dashboard-context';
+import { useCachedAnalysis } from '@/lib/use-cached-analysis';
 import { getThemeColors } from '@/lib/utils';
 import * as api from '@/lib/api';
 import ChartCard from '@/components/dashboard/ChartCard';
@@ -169,8 +170,8 @@ function HealthDisplay({ data }: { data: Record<string, unknown> }) {
       <div className="space-y-1 font-mono text-[10px]">
         {entries.map(([k, v]) => (
           <div key={k} className="flex gap-2">
-            <span className="w-32 truncate" style={{ color: 'var(--text-muted)' }}>{k}:</span>
-            <span className="text-cyan-400/60 truncate">
+            <span className="w-auto min-w-[80px] shrink-0" style={{ color: 'var(--text-muted)' }}>{k}:</span>
+            <span className="text-cyan-400/60 break-all">
               {typeof v === 'number' ? (Number.isInteger(v) ? v : Number(v).toFixed(4)) :
                typeof v === 'boolean' ? (v ? '✓ yes' : '✗ no') :
                typeof v === 'string' ? v :
@@ -219,8 +220,8 @@ function FingerprintDisplay({ data }: { data: Record<string, unknown> }) {
           .slice(0, 6)
           .map(([k, v]) => (
             <div key={k} className="flex gap-2">
-              <span className="w-28 truncate" style={{ color: 'var(--text-muted)' }}>{k}:</span>
-              <span className="truncate" style={{ color: 'var(--text-secondary)' }}>
+              <span className="w-auto min-w-[80px] shrink-0" style={{ color: 'var(--text-muted)' }}>{k}:</span>
+              <span className="break-all" style={{ color: 'var(--text-secondary)' }}>
                 {typeof v === 'number' ? Number(v).toFixed(4) :
                  typeof v === 'boolean' ? String(v) :
                  typeof v === 'string' ? v :
@@ -239,31 +240,10 @@ function FingerprintDisplay({ data }: { data: Record<string, unknown> }) {
 export default function IQPage() {
   const { datasetId, status, spikes } = useDashboardContext();
 
-  const [iqData,   setIQData]   = useState<Record<string, unknown> | null>(null);
-  const [health,   setHealth]   = useState<Record<string, unknown> | null>(null);
-  const [finger,   setFinger]   = useState<Record<string, unknown> | null>(null);
-  const [ethics,   setEthics]   = useState<Record<string, unknown> | null>(null);
-  const [errors,   setErrors]   = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    if (!datasetId) return;
-
-    api.getEthics(datasetId)
-      .then(setEthics)
-      .catch((e) => setErrors((p) => ({ ...p, ethics: e instanceof Error ? e.message : 'Failed' })));
-
-    api.getOrganoidIQ(datasetId)
-      .then(setIQData)
-      .catch((e) => setErrors((p) => ({ ...p, iq: e instanceof Error ? e.message : 'Failed' })));
-
-    api.getHealth(datasetId)
-      .then(setHealth)
-      .catch((e) => setErrors((p) => ({ ...p, health: e instanceof Error ? e.message : 'Failed' })));
-
-    api.getFingerprint(datasetId)
-      .then(setFinger)
-      .catch((e) => setErrors((p) => ({ ...p, finger: e instanceof Error ? e.message : 'Failed' })));
-  }, [datasetId]);
+  const iq          = useCachedAnalysis(datasetId, 'iq',          () => api.getOrganoidIQ(datasetId!));
+  const health      = useCachedAnalysis(datasetId, 'health',      () => api.getHealth(datasetId!));
+  const fingerprint = useCachedAnalysis(datasetId, 'fingerprint', () => api.getFingerprint(datasetId!));
+  const ethics      = useCachedAnalysis(datasetId, 'ethics',      () => api.getEthics(datasetId!));
 
   if (status === 'loading' && spikes.length === 0) {
     return (
@@ -273,9 +253,10 @@ export default function IQPage() {
     );
   }
 
+  const iqData = iq.data;
   const score = Number(iqData?.iq_score ?? iqData?.score ?? 0);
   const grade = String(iqData?.grade ?? '—');
-  const dims  = (iqData?.dimensions ?? iqData?.dimension_scores ?? {}) as Record<string, number>;
+  const dims  = (iqData?.dimensions ?? iqData?.dimension_scores ?? iqData?.subscores ?? iqData?.sub_scores ?? {}) as Record<string, number>;
   const dimEntries = Object.entries(dims);
 
   const getGradeDesc = (g: string) => {
@@ -300,56 +281,47 @@ export default function IQPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <ChartCard title="Organoid IQ Score" description="Composite intelligence score across 6 computational dimensions">
-          {errors.iq
-            ? <div className="text-[11px] text-red-400/60 py-4">{errors.iq}</div>
-            : !iqData
-              ? (
-                <div className="flex items-center justify-center py-16">
-                  <div className="w-6 h-6 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
+        <ChartCard title="Organoid IQ Score" description="Composite intelligence score across 6 computational dimensions" loading={iq.loading} error={iq.error}>
+          {iqData && (
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
+              {/* Gauge column */}
+              <div className="flex flex-col items-center gap-3 shrink-0">
+                <CircularGauge value={score} grade={grade} />
+                <div className="text-center max-w-[200px]">
+                  <div className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{getGradeDesc(grade)}</div>
                 </div>
-              )
-              : (
-                <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
-                  {/* Gauge column */}
-                  <div className="flex flex-col items-center gap-3 shrink-0">
-                    <CircularGauge value={score} grade={grade} />
-                    <div className="text-center max-w-[200px]">
-                      <div className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{getGradeDesc(grade)}</div>
-                    </div>
-                  </div>
+              </div>
 
-                  {/* Subscores column */}
-                  <div className="flex-1 min-w-0 space-y-3">
-                    <div className="text-[10px] uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Dimension Scores</div>
-                    {dimEntries.length > 0
-                      ? dimEntries.map(([dim, val]) => (
-                          <SubscoreBar key={dim} label={dim} value={val} />
-                        ))
-                      : (
-                        <div className="space-y-1 font-mono text-[11px]">
-                          {Object.entries(iqData)
-                            .filter(([k]) => !['grade', 'iq_score', 'score', 'dimensions', 'dimension_scores'].includes(k))
-                            .slice(0, 10)
-                            .map(([k, v]) => (
-                              <div key={k} className="flex gap-2 py-1 border-b border-white/[0.03]">
-                                <span className="w-36 truncate" style={{ color: 'var(--text-muted)' }}>{k}:</span>
-                                <span className="text-cyan-400/70">
-                                  {typeof v === 'number' ? (Number.isInteger(v) ? v : Number(v).toFixed(4)) :
-                                   typeof v === 'boolean' ? String(v) :
-                                   typeof v === 'string' ? v :
-                                   Array.isArray(v) ? `[${(v as unknown[]).length}]` :
-                                   typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v)}
-                                </span>
-                              </div>
-                            ))}
-                        </div>
-                      )
-                    }
-                  </div>
-                </div>
-              )
-          }
+              {/* Subscores column */}
+              <div className="flex-1 min-w-0 space-y-3">
+                <div className="text-[10px] uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Dimension Scores</div>
+                {dimEntries.length > 0
+                  ? dimEntries.map(([dim, val]) => (
+                      <SubscoreBar key={dim} label={dim} value={val} />
+                    ))
+                  : (
+                    <div className="space-y-1 font-mono text-[11px]">
+                      {Object.entries(iqData)
+                        .filter(([k]) => !['grade', 'iq_score', 'score', 'dimensions', 'dimension_scores'].includes(k))
+                        .slice(0, 10)
+                        .map(([k, v]) => (
+                          <div key={k} className="flex gap-2 py-1 border-b border-white/[0.03]">
+                            <span className="w-36 truncate" style={{ color: 'var(--text-muted)' }}>{k}:</span>
+                            <span className="text-cyan-400/70">
+                              {typeof v === 'number' ? (Number.isInteger(v) ? v : Number(v).toFixed(4)) :
+                               typeof v === 'boolean' ? String(v) :
+                               typeof v === 'string' ? v :
+                               Array.isArray(v) ? `[${(v as unknown[]).length}]` :
+                               typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v)}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  )
+                }
+              </div>
+            </div>
+          )}
         </ChartCard>
       </motion.div>
 
@@ -360,13 +332,8 @@ export default function IQPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <ChartCard title="Organoid Health" description="Viability and signal quality assessment">
-            {errors.health
-              ? <div className="text-[11px] text-red-400/60">{errors.health}</div>
-              : !health
-                ? <div className="flex items-center justify-center py-8"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>
-                : <HealthDisplay data={health} />
-            }
+          <ChartCard title="Organoid Health" description="Viability and signal quality assessment" loading={health.loading} error={health.error}>
+            {health.data && <HealthDisplay data={health.data} />}
           </ChartCard>
         </motion.div>
 
@@ -375,13 +342,8 @@ export default function IQPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
         >
-          <ChartCard title="Neural Fingerprint" description="Unique activity signature hash for organoid identification">
-            {errors.finger
-              ? <div className="text-[11px] text-red-400/60">{errors.finger}</div>
-              : !finger
-                ? <div className="flex items-center justify-center py-8"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>
-                : <FingerprintDisplay data={finger} />
-            }
+          <ChartCard title="Neural Fingerprint" description="Unique activity signature hash for organoid identification" loading={fingerprint.loading} error={fingerprint.error}>
+            {fingerprint.data && <FingerprintDisplay data={fingerprint.data} />}
           </ChartCard>
         </motion.div>
       </div>
@@ -392,36 +354,31 @@ export default function IQPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <ChartCard title="Sentience Ethics" description="Risk assessment for organoid sentience">
-          {errors.ethics
-            ? <div className="text-[11px] text-red-400/60">{errors.ethics}</div>
-            : !ethics
-              ? <div className="flex items-center justify-center py-4"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>
-              : (() => {
-                  const sentience = (ethics.sentience_risk ?? {}) as Record<string, unknown>;
-                  const riskScore = Number(sentience.overall_score ?? ethics.sentience_score ?? ethics.risk_score ?? 0);
-                  const riskLevel = String(sentience.risk_level ?? ethics.risk_level ?? ethics.overall_risk_level ?? 'unknown');
-                  const isHigh = riskLevel.toLowerCase().includes('high') || riskLevel.toLowerCase().includes('critical');
-                  const isMed  = riskLevel.toLowerCase().includes('moderate') || riskLevel.toLowerCase().includes('medium');
-                  const badgeColor = isHigh ? 'bg-red-500/15 text-red-400 border-red-500/20'
-                                   : isMed  ? 'bg-amber-500/15 text-amber-400 border-amber-500/20'
-                                   :          'bg-emerald-500/15 text-emerald-400 border-emerald-500/20';
-                  return (
-                    <div className="flex items-center gap-4 flex-wrap">
-                      <div className="text-2xl font-bold tabular-nums" style={{ color: 'var(--text-secondary)' }}>{(riskScore * 100).toFixed(1)}%</div>
-                      <div className={`px-3 py-1 rounded-lg border text-[11px] font-bold ${badgeColor}`}>
-                        {riskLevel.toUpperCase()}
-                      </div>
-                      <Link
-                        href="/dashboard/discovery"
-                        className="ml-auto text-[11px] text-cyan-400/70 hover:text-cyan-400 transition-colors"
-                      >
-                        View Details →
-                      </Link>
-                    </div>
-                  );
-                })()
-          }
+        <ChartCard title="Sentience Ethics" description="Risk assessment for organoid sentience" loading={ethics.loading} error={ethics.error}>
+          {ethics.data && (() => {
+            const sentience = (ethics.data.sentience_risk ?? {}) as Record<string, unknown>;
+            const riskScore = Number(sentience.overall_score ?? ethics.data.sentience_score ?? ethics.data.risk_score ?? 0);
+            const riskLevel = String(sentience.risk_level ?? ethics.data.risk_level ?? ethics.data.overall_risk_level ?? 'unknown');
+            const isHigh = riskLevel.toLowerCase().includes('high') || riskLevel.toLowerCase().includes('critical');
+            const isMed  = riskLevel.toLowerCase().includes('moderate') || riskLevel.toLowerCase().includes('medium');
+            const badgeColor = isHigh ? 'bg-red-500/15 text-red-400 border-red-500/20'
+                             : isMed  ? 'bg-amber-500/15 text-amber-400 border-amber-500/20'
+                             :          'bg-emerald-500/15 text-emerald-400 border-emerald-500/20';
+            return (
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="text-2xl font-bold tabular-nums" style={{ color: 'var(--text-secondary)' }}>{(riskScore * 100).toFixed(1)}%</div>
+                <div className={`px-3 py-1 rounded-lg border text-[11px] font-bold ${badgeColor}`}>
+                  {riskLevel.toUpperCase()}
+                </div>
+                <Link
+                  href="/dashboard/discovery"
+                  className="ml-auto text-[11px] text-cyan-400/70 hover:text-cyan-400 transition-colors"
+                >
+                  View Details →
+                </Link>
+              </div>
+            );
+          })()}
         </ChartCard>
       </motion.div>
 
@@ -504,23 +461,48 @@ function RadarChart({ dimensions }: { dimensions: [string, number][] }) {
 // ─── Comparative Card ────────────────────────────────────────────────────────
 
 function ComparativeCard({ datasetId }: { datasetId: string }) {
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    api.getComparative(datasetId)
-      .then(setData)
-      .catch((e) => setError(e instanceof Error ? e.message : 'Failed'));
-  }, [datasetId]);
+  const { data, loading, error } = useCachedAnalysis(datasetId, 'comparative', () => api.getComparative(datasetId));
 
   if (error) return <div className="text-[11px] text-red-400/60 py-4">{error}</div>;
-  if (!data) return <div className="flex items-center justify-center py-8"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>;
+  if (loading || !data) return <div className="flex items-center justify-center py-8"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>;
 
-  const mostSimilar = String(data.most_similar_system ?? 'unknown');
-  const mostSimilarScore = Number(data.most_similar_score ?? 0);
-  const mostSimilarDesc = String(data.most_similar_description ?? '');
-  const similarities = (data.similarities ?? {}) as Record<string, { similarity: number; description: string }>;
-  const systems = Object.entries(similarities).sort((a, b) => b[1].similarity - a[1].similarity);
+  // Support both old format {most_similar_system, similarities: {name: {similarity, description}}}
+  // and new format {ranking: [{name, similarity, description}], similarities: {...}}
+  const rankRaw = data.ranking ?? [];
+  const ranking = Array.isArray(rankRaw) ? rankRaw as Array<Record<string, unknown>> : [];
+  const simRaw = data.similarities ?? {};
+  const similaritiesRaw = (typeof simRaw === 'object' && simRaw !== null && !Array.isArray(simRaw) ? simRaw : {}) as Record<string, unknown>;
+
+  // Build a normalized list of systems with similarity + description
+  let systems: Array<[string, { similarity: number; description: string }]> = [];
+
+  if (ranking.length > 0) {
+    // New format: ranking is an array of objects
+    systems = ranking.map((item) => [
+      String(item.name ?? item.system ?? 'unknown'),
+      {
+        similarity: Number(item.similarity ?? item.score ?? 0),
+        description: String(item.description ?? ''),
+      },
+    ]);
+  } else if (typeof similaritiesRaw === 'object' && similaritiesRaw !== null) {
+    // Old format: similarities is a dict {name: {similarity, description}}
+    systems = Object.entries(similaritiesRaw)
+      .map(([name, val]) => {
+        const v = (typeof val === 'object' && val !== null ? val : {}) as Record<string, unknown>;
+        return [name, {
+          similarity: Number(v.similarity ?? v.score ?? 0),
+          description: String(v.description ?? ''),
+        }] as [string, { similarity: number; description: string }];
+      });
+  }
+
+  systems.sort((a, b) => b[1].similarity - a[1].similarity);
+
+  const topSystem = systems[0];
+  const mostSimilar = String(data.most_similar_system ?? topSystem?.[0] ?? 'unknown');
+  const mostSimilarScore = Number(data.most_similar_score ?? topSystem?.[1]?.similarity ?? 0);
+  const mostSimilarDesc = String(data.most_similar_description ?? topSystem?.[1]?.description ?? '');
 
   return (
     <div className="space-y-3">

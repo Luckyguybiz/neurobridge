@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import { motion } from 'framer-motion';
 import { useDashboardContext } from '@/lib/dashboard-context';
+import { useCachedAnalysis } from '@/lib/use-cached-analysis';
 import * as api from '@/lib/api';
 import ChartCard from '@/components/dashboard/ChartCard';
 import RasterPlot from '@/components/dashboard/RasterPlot';
@@ -14,16 +15,8 @@ import type { Spike } from '@/lib/types';
 
 // ─── Firing Rate Timeline ─────────────────────────────────────────────────────
 
-function FiringRateTimeline({ datasetId }: { datasetId: string }) {
+function FiringRateTimeline({ data }: { data: { bins: number[]; rates: Record<string, number[]> } | null }) {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [data, setData] = useState<{ bins: number[]; rates: Record<string, number[]> } | null>(null);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    api.getFiringRates(datasetId, 1)
-      .then(setData)
-      .catch((e) => setError(e instanceof Error ? e.message : 'Failed'));
-  }, [datasetId]);
 
   useEffect(() => {
     if (!svgRef.current || !data) return;
@@ -124,13 +117,7 @@ function FiringRateTimeline({ datasetId }: { datasetId: string }) {
     });
   }, [data]);
 
-  if (error) return <div className="text-[11px] text-red-400/60 py-6">{error}</div>;
-  if (!data) return (
-    <div className="flex items-center justify-center py-12">
-      <div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
-    </div>
-  );
-
+  if (!data) return null;
   return <svg ref={svgRef} className="w-full h-52" />;
 }
 
@@ -227,6 +214,13 @@ export default function SpikesPage() {
   const { datasetId, spikes, duration, nElectrodes, status } = useDashboardContext();
   const [selectedElectrode, setSelectedElectrode] = useState<number | null>(null);
 
+  // Cached analysis — persists across page navigation
+  const firing = useCachedAnalysis<{ bins: number[]; rates: Record<string, number[]> }>(
+    datasetId, 'firing-rates', () => api.getFiringRates(datasetId!, 1),
+  );
+  const pca = useCachedAnalysis(datasetId, 'pca', () => api.getPCA(datasetId!));
+  const states = useCachedAnalysis(datasetId, 'states', () => api.getStates(datasetId!));
+
   const filteredSpikes = selectedElectrode !== null
     ? spikes.filter(s => s.electrode === selectedElectrode)
     : spikes;
@@ -321,8 +315,8 @@ export default function SpikesPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <ChartCard title="Firing Rate Timeline" description="Per-electrode firing rate (1s bins)">
-            <FiringRateTimeline datasetId={datasetId} />
+          <ChartCard title="Firing Rate Timeline" description="Per-electrode firing rate (1s bins)" loading={firing.loading} error={firing.error}>
+            <FiringRateTimeline data={firing.data} />
           </ChartCard>
         </motion.div>
       )}
@@ -365,13 +359,13 @@ export default function SpikesPage() {
       {datasetId && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}>
-            <ChartCard title="PCA Embedding" description="Neural state space — 2D projection of activity windows">
-              <PCAScatter datasetId={datasetId} />
+            <ChartCard title="PCA Embedding" description="Neural state space — 2D projection of activity windows" loading={pca.loading} error={pca.error}>
+              <PCAScatter data={pca.data} />
             </ChartCard>
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}>
-            <ChartCard title="State Classification" description="Automatic classification: resting / active / bursting">
-              <StateClassification datasetId={datasetId} />
+            <ChartCard title="State Classification" description="Automatic classification: resting / active / bursting" loading={states.loading} error={states.error}>
+              <StateClassification data={states.data} />
             </ChartCard>
           </motion.div>
         </div>
@@ -382,14 +376,8 @@ export default function SpikesPage() {
 
 // ─── PCA Scatter ─────────────────────────────────────────────────────────────
 
-function PCAScatter({ datasetId }: { datasetId: string }) {
+function PCAScatter({ data }: { data: Record<string, unknown> | null }) {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    api.getPCA(datasetId).then(setData).catch(e => setError(e instanceof Error ? e.message : 'Failed'));
-  }, [datasetId]);
 
   useEffect(() => {
     if (!svgRef.current || !data) return;
@@ -397,9 +385,12 @@ function PCAScatter({ datasetId }: { datasetId: string }) {
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
-    const embedding = (data.embedding ?? data.components ?? data.points ?? []) as number[][];
-    const labels = (data.labels ?? data.cluster_labels ?? []) as number[];
-    const explained = (data.explained_variance ?? data.variance_explained ?? []) as number[];
+    const embRaw = data.embedding ?? data.components ?? data.points ?? [];
+    const embedding = Array.isArray(embRaw) ? embRaw as number[][] : [];
+    const labRaw = data.labels ?? data.cluster_labels ?? [];
+    const labels = Array.isArray(labRaw) ? labRaw.map(Number) : [];
+    const expRaw = data.explained_variance ?? data.explained_variance_ratio ?? data.variance_explained ?? [];
+    const explained = Array.isArray(expRaw) ? expRaw.map(Number) : [];
 
     if (embedding.length < 2) return;
 
@@ -449,46 +440,51 @@ function PCAScatter({ datasetId }: { datasetId: string }) {
     }
   }, [data]);
 
-  if (error) return <div className="text-[11px] text-red-400/60 py-4">{error}</div>;
-  if (!data) return <div className="flex items-center justify-center py-8"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>;
-
+  if (!data) return null;
   return <svg ref={svgRef} className="w-full" style={{ height: 220 }} />;
 }
 
 // ─── State Classification ────────────────────────────────────────────────────
 
-function StateClassification({ datasetId }: { datasetId: string }) {
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
-  const [error, setError] = useState('');
+function StateClassification({ data }: { data: Record<string, unknown> | null }) {
+  if (!data) return null;
 
-  useEffect(() => {
-    api.getStates(datasetId).then(setData).catch(e => setError(e instanceof Error ? e.message : 'Failed'));
-  }, [datasetId]);
+  // Handle both array labels and dict states format
+  const rawLabels = data.labels ?? data.state_labels ?? data.timeline;
+  const rawStates = data.states;
+  const stateColors = ['#818cf8', '#22d3ee', '#f87171', '#fbbf24', '#34d399'];
 
-  if (error) return <div className="text-[11px] text-red-400/60 py-4">{error}</div>;
-  if (!data) return <div className="flex items-center justify-center py-8"><div className="w-5 h-5 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" /></div>;
+  let counts: Record<string, number> = {};
+  let total = 1;
 
-  const labels = (data.labels ?? data.state_labels ?? data.states ?? []) as number[];
-  const stateNames = ['Resting', 'Active', 'Bursting'];
-  const stateColors = ['#818cf8', '#22d3ee', '#f87171'];
-
-  // Count each state
-  const counts: Record<number, number> = {};
-  for (const l of labels) {
-    counts[l] = (counts[l] ?? 0) + 1;
+  if (Array.isArray(rawLabels)) {
+    // Old format: array of state indices or objects
+    for (const l of rawLabels) {
+      const k = typeof l === 'object' && l !== null
+        ? String((l as Record<string, unknown>).state ?? (l as Record<string, unknown>).name ?? (l as Record<string, unknown>).label ?? JSON.stringify(l))
+        : String(l);
+      counts[k] = (counts[k] ?? 0) + 1;
+    }
+    total = rawLabels.length || 1;
+  } else if (rawStates && typeof rawStates === 'object' && !Array.isArray(rawStates)) {
+    // New format: { resting: {windows, fraction}, low_activity: {...} }
+    const stateEntries = rawStates as Record<string, Record<string, unknown>>;
+    for (const [name, info] of Object.entries(stateEntries)) {
+      counts[name] = Number(info?.n_windows ?? info?.count ?? info?.windows ?? 0);
+      total += counts[name];
+    }
+    if (total === 0) total = 1;
   }
-
-  const total = labels.length || 1;
 
   return (
     <div className="space-y-3">
-      {Object.entries(counts).sort((a, b) => Number(b[1]) - Number(a[1])).map(([state, count]) => {
-        const idx = Number(state);
+      {Object.entries(counts).sort((a, b) => Number(b[1]) - Number(a[1])).map(([state, count], idx) => {
         const pct = (count / total * 100).toFixed(1);
+        const displayName = isNaN(Number(state)) ? state.replace(/_/g, ' ') : ['Resting', 'Active', 'Bursting'][Number(state)] ?? `State ${state}`;
         return (
           <div key={state} className="space-y-1">
             <div className="flex justify-between text-[10px]">
-              <span style={{ color: 'var(--text-muted)' }}>{stateNames[idx] ?? `State ${idx}`}</span>
+              <span style={{ color: 'var(--text-muted)' }} className="capitalize">{displayName}</span>
               <span className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>{pct}% ({count} windows)</span>
             </div>
             <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--chart-grid)' }}>
@@ -503,7 +499,7 @@ function StateClassification({ datasetId }: { datasetId: string }) {
           </div>
         );
       })}
-      <div className="text-[10px] mt-2" style={{ color: 'var(--text-muted)' }}>{labels.length} time windows classified</div>
+      <div className="text-[10px] mt-2" style={{ color: 'var(--text-muted)' }}>{total} time windows classified</div>
     </div>
   );
 }
