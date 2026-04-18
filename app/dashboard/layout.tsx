@@ -353,18 +353,22 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
       setLoadingStep('Loading spikes...');
       const spikeData = await api.getSpikes(result.dataset_id, { limit: 5000 });
-      const spikeArr: Spike[] = spikeData.times.map((t: number, i: number) => ({
+      const times = spikeData?.times ?? [];
+      const spikeArr: Spike[] = times.map((t: number, i: number) => ({
         time: t,
-        electrode: spikeData.electrodes[i],
-        amplitude: spikeData.amplitudes[i],
+        electrode: spikeData.electrodes?.[i] ?? 0,
+        amplitude: spikeData.amplitudes?.[i] ?? 0,
         waveform: [],
       }));
       setSpikes(spikeArr);
 
-      // Show dashboard immediately — analysis loads in background
       setLoadingStep('');
-      setStatus('ready');
-      fetchBackgroundAnalysis(result.dataset_id);
+      setStatus(spikeArr.length > 0 ? 'ready' : 'error');
+      if (spikeArr.length === 0) {
+        setError('No spikes returned. Try again.');
+      } else {
+        fetchBackgroundAnalysis(result.dataset_id);
+      }
     } catch (e) {
       setLoadingStep('');
       setError(e instanceof Error ? e.message : 'Failed to generate data');
@@ -660,17 +664,29 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     setLoadingStep('Loading FinalSpark MEA data...');
                     try {
                       const result = await api.loadLocalDataset('SpikeDataToShare_fs437data.csv', 437);
-                      setDatasetId(result.dataset_id);
+                      const dsId = result.dataset_id;
+                      setDatasetId(dsId);
                       setDuration(result.duration_s);
                       setNElectrodes(result.n_electrodes);
-                      const spikeData = await api.getSpikes(result.dataset_id, { limit: 5000 });
-                      const spikeArr: Spike[] = spikeData.times.map((t: number, i: number) => ({
-                        time: t, electrode: spikeData.electrodes[i], amplitude: spikeData.amplitudes[i], waveform: [],
+                      setLoadingStep('Loading spike data for visualization...');
+                      const spikeData = await api.getSpikes(dsId, { limit: 5000 });
+                      const times = spikeData?.times ?? [];
+                      const electrodes = spikeData?.electrodes ?? [];
+                      const amplitudes = spikeData?.amplitudes ?? [];
+                      if (times.length === 0) {
+                        console.error('[FinalSpark] getSpikes returned empty times', spikeData);
+                      }
+                      const spikeArr: Spike[] = times.map((t: number, i: number) => ({
+                        time: t, electrode: electrodes[i] ?? 0, amplitude: amplitudes[i] ?? 0, waveform: [],
                       }));
                       setSpikes(spikeArr);
                       setLoadingStep('');
-                      setStatus('ready');
-                      fetchBackgroundAnalysis(result.dataset_id);
+                      setStatus(spikeArr.length > 0 ? 'ready' : 'error');
+                      if (spikeArr.length === 0) {
+                        setError('Spike data loaded but appears empty. Try again.');
+                      } else {
+                        fetchBackgroundAnalysis(dsId);
+                      }
                     } catch (e) {
                       setLoadingStep('');
                       setError(e instanceof Error ? e.message : 'Failed to load FinalSpark data');
