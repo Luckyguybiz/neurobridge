@@ -68,8 +68,8 @@ function QuickStats() {
       href: '/dashboard/iq',
     },
     {
-      label: 'Sentience Risk',
-      tip: 'Composite ethics score: PCI + recurrence + Phi. Low = no ethical concern',
+      label: 'Complexity',
+      tip: 'Network integration index: information integration + recurrence + dynamics. Higher = more complex network',
       loading: consciousness === undefined,
       value: consScore > 0 ? `${consScore.toFixed(0)}%` : consciousness === null ? '—' : '',
       color: consScore > 50 ? 'text-red-400' : consScore > 30 ? 'text-amber-400' : 'text-emerald-400',

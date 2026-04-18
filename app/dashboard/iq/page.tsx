@@ -261,16 +261,16 @@ export default function IQPage() {
 
   const getGradeDesc = (g: string) => {
     const map: Record<string, string> = {
-      'A+': 'Exceptional — top 1% computational capability',
-      A:   'Outstanding neural computational performance',
-      'A-': 'Very strong information processing capacity',
-      'B+': 'Above average with good learning potential',
-      B:   'Average organoid intelligence benchmark',
-      C:   'Below average — developing neural circuits',
-      D:   'Early-stage or low-activity organoid',
-      F:   'Minimal neural activity detected',
+      'A+': 'Very high network complexity and activity diversity',
+      A:   'High computational capacity across most dimensions',
+      'A-': 'Strong information processing and connectivity',
+      'B+': 'Above-average network dynamics',
+      B:   'Moderate complexity — typical for developing networks',
+      C:   'Low-moderate activity — early-stage or sparse network',
+      D:   'Minimal network complexity detected',
+      F:   'Very low activity — check recording quality',
     };
-    return map[g] ?? 'Organoid intelligence assessment result';
+    return map[g] ?? 'Network complexity assessment';
   };
 
   return (
@@ -287,8 +287,11 @@ export default function IQPage() {
               {/* Gauge column */}
               <div className="flex flex-col items-center gap-3 shrink-0">
                 <CircularGauge value={score} grade={grade} />
-                <div className="text-center max-w-[200px]">
+                <div className="text-center max-w-[220px]">
                   <div className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{getGradeDesc(grade)}</div>
+                  <div className="text-[9px] mt-2 leading-relaxed" style={{ color: 'var(--text-faint)' }}>
+                    Composite index of network properties. Not analogous to human IQ. Weights are heuristic, not externally validated.
+                  </div>
                 </div>
               </div>
 

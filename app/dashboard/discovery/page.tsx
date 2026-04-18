@@ -772,7 +772,7 @@ function WelfareCard({ data }: { data: Record<string, unknown> }) {
 // ─── Groups ───────────────────────────────────────────────────────────────────
 
 const GROUPS = [
-  { id: 'emergence',  label: 'Emergence & Consciousness', icon: '🧠', indices: [0, 1, 9, 10] },
+  { id: 'emergence',  label: 'Emergence & Integration', icon: '🧠', indices: [0, 1, 9, 10] },
   { id: 'dynamics',   label: 'Dynamics & Complexity',      icon: '🌊', indices: [2, 3, 5, 8, 11] },
   { id: 'memory',     label: 'Memory & Learning',          icon: '💡', indices: [4, 6, 7, 14, 15] },
   { id: 'health',     label: 'Health & Ethics',             icon: '🛡️', indices: [12, 13, 16] },
@@ -895,7 +895,7 @@ export default function DiscoveryPage() {
   const cards = [
     {
       title: 'Causal Emergence (Φ)',
-      desc:  'Integrated information — consciousness-like metric',
+      desc:  'Integrated information (Tononi 2004) — measures network irreducibility, not consciousness',
       data: emergence.data,
       loading: emergence.loading,
       error: emergence.error,
@@ -903,8 +903,8 @@ export default function DiscoveryPage() {
       wide: true,
     },
     {
-      title: 'Predictive Coding',
-      desc:  'Free energy minimization — does the organoid predict?',
+      title: 'Temporal Prediction Analysis',
+      desc:  'Differential response to expected vs unexpected state transitions. Speculative without closed-loop stimulation',
       data: predictive.data,
       loading: predictive.loading,
       error: predictive.error,
@@ -948,8 +948,8 @@ export default function DiscoveryPage() {
       wide: false,
     },
     {
-      title: 'Sleep-Wake Cycles',
-      desc:  'UP/DOWN state detection + slow-wave oscillations',
+      title: 'Network State Transitions',
+      desc:  'Bistable dynamics detection (UP/DOWN-like states). Not sleep physiology — reflects network bistability in vitro',
       data: sleepWake.data,
       loading: sleepWake.loading,
       error: sleepWake.error,
@@ -975,8 +975,8 @@ export default function DiscoveryPage() {
       wide: false,
     },
     {
-      title: 'Consciousness Assessment',
-      desc:  'Composite score: PCI + recurrence + Phi + ethical flags',
+      title: 'Network Dynamics Assessment',
+      desc:  'Composite complexity: integration + recurrence + dynamics. Measures network properties, not sentience',
       data: consciousness.data,
       loading: consciousness.loading,
       error: consciousness.error,

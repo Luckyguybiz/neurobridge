@@ -274,9 +274,9 @@ export default function HomePage() {
               { name: 'Criticality', methods: 'Power-law fitting (Clauset et al. 2009), Branching ratio, DFA (Beggs & Plenz 2003)' },
               { name: 'Emergence', methods: 'IIT Phi (Tononi 2004), Queyranne MIP, PID (Williams & Beer 2010), Causal Emergence (Hoel 2013)' },
               { name: 'Metastability', methods: 'Kuramoto order parameter (Shanahan 2010), FCD (Deco & Kringelbach 2016)' },
-              { name: 'Predictive Coding', methods: 'Markov transitions, Mismatch negativity, Prediction error signals, Bayesian surprise. Bonferroni + Cohen\'s d' },
-              { name: 'Sleep-Wake', methods: 'HMM Baum-Welch, Lomb-Scargle periodogram, Cosinor analysis (Sokolove & Bushell 1983)' },
-              { name: 'Organoid IQ', methods: '6-dimension composite: signal quality, network complexity, information processing, temporal organization, adaptability, learning potential' },
+              { name: 'Temporal Prediction', methods: 'Differential response analysis: Markov transitions, prediction error signals, Bayesian surprise. Bonferroni correction + Cohen\'s d. Speculative without closed-loop' },
+              { name: 'State Transitions', methods: 'HMM Baum-Welch for bistable dynamics, Lomb-Scargle periodogram, Cosinor (Sokolove & Bushell 1983). Detects network bistability, not sleep physiology' },
+              { name: 'Complexity Index', methods: '6-dimension composite: signal quality, network complexity, information processing, temporal organization, adaptability, learning potential. Heuristic weights, not externally validated' },
               { name: 'Comparative', methods: '15 metrics × 10 reference systems (C. elegans, mouse hippocampus, rat cortex, DishBrain, and 6 others)' },
             ].map((m, i) => (
               <ScrollReveal key={m.name} delay={i * 0.05}>
