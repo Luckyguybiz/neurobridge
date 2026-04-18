@@ -1,6 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useDashboardContext } from '@/lib/dashboard-context';
 import { useCachedAnalysis } from '@/lib/use-cached-analysis';
 import * as api from '@/lib/api';
@@ -747,6 +748,96 @@ function WelfareCard({ data }: { data: Record<string, unknown> }) {
   );
 }
 
+// ─── Groups ───────────────────────────────────────────────────────────────────
+
+const GROUPS = [
+  { id: 'emergence',  label: 'Emergence & Consciousness', icon: '🧠', indices: [0, 1, 9, 10] },
+  { id: 'dynamics',   label: 'Dynamics & Complexity',      icon: '🌊', indices: [2, 3, 5, 8, 11] },
+  { id: 'memory',     label: 'Memory & Learning',          icon: '💡', indices: [4, 6, 7, 14, 15] },
+  { id: 'health',     label: 'Health & Ethics',             icon: '🛡️', indices: [12, 13, 16] },
+];
+
+interface CardDef {
+  title: string;
+  desc: string;
+  data: Record<string, unknown> | null;
+  loading: boolean;
+  error: string;
+  render: (d: Record<string, unknown>) => React.ReactNode;
+  wide?: boolean;
+}
+
+function DiscoveryGroups({ cards }: { cards: CardDef[] }) {
+  const [open, setOpen] = useState<Record<string, boolean>>({ emergence: true, dynamics: true, memory: true, health: true });
+
+  const toggle = (id: string) => setOpen((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  return (
+    <div className="space-y-4">
+      {GROUPS.map((group) => {
+        const isOpen = open[group.id] ?? true;
+        const groupCards = group.indices.map((idx) => cards[idx]).filter(Boolean);
+        const loadedCount = groupCards.filter((c) => c.data && !c.loading).length;
+
+        return (
+          <div key={group.id}>
+            {/* Section header — clickable to toggle */}
+            <button
+              onClick={() => toggle(group.id)}
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl mb-2 transition-all hover:brightness-110"
+              style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-base">{group.icon}</span>
+                <span className="text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>{group.label}</span>
+                <span className="text-[10px] tabular-nums" style={{ color: 'var(--text-faint)' }}>
+                  {loadedCount}/{groupCards.length}
+                </span>
+              </div>
+              <svg
+                className="w-4 h-4 transition-transform duration-300"
+                style={{ color: 'var(--text-faint)', transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+                fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {/* Cards grid — collapsible */}
+            <AnimatePresence initial={false}>
+              {isOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  className="overflow-hidden"
+                >
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 pb-2">
+                    {groupCards.map((card, i) => (
+                      <motion.div
+                        key={card.title}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.03 * i }}
+                        className={card.wide ? 'xl:col-span-1 lg:col-span-2' : ''}
+                      >
+                        <ChartCard title={card.title} description={card.desc} loading={card.loading} error={card.error}>
+                          {card.data && card.render(card.data)}
+                        </ChartCard>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DiscoveryPage() {
@@ -1018,24 +1109,10 @@ export default function DiscoveryPage() {
         className="mb-4"
       >
         <h1 className="text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Discovery Analysis</h1>
-        <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>13 advanced computational neuroscience metrics · {datasetId ?? 'no dataset'}</p>
+        <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>17 advanced analyses grouped by domain</p>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-        {cards.map((card, i) => (
-          <motion.div
-            key={card.title}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.04 * i }}
-            className={card.wide ? 'xl:col-span-1 lg:col-span-2' : ''}
-          >
-            <ChartCard title={card.title} description={card.desc} loading={card.loading} error={card.error}>
-              {card.data && card.render(card.data)}
-            </ChartCard>
-          </motion.div>
-        ))}
-      </div>
+      <DiscoveryGroups cards={cards} />
     </div>
   );
 }

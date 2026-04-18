@@ -611,12 +611,22 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 </svg>
               </button>
 
-              {/* Status badge */}
+              {/* Status badge + dataset name */}
               <div className="flex items-center gap-2 min-w-0">
                 {status === 'ready' && (
                   <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/[0.08] border border-emerald-500/[0.12] shrink-0">
                     <LiveDot />
-                    <span className="text-[10px] text-emerald-400/80 font-medium">READY</span>
+                    <span className="text-[10px] text-emerald-400/80 font-medium">
+                      {datasetSource === 'finalspark' || datasetSource === 'fs437'
+                        ? 'FinalSpark 5-day'
+                        : datasetSource === 'synthetic-30'
+                          ? 'Synthetic 30s'
+                          : datasetSource === 'synthetic-120'
+                            ? 'Synthetic 120s'
+                            : datasetSource === 'upload'
+                              ? 'Uploaded'
+                              : 'READY'}
+                    </span>
                     <span className="text-[10px] text-emerald-400/50 font-mono tabular-nums">
                       {Math.floor(elapsed / 60)}:{(elapsed % 60).toString().padStart(2, '0')}
                     </span>
