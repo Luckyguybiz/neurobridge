@@ -14,9 +14,9 @@ import { AnimatedWords } from '@/components/landing/AnimatedText';
 const capabilities = [
   {
     tag: 'Visualization',
-    title: 'See neurons fire',
-    titleAccent: 'in real-time',
-    desc: 'Interactive raster plots, firing rate heatmaps, and spike waveforms. Every action potential captured and rendered at 30kHz.',
+    title: 'Visualize spike',
+    titleAccent: 'activity',
+    desc: 'Interactive raster plots, firing rate heatmaps, and spike waveforms across all electrodes and time ranges.',
     visual: 'raster' as const,
   },
   {

@@ -582,7 +582,7 @@ function ConsciousnessCard({ data }: { data: Record<string, unknown> }) {
           }`}>
             {riskLevel.toUpperCase()} RISK
           </div>
-          <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Consciousness assessment</div>
+          <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Network dynamics score</div>
         </div>
       </div>
 
@@ -775,7 +775,7 @@ const GROUPS = [
   { id: 'emergence',  label: 'Emergence & Integration', icon: '🧠', indices: [0, 1, 9, 10] },
   { id: 'dynamics',   label: 'Dynamics & Complexity',      icon: '🌊', indices: [2, 3, 5, 8, 11] },
   { id: 'memory',     label: 'Memory & Learning',          icon: '💡', indices: [4, 6, 7, 14, 15] },
-  { id: 'health',     label: 'Health & Ethics',             icon: '🛡️', indices: [12, 13, 16] },
+  { id: 'health',     label: 'Health & Welfare',             icon: '🛡️', indices: [12, 13, 16] },
 ];
 
 interface CardDef {

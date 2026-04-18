@@ -109,7 +109,7 @@ function PongCard({ datasetId }: { datasetId: string }) {
     return (
       <div className="space-y-2">
         <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-          Simulate a DishBrain-style Pong experiment using free energy minimization.
+          Simulate a DishBrain-style Pong experiment using differential stimulation feedback (Kagan et al. 2022).
           The organoid learns to predict and intercept the ball over 200 trials.
         </div>
         <RunButton label="Run Simulation" onClick={run} />
@@ -626,7 +626,7 @@ interface ExperimentDef {
 const EXPERIMENTS: ExperimentDef[] = [
   {
     title: 'DishBrain Pong',
-    desc: 'Train organoid to play Pong using free energy principle',
+    desc: 'Train organoid to play Pong using structured vs random stimulation feedback',
     render: (id) => <PongCard datasetId={id} />,
   },
   {

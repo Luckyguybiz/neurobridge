@@ -159,7 +159,7 @@ const sections: AnalysisSection[] = [
   {
     key: 'emergence',
     title: 'Causal Emergence (Phi)',
-    desc: 'Integrated information — consciousness-like metric',
+    desc: 'Integrated information (Tononi 2004) — network irreducibility measure',
     fetcher: api.getEmergence,
     render: (d) => {
       const phi = Number(d.phi ?? d.phi_value ?? d.causal_emergence ?? d.effective_information ?? 0);

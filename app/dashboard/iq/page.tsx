@@ -357,7 +357,7 @@ export default function IQPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <ChartCard title="Sentience Ethics" description="Risk assessment for organoid sentience" loading={ethics.loading} error={ethics.error}>
+        <ChartCard title="Welfare Monitoring" description="Network complexity indicators for welfare assessment" loading={ethics.loading} error={ethics.error}>
           {ethics.data && (() => {
             const sentience = (ethics.data.sentience_risk ?? {}) as Record<string, unknown>;
             const riskScore = Number(sentience.overall_score ?? ethics.data.sentience_score ?? ethics.data.risk_score ?? 0);
@@ -389,7 +389,7 @@ export default function IQPage() {
       {datasetId && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
-            <ChartCard title="IQ Radar" description="6-dimension intelligence profile">
+            <ChartCard title="IQ Radar" description="6-dimension network complexity profile">
               {dimEntries.length > 0 ? (
                 <RadarChart dimensions={dimEntries} />
               ) : (

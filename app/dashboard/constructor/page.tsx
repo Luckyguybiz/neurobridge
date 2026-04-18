@@ -36,7 +36,7 @@ const PROTOCOLS: Protocol[] = [
     origin: 'Cortical Labs',
     icon: '🏓',
     color: '#a78bfa',
-    description: 'Train the organoid to play Pong using the free energy principle. The network learns to minimize unpredictability — hits produce structured feedback, misses produce chaos.',
+    description: 'Simulate DishBrain-style Pong (Kagan et al. 2022). Hits produce structured stimulation, misses produce random noise. Network learns to reduce unpredictability.',
     mechanism: 'Ball position → electrode stimulation. Neural response → paddle movement. Hit = reward. Miss = punishment.',
     endpoint: '/api/protocols/dishbrain-pong',
   },
