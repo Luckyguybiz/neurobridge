@@ -266,7 +266,7 @@ export default function ProtocolsPage() {
           transition={{ duration: 0.4 }}
           className="mb-4 px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20"
         >
-          <span className="text-[11px] " style={{ color: 'var(--text-muted)' }}>AI Recommendation: </span>
+          <span className="text-[11px] " style={{ color: 'var(--text-muted)' }}>Suggested: </span>
           <span className="text-[13px] font-medium text-emerald-400">{suggestedName}</span>
         </motion.div>
       )}

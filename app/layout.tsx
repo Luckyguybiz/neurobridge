@@ -21,8 +21,8 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Neurocomputers — The Platform for Living Neural Networks",
-  description: "Biocomputing-as-a-Service. 132+ API endpoints, 61 analysis modules for brain organoid data. Organoid IQ, consciousness metrics, predictive coding, circadian rhythms.",
+  title: "Neurocomputers — Open-Source Brain Organoid Analysis",
+  description: "Open-source electrophysiology analysis platform. 9 peer-reviewed methods: criticality (Clauset 2009), IIT Phi (Tononi 2004), burst detection, connectivity, metastability. MIT License.",
   icons: {
     icon: '/favicon.svg',
   },

@@ -558,7 +558,7 @@ function ProtocolCard({ datasetId }: { datasetId: string }) {
     return (
       <div className="space-y-2">
         <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-          AI-powered analysis of your organoid's current state to recommend the optimal stimulation protocol.
+          Heuristic analysis of firing rate and burst patterns to suggest an appropriate stimulation protocol.
         </div>
         <RunButton label="Get Suggestion" onClick={run} />
       </div>
@@ -650,8 +650,8 @@ const EXPERIMENTS: ExperimentDef[] = [
     render: (id) => <ClosedLoopCard datasetId={id} />,
   },
   {
-    title: 'AI Protocol Advisor',
-    desc: 'Get AI-recommended stimulation protocol',
+    title: 'Protocol Advisor',
+    desc: 'Get recommended stimulation protocol based on organoid state',
     render: (id) => <ProtocolCard datasetId={id} />,
   },
 ];

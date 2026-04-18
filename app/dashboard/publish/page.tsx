@@ -372,7 +372,7 @@ export default function PublishPage() {
       >
         <h1 className="text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Publish & Funding</h1>
         <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-          Generate publication drafts and find matching grant opportunities
+          Generate analysis reports and explore relevant grant programs
         </p>
       </motion.div>
 
@@ -384,7 +384,7 @@ export default function PublishPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.06 }}
         >
-          <ChartCard title="Paper Generator" description="AI-powered publication draft from your dataset">
+          <ChartCard title="Paper Generator" description="Template-based publication draft from your analysis results">
             <PaperGenerator datasetId={datasetId} />
           </ChartCard>
         </motion.div>
