@@ -352,7 +352,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       setNElectrodes(result.n_electrodes);
 
       setLoadingStep('Loading spikes...');
-      const spikeData = await api.getSpikes(result.dataset_id, { limit: 15000 });
+      const spikeData = await api.getSpikes(result.dataset_id, { limit: 5000 });
       const spikeArr: Spike[] = spikeData.times.map((t: number, i: number) => ({
         time: t,
         electrode: spikeData.electrodes[i],
@@ -385,7 +385,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       setDuration(result.duration_s);
       setNElectrodes(result.n_electrodes);
 
-      const spikeData = await api.getSpikes(result.dataset_id, { limit: 15000 });
+      const spikeData = await api.getSpikes(result.dataset_id, { limit: 5000 });
       const spikeArr: Spike[] = spikeData.times.map((t: number, i: number) => ({
         time: t,
         electrode: spikeData.electrodes[i],
@@ -417,7 +417,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       setDuration(result.duration_s);
       setNElectrodes(result.n_electrodes);
 
-      const spikeData = await api.getSpikes(result.dataset_id, { limit: 15000 });
+      const spikeData = await api.getSpikes(result.dataset_id, { limit: 5000 });
       const spikeArr: Spike[] = spikeData.times.map((t: number, i: number) => ({
         time: t,
         electrode: spikeData.electrodes[i],
@@ -436,8 +436,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     }
   }, [fetchBackgroundAnalysis]);
 
-  // ── Auto-generate on mount ─────────────────────────────────────────────
-  useEffect(() => { generateData(30, 8); }, [generateData]);
+  // ── Auto-generate on mount (only if no data loaded yet) ────────────────
+  const autoGenDone = useRef(false);
+  useEffect(() => {
+    if (!autoGenDone.current && !datasetId) {
+      autoGenDone.current = true;
+      generateData(30, 8);
+    }
+  }, [generateData, datasetId]);
 
   // ── Debug panel keyboard shortcut (Ctrl+Shift+D) ──────────────────────
   useEffect(() => {
@@ -654,7 +660,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                       setDatasetId(result.dataset_id);
                       setDuration(result.duration_s);
                       setNElectrodes(result.n_electrodes);
-                      const spikeData = await api.getSpikes(result.dataset_id, { limit: 15000 });
+                      const spikeData = await api.getSpikes(result.dataset_id, { limit: 5000 });
                       const spikeArr: Spike[] = spikeData.times.map((t: number, i: number) => ({
                         time: t, electrode: spikeData.electrodes[i], amplitude: spikeData.amplitudes[i], waveform: [],
                       }));
