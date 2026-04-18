@@ -79,50 +79,71 @@ function EmergenceCard({ data }: { data: Record<string, unknown> }) {
 // ─── Predictive Coding ────────────────────────────────────────────────────────
 
 function PredictiveCodingCard({ data }: { data: Record<string, unknown> }) {
-  const active    = Boolean(data.predictive_coding_active ?? data.has_predictive_coding ?? data.is_predictive ?? data.active ?? false);
-  const freeEnergy = Number(data.free_energy ?? data.prediction_error ?? data.surprise_ratio ?? 0);
-  const evidence   = Number(data.evidence ?? data.confidence ?? 0);
+  const surpriseRatio = Number(data.surprise_ratio ?? data.free_energy ?? data.prediction_error ?? 0);
+  const nSig = Number(data.n_significant_methods ?? 0);
+  const nTotal = Number(data.n_tests_total ?? 0);
+  const effectSize = Number(data.effect_size ?? 0);
+  const pValue = Number(data.p_value ?? 1);
+  const interp = String(data.interpretation ?? '');
+
+  // Strength: 0-1 scale based on significant tests ratio
+  const strength = nTotal > 0 ? nSig / nTotal : 0;
+  const strengthLabel = strength >= 0.4 ? 'Strong' : strength >= 0.2 ? 'Moderate' : strength > 0 ? 'Weak' : 'None';
+  const strengthColor = strength >= 0.4 ? 'text-emerald-400' : strength >= 0.2 ? 'text-amber-400' : 'text-red-400/70';
 
   return (
     <div className="space-y-4">
-      {/* YES/NO badge */}
-      <div className="flex items-center gap-3">
-        <div className={`
-          flex items-center gap-2 px-4 py-2 rounded-xl border text-[15px] font-bold
-          ${active
-            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-            : 'bg-red-500/10 border-red-500/20 text-red-400'
-          }
-        `}>
-          <div className={`w-2 h-2 rounded-full ${active ? 'bg-emerald-400' : 'bg-red-400'} ${active ? 'animate-pulse' : ''}`} />
-          {active ? 'ACTIVE' : 'NOT DETECTED'}
+      {/* Strength bar instead of binary badge */}
+      <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <span className={`text-[13px] font-bold ${strengthColor}`}>
+            {strengthLabel} evidence
+          </span>
+          <span className="text-[10px] tabular-nums" style={{ color: 'var(--text-faint)' }}>
+            {nSig}/{nTotal} tests significant
+          </span>
+        </div>
+        <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
+          <div
+            className="h-full rounded-full transition-all duration-700"
+            style={{
+              width: `${Math.max(strength * 100, 2)}%`,
+              background: strength >= 0.4
+                ? 'linear-gradient(to right, var(--accent-emerald), var(--accent-cyan))'
+                : strength >= 0.2
+                  ? 'linear-gradient(to right, var(--accent-amber), var(--accent-cyan))'
+                  : 'var(--accent-red)',
+            }}
+          />
         </div>
       </div>
 
-      <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-        {active
-          ? 'Organoid exhibits free energy minimization — actively predicts and corrects sensory inputs, consistent with predictive processing theory.'
-          : 'No evidence of predictive processing. Neural activity does not show hierarchical prediction-error minimization patterns.'}
+      {/* Key metrics */}
+      <div className="grid grid-cols-3 gap-2 text-[10px]">
+        <div className="px-2 py-1.5 rounded-md" style={{ background: 'var(--bg-card)' }}>
+          <div style={{ color: 'var(--text-faint)' }}>Surprise ratio</div>
+          <div className="text-[13px] font-medium text-cyan-400 tabular-nums">{surpriseRatio.toFixed(3)}x</div>
+        </div>
+        <div className="px-2 py-1.5 rounded-md" style={{ background: 'var(--bg-card)' }}>
+          <div style={{ color: 'var(--text-faint)' }}>Effect size (d)</div>
+          <div className="text-[13px] font-medium text-violet-400 tabular-nums">{effectSize.toFixed(2)}</div>
+        </div>
+        <div className="px-2 py-1.5 rounded-md" style={{ background: 'var(--bg-card)' }}>
+          <div style={{ color: 'var(--text-faint)' }}>p-value</div>
+          <div className="text-[13px] font-medium tabular-nums" style={{ color: pValue < 0.05 ? 'var(--accent-emerald)' : 'var(--text-muted)' }}>
+            {pValue < 0.001 ? '<0.001' : pValue.toFixed(3)}
+          </div>
+        </div>
       </div>
 
-      {(freeEnergy > 0 || evidence > 0) && (
-        <div className="flex gap-4">
-          {freeEnergy > 0 && (
-            <div>
-              <div className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'var(--text-faint)' }}>Free Energy</div>
-              <div className="text-[15px] font-medium text-amber-400 tabular-nums">{freeEnergy.toFixed(4)}</div>
-            </div>
-          )}
-          {evidence > 0 && (
-            <div>
-              <div className="text-[9px] uppercase tracking-widest mb-1" style={{ color: 'var(--text-faint)' }}>Evidence</div>
-              <div className="text-[15px] font-medium text-violet-400 tabular-nums">{(evidence * 100).toFixed(1)}%</div>
-            </div>
-          )}
+      {/* Interpretation */}
+      {interp && (
+        <div className="text-[10px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+          {interp.length > 200 ? interp.slice(0, 200) + '...' : interp}
         </div>
       )}
 
-      <JsonRows data={data} max={6} />
+      <JsonRows data={data} max={4} />
     </div>
   );
 }

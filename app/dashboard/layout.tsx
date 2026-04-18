@@ -436,14 +436,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     }
   }, [fetchBackgroundAnalysis]);
 
-  // ── Auto-generate on mount (only if no data loaded yet) ────────────────
-  const autoGenDone = useRef(false);
-  useEffect(() => {
-    if (!autoGenDone.current && !datasetId) {
-      autoGenDone.current = true;
-      generateData(30, 8);
-    }
-  }, [generateData, datasetId]);
+  // No auto-generate — user chooses data source (FinalSpark, synthetic, upload)
 
   // ── Debug panel keyboard shortcut (Ctrl+Shift+D) ──────────────────────
   useEffect(() => {
@@ -693,7 +686,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 >
                   {datasetSource === 'finalspark' && status === 'loading' && <span className="inline-block w-2.5 h-2.5 border-[1.5px] border-amber-400/30 border-t-amber-400 rounded-full animate-spin mr-1 align-middle" />}
                   FinalSpark
+                  <span className="hidden sm:inline text-[8px] opacity-50 ml-0.5">fs437</span>
                 </button>
+                {/* FinalSpark metadata tooltip */}
+                {datasetSource === 'finalspark' && status === 'ready' && (
+                  <span className="hidden lg:inline text-[9px] tabular-nums" style={{ color: 'var(--text-faint)' }}>
+                    32ch MEA · 4 organoids · 118h · 437Hz
+                  </span>
+                )}
                 {([
                   { src: 'synthetic-30' as DatasetSource, label: '30s', title: 'Generate 30s synthetic data', onClick: () => generateData(30, 8) },
                   { src: 'synthetic-120' as DatasetSource, label: '120s', title: 'Generate 120s synthetic data', onClick: () => generateData(120, 8) },

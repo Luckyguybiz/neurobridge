@@ -137,6 +137,36 @@ export default function DashboardPage() {
   const pop     = summary?.population as Record<string, unknown> | undefined;
   const dataset = summary?.dataset    as Record<string, unknown> | undefined;
 
+  // Empty state — no data loaded yet
+  if (status === 'idle' && !datasetId) {
+    return (
+      <div className="p-3 sm:p-4">
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="text-4xl mb-4">🧠</div>
+          <h2 className="text-[20px] font-display mb-2" style={{ color: 'var(--text-primary)' }}>Load data to begin analysis</h2>
+          <p className="text-[13px] max-w-md leading-relaxed mb-6" style={{ color: 'var(--text-muted)' }}>
+            Choose a data source from the header: <strong className="text-emerald-400">FinalSpark</strong> for real organoid data (2.6M spikes, 32ch MEA, 118h),
+            or <strong style={{ color: 'var(--text-secondary)' }}>30s/120s</strong> to generate synthetic spike data for testing.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-lg w-full text-[11px]">
+            <div className="px-4 py-3 rounded-xl text-left" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+              <div className="font-medium text-emerald-400 mb-1">FinalSpark</div>
+              <div style={{ color: 'var(--text-faint)' }}>Real organoid MEA recording. 4 organoids, 5 days, 437Hz.</div>
+            </div>
+            <div className="px-4 py-3 rounded-xl text-left" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+              <div className="font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Synthetic</div>
+              <div style={{ color: 'var(--text-faint)' }}>Generated spike data with configurable burst probability.</div>
+            </div>
+            <div className="px-4 py-3 rounded-xl text-left" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+              <div className="font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Upload</div>
+              <div style={{ color: 'var(--text-faint)' }}>Your own CSV/HDF5/NWB file. Any MEA system.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-3 sm:p-4">
       {/* Quick Stats */}

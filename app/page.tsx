@@ -290,7 +290,11 @@ export default function HomePage() {
               <Link href="/dashboard" className="hover:text-cyan-400/60 transition-colors">Dashboard</Link>
             </div>
           </div>
-          <div className="mt-6 text-[10px]" style={{ color: 'var(--text-faint)' }}>Biocomputing-as-a-Service</div>
+          <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-2 text-[10px]" style={{ color: 'var(--text-faint)' }}>
+            <span>Built by Nikita Britikov</span>
+            <span className="hidden sm:inline">·</span>
+            <span>9 peer-reviewed analysis modules · ~12,000 lines · MIT License</span>
+          </div>
         </div>
       </footer>
     </div>
