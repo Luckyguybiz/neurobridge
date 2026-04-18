@@ -28,8 +28,8 @@ const capabilities = [
   },
   {
     tag: 'Connectivity',
-    title: 'Map the living',
-    titleAccent: 'neural network',
+    title: 'Map functional',
+    titleAccent: 'connectivity',
     desc: 'Cross-correlation, transfer entropy (Schreiber 2000), Granger causality, and graph-theoretic metrics. All with significance testing.',
     visual: 'network' as const,
   },
@@ -96,7 +96,7 @@ export default function HomePage() {
               className="block text-[clamp(2.5rem,7vw,5.5rem)] font-display italic leading-[1.2] tracking-[-0.02em] pb-2 bg-clip-text text-transparent"
               style={{ backgroundImage: 'linear-gradient(to right, var(--gradient-text-from), var(--gradient-text-via), var(--gradient-text-to))' }}
             >
-              living neural networks
+              brain organoid analysis
             </motion.span>
           </h1>
 
