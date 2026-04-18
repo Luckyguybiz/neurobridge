@@ -176,81 +176,142 @@ select option { background: var(--bg-secondary); color: var(--text-primary); }
 .text-th-muted     { color: var(--text-muted); }
 .text-th-faint     { color: var(--text-faint); }
 
-/* ─── Light mode overrides for Tailwind dark-only classes ─── */
-/* Tailwind v4 text-white/NN classes generate inline --tw-text-opacity.
-   Override the white color itself when light theme is active. */
-html.light .text-white\/85, html.light .text-white\/80, html.light .text-white\/90 { color: var(--text-primary) !important; }
-html.light .text-white\/70, html.light .text-white\/60 { color: var(--text-secondary) !important; }
-html.light .text-white\/50, html.light .text-white\/40, html.light .text-white\/35 { color: var(--text-muted) !important; }
-html.light .text-white\/30, html.light .text-white\/25, html.light .text-white\/20, html.light .text-white\/15 { color: var(--text-faint) !important; }
-/* Attribute selectors — match both escaped and unescaped class names */
-html.light [class*="text-white/8"], html.light [class*="text-white/9"] { color: var(--text-primary) !important; }
-html.light [class*="text-white/6"], html.light [class*="text-white/7"] { color: var(--text-secondary) !important; }
-html.light [class*="text-white/4"], html.light [class*="text-white/5"] { color: var(--text-muted) !important; }
-html.light [class*="text-white/1"], html.light [class*="text-white/2"], html.light [class*="text-white/3"] { color: var(--text-faint) !important; }
-/* Turbopack may inline color via style attr — override any rgba(255,255,255,*) in light mode */
-html.light [style*="color: rgb(255"] { color: var(--text-muted) !important; }
-html.light [style*="color:rgb(255"] { color: var(--text-muted) !important; }
-html.light [style*="color: rgba(255"] { color: var(--text-muted) !important; }
-html.light [style*="color:rgba(255"] { color: var(--text-muted) !important; }
+/* ─── Light mode overrides ─── */
+/* Rules below are unlayered, so they naturally beat Tailwind's
+   @layer utilities in the cascade — no !important needed.         */
 
-/* Background overrides */
-.light .bg-white\/\[0\.03\], .light .bg-white\/\[0\.02\] { background: var(--bg-card) !important; }
-.light .bg-white\/\[0\.04\], .light .bg-white\/\[0\.05\] { background: var(--bg-card) !important; }
-.light .bg-white\/\[0\.06\], .light .bg-white\/\[0\.08\] { background: var(--bg-card-hover) !important; }
+/* --- Text: white-opacity → theme text colors --- */
+html.light .text-white\/85,
+html.light .text-white\/80,
+html.light .text-white\/90  { color: var(--text-primary); }
 
-/* Border overrides */
-.light .border-white\/\[0\.04\], .light .border-white\/\[0\.03\] { border-color: var(--border) !important; }
-.light .border-white\/\[0\.06\], .light .border-white\/\[0\.08\] { border-color: var(--border-hover) !important; }
+html.light .text-white\/70,
+html.light .text-white\/60  { color: var(--text-secondary); }
 
-/* Hardcoded dark backgrounds */
-.light .bg-\[\#05060a\], .light .bg-\[\#06070c\], .light .bg-\[\#08090e\], .light .bg-\[\#0a0b10\], .light .bg-\[\#0f1018\] {
-  background: var(--bg-primary) !important;
-}
+html.light .text-white\/50,
+html.light .text-white\/40,
+html.light .text-white\/35  { color: var(--text-muted); }
 
-/* Gradient text stays vibrant in both modes */
-.light .from-cyan-500\/20 { --tw-gradient-from: color-mix(in srgb, var(--accent-cyan) 20%, transparent) !important; }
-.light .to-violet-500\/20 { --tw-gradient-to: color-mix(in srgb, var(--accent-violet) 20%, transparent) !important; }
+html.light .text-white\/30,
+html.light .text-white\/25,
+html.light .text-white\/20,
+html.light .text-white\/15  { color: var(--text-faint); }
 
-/* Hover states */
-.light .hover\:text-white\/60:hover, .light .hover\:text-white\/70:hover { color: var(--text-secondary) !important; }
-.light .hover\:text-white\/90:hover, .light .hover\:text-white\/50:hover { color: var(--text-primary) !important; }
-.light .hover\:bg-white\/\[0\.03\]:hover, .light .hover\:bg-white\/\[0\.06\]:hover,
-.light .hover\:bg-white\/\[0\.08\]:hover, .light .hover\:bg-white\/\[0\.1\]:hover {
-  background: var(--bg-card-hover) !important;
-}
+html.light .text-white\/10  { color: var(--text-faint); }
 
-/* Light mode: accent badges need visible backgrounds */
-.light .bg-cyan-500\/\[0\.08\], .light .bg-cyan-500\/15, .light .bg-cyan-400\/20 { background: rgba(8,145,178,0.1) !important; }
-.light .bg-violet-500\/\[0\.08\], .light .bg-violet-500\/15 { background: rgba(124,58,237,0.08) !important; }
-.light .bg-emerald-500\/\[0\.08\], .light .bg-emerald-500\/15 { background: rgba(5,150,105,0.08) !important; }
-.light .bg-amber-500\/\[0\.08\], .light .bg-amber-500\/15 { background: rgba(217,119,6,0.08) !important; }
-.light .bg-red-500\/\[0\.08\], .light .bg-red-500\/10, .light .bg-red-500\/15 { background: rgba(220,38,38,0.06) !important; }
+/* --- Background: white-opacity → theme card/surface --- */
+html.light .bg-white\/\[0\.02\],
+html.light .bg-white\/\[0\.03\] { background: var(--bg-card); }
 
-/* Light mode: ensure text on colored backgrounds stays visible */
-.light .text-cyan-400, .light .text-cyan-400\/80, .light .text-cyan-400\/90 { color: #0891b2 !important; }
-.light .text-violet-400, .light .text-violet-400\/60 { color: #7c3aed !important; }
-.light .text-emerald-400, .light .text-emerald-400\/80 { color: #059669 !important; }
-.light .text-amber-400, .light .text-amber-400\/80 { color: #d97706 !important; }
-.light .text-red-400, .light .text-red-400\/80, .light .text-red-400\/60 { color: #dc2626 !important; }
+html.light .bg-white\/\[0\.04\],
+html.light .bg-white\/\[0\.05\] { background: var(--bg-card); }
 
-/* Light mode: cyan/violet hover links */
-.light .hover\:text-cyan-400\/70:hover, .light .hover\:text-cyan-400\/60:hover { color: var(--accent-cyan) !important; }
+html.light .bg-white\/\[0\.06\],
+html.light .bg-white\/\[0\.08\] { background: var(--bg-card-hover); }
 
-/* Light mode: gradient border buttons */
-.light .from-cyan-500\/20 { --tw-gradient-from: rgba(8,145,178,0.15) !important; }
-.light .to-violet-500\/20 { --tw-gradient-to: rgba(124,58,237,0.12) !important; }
-.light .border-cyan-500\/20, .light .border-cyan-500\/\[0\.15\] { border-color: rgba(8,145,178,0.2) !important; }
+html.light .bg-white\/10     { background: var(--bg-card-hover); }
 
-/* Light mode: SVG text visibility */
-.light svg text { fill: var(--text-secondary) !important; }
-.light svg text[fill*="rgba(255"] { fill: var(--text-secondary) !important; }
+/* --- Border: white-opacity → theme border --- */
+html.light .border-white\/\[0\.03\],
+html.light .border-white\/\[0\.04\] { border-color: var(--border); }
 
-/* Light mode: ensure all white text becomes dark */
-.light [style*="color: rgba(255"] { color: var(--text-primary) !important; }
-.light [style*="fill: rgba(255"] { fill: var(--text-primary) !important; }
+html.light .border-white\/\[0\.06\],
+html.light .border-white\/\[0\.08\] { border-color: var(--border-hover); }
 
-/* Light mode body */
+/* --- Hardcoded dark backgrounds → theme primary --- */
+html.light .bg-\[\#05060a\],
+html.light .bg-\[\#06070c\],
+html.light .bg-\[\#08090e\],
+html.light .bg-\[\#0a0b10\],
+html.light .bg-\[\#0f1018\] { background: var(--bg-primary); }
+
+/* --- Gradient from/to in light mode --- */
+html.light .from-cyan-500\/20  { --tw-gradient-from: rgba(8,145,178,0.15); }
+html.light .to-violet-500\/20  { --tw-gradient-to:   rgba(124,58,237,0.12); }
+
+/* --- Hover states --- */
+html.light .hover\:text-white\/60:hover,
+html.light .hover\:text-white\/70:hover  { color: var(--text-secondary); }
+
+html.light .hover\:text-white\/90:hover,
+html.light .hover\:text-white\/50:hover  { color: var(--text-primary); }
+
+html.light .hover\:bg-white\/\[0\.03\]:hover,
+html.light .hover\:bg-white\/\[0\.06\]:hover,
+html.light .hover\:bg-white\/\[0\.08\]:hover,
+html.light .hover\:bg-white\/\[0\.1\]:hover { background: var(--bg-card-hover); }
+
+/* --- Accent badge backgrounds (more visible in light) --- */
+html.light .bg-cyan-500\/\[0\.08\],
+html.light .bg-cyan-500\/15,
+html.light .bg-cyan-400\/20     { background: rgba(8,145,178,0.1); }
+
+html.light .bg-cyan-500\/10     { background: rgba(8,145,178,0.08); }
+
+html.light .bg-violet-500\/\[0\.08\],
+html.light .bg-violet-500\/15   { background: rgba(124,58,237,0.08); }
+
+html.light .bg-emerald-500\/\[0\.08\],
+html.light .bg-emerald-500\/15  { background: rgba(5,150,105,0.08); }
+
+html.light .bg-amber-500\/\[0\.08\],
+html.light .bg-amber-500\/15,
+html.light .bg-amber-500\/10    { background: rgba(217,119,6,0.08); }
+
+html.light .bg-red-500\/\[0\.08\],
+html.light .bg-red-500\/10,
+html.light .bg-red-500\/15      { background: rgba(220,38,38,0.06); }
+
+/* --- Accent text: 400-shade → darker for light bg --- */
+html.light .text-cyan-400,
+html.light .text-cyan-400\/80,
+html.light .text-cyan-400\/90,
+html.light .text-cyan-400\/70,
+html.light .text-cyan-400\/60,
+html.light .text-cyan-400\/40   { color: var(--accent-cyan); }
+
+html.light .text-violet-400,
+html.light .text-violet-400\/60  { color: var(--accent-violet); }
+
+html.light .text-emerald-400,
+html.light .text-emerald-400\/80,
+html.light .text-emerald-400\/60 { color: var(--accent-emerald); }
+
+html.light .text-amber-400,
+html.light .text-amber-400\/80   { color: var(--accent-amber); }
+
+html.light .text-red-400,
+html.light .text-red-400\/80,
+html.light .text-red-400\/70,
+html.light .text-red-400\/60     { color: var(--accent-red); }
+
+/* --- Accent hover links --- */
+html.light .hover\:text-cyan-400\/70:hover,
+html.light .hover\:text-cyan-400\/60:hover  { color: var(--accent-cyan); }
+
+html.light .hover\:text-red-400:hover       { color: var(--accent-red); }
+
+/* --- Gradient border buttons --- */
+html.light .border-cyan-500\/20,
+html.light .border-cyan-500\/\[0\.15\] { border-color: rgba(8,145,178,0.2); }
+
+html.light .border-emerald-500\/20,
+html.light .border-emerald-500\/25,
+html.light .border-emerald-500\/\[0\.12\] { border-color: rgba(5,150,105,0.18); }
+
+html.light .border-amber-500\/20,
+html.light .border-amber-500\/\[0\.12\] { border-color: rgba(217,119,6,0.18); }
+
+html.light .border-red-500\/15,
+html.light .border-red-500\/20,
+html.light .border-red-500\/\[0\.12\] { border-color: rgba(220,38,38,0.18); }
+
+html.light .border-violet-500\/20 { border-color: rgba(124,58,237,0.18); }
+
+/* --- SVG text fill: use theme variable --- */
+html.light svg text             { fill: var(--text-secondary); }
+
+/* --- Light mode body --- */
 .light { color-scheme: light; }
 .light .grain::before { display: none; }
 
