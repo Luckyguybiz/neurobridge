@@ -23,23 +23,23 @@ const capabilities = [
     tag: 'Analysis',
     title: 'Decode hidden',
     titleAccent: 'neural patterns',
-    desc: 'Automated burst detection, spike sorting, and functional connectivity mapping. ML-powered insights that manual analysis misses.',
+    desc: 'Burst detection (Bakkum 2013), criticality assessment (Clauset et al. 2009), and IIT Phi computation — in one click.',
     visual: 'heatmap' as const,
   },
   {
     tag: 'Connectivity',
     title: 'Map the living',
     titleAccent: 'neural network',
-    desc: 'Force-directed graphs reveal functional connections between electrodes. Watch information propagate through biological tissue.',
+    desc: 'Cross-correlation, transfer entropy (Schreiber 2000), Granger causality, and graph-theoretic metrics. All with significance testing.',
     visual: 'network' as const,
   },
 ];
 
 const steps = [
-  { title: 'Connect', desc: 'Link FinalSpark, Cortical Labs, or any MEA system through our unified API.' },
-  { title: 'Stream', desc: 'Real-time spike detection at 30kHz with automatic artifact rejection.' },
-  { title: 'Experiment', desc: 'Design stimulation protocols visually. Test on digital twins first.' },
-  { title: 'Discover', desc: 'Export publication-quality figures and contribute to the community.' },
+  { title: 'Upload', desc: 'Load spike data from any MEA system — CSV, HDF5, NWB, or Parquet. Or use our FinalSpark demo dataset.' },
+  { title: 'Analyze', desc: '9 analysis modules run automatically: bursts, connectivity, criticality, emergence, metastability, and more.' },
+  { title: 'Compare', desc: 'Stage your organoid against 10 reference neural systems across 15 electrophysiological metrics.' },
+  { title: 'Publish', desc: 'Export JSON reports and analysis parameters. All methods fully cited for reproducibility.' },
 ];
 
 export default function HomePage() {
@@ -54,6 +54,7 @@ export default function HomePage() {
           <div className="hidden md:flex items-center gap-8 text-[13px]" style={{ color: 'var(--text-muted)' }}>
             <a href="#capabilities" className="hover:opacity-70 transition-colors duration-500">Capabilities</a>
             <a href="#workflow" className="hover:opacity-70 transition-colors duration-500">Workflow</a>
+            <a href="https://github.com/Luckyguybiz/neurobridge-api" target="_blank" rel="noopener" className="hover:opacity-70 transition-colors duration-500">Paper & Methods</a>
           </div>
           <Link href="/dashboard" className="text-[12px] px-4 py-1.5 rounded-lg transition-all duration-500" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
             Dashboard
@@ -81,7 +82,7 @@ export default function HomePage() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
             </span>
-            Biocomputing-as-a-Service
+            Open-source · MIT License · Peer-reviewed methods
           </motion.div>
 
           <h1 className="glow-text">
@@ -106,7 +107,7 @@ export default function HomePage() {
             className="mt-8 text-[16px] max-w-md mx-auto leading-[1.8]"
             style={{ color: 'var(--text-muted)' }}
           >
-            One API to access, visualize, and experiment on brain organoids. AI-powered tools for the next era of computing.
+            Open-source analysis platform for brain organoid electrophysiology. 9 peer-reviewed methods from spike sorting to criticality assessment.
           </motion.p>
 
           <motion.div
@@ -158,10 +159,10 @@ export default function HomePage() {
         <div className="max-w-[1100px] mx-auto px-6">
           <div className="stats-grid grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-0 md:divide-x">
             {[
-              { value: '137', label: 'API Endpoints' },
-              { value: '61', label: 'Analysis Modules' },
-              { value: '11', label: 'Dashboard Pages' },
-              { value: '2.6M', label: 'Spikes Analyzed' },
+              { value: '9', label: 'Peer-Reviewed Methods' },
+              { value: '12K', label: 'Lines of Analysis Code' },
+              { value: '2.6M', label: 'Spikes Validated' },
+              { value: '22', label: 'Literature References' },
             ].map((s, i) => (
               <ScrollReveal key={s.label} delay={i * 0.1} className="text-center px-4">
                 <div className="text-[clamp(2rem,4vw,3.5rem)] font-display tracking-tight" style={{ color: 'var(--text-primary)' }}>
@@ -261,11 +262,11 @@ export default function HomePage() {
 
         <ScrollReveal variant="scale" className="text-center max-w-xl mx-auto relative z-10">
           <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-display leading-[1.15] tracking-tight mb-6">
-            Ready to program{' '}
-            <span className="italic bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, var(--gradient-text-from), var(--gradient-text-to))' }}>biology</span>?
+            Ready to analyze your{' '}
+            <span className="italic bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, var(--gradient-text-from), var(--gradient-text-to))' }}>organoid data</span>?
           </h2>
           <p className="text-[14px] mb-14 leading-[1.8]" style={{ color: 'var(--text-muted)' }}>
-            Join researchers building the future of biological computing.
+            Upload your MEA recordings or explore the FinalSpark demo dataset.
           </p>
           <Link href="/dashboard" className="group inline-flex items-center gap-3 px-10 py-4 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 font-medium text-[13px] transition-all duration-500 hover:shadow-[0_0_80px_rgba(34,211,238,0.2)]">
             Open Dashboard
