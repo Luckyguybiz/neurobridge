@@ -11,6 +11,7 @@ import type { BurstInfo, DashboardStatus, DatasetSource, LiveSpike, LiveState } 
 import { ThemeToggle } from '@/lib/theme-context';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import DebugPanel from '@/components/dashboard/DebugPanel';
+import WelcomeModal from '@/components/dashboard/WelcomeModal';
 import { clearCache } from '@/lib/analysis-cache';
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
@@ -747,6 +748,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         />
 
         <DebugPanel open={debugOpen} onClose={() => setDebugOpen(false)} />
+        <WelcomeModal />
       </div>
     </DashboardContext.Provider>
   );
