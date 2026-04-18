@@ -224,6 +224,14 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* No spikes but ready — auto-retry loading spikes */}
+      {status === 'ready' && datasetId && spikes.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 gap-3">
+          <div className="w-6 h-6 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
+          <div className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Loading visualizations...</div>
+        </div>
+      )}
+
       {/* Content grid */}
       {spikes.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
