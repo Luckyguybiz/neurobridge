@@ -51,6 +51,7 @@ function QuickStats() {
   const cards = [
     {
       label: 'Organoid IQ',
+      tip: 'Composite Computational Capacity Index (6 dimensions, 0-100)',
       loading: iq === undefined,
       value: iqScore > 0 ? `${iqScore.toFixed(0)} (${iqGrade})` : iq === null ? '—' : '',
       color: iqScore >= 60 ? 'text-cyan-400' : iqScore >= 40 ? 'text-amber-400' : 'text-amber-400',
@@ -59,6 +60,7 @@ function QuickStats() {
     },
     {
       label: 'Health',
+      tip: 'Viability estimate: firing regularity, electrode coverage, amplitude stability',
       loading: health === undefined,
       value: healthScore > 0 ? `${healthScore.toFixed(0)}%` : health === null ? '—' : '',
       color: healthScore >= 70 ? 'text-emerald-400' : healthScore >= 40 ? 'text-amber-400' : 'text-red-400',
@@ -66,15 +68,17 @@ function QuickStats() {
       href: '/dashboard/iq',
     },
     {
-      label: 'Consciousness',
+      label: 'Sentience Risk',
+      tip: 'Composite ethics score: PCI + recurrence + Phi. Low = no ethical concern',
       loading: consciousness === undefined,
-      value: consScore > 0 ? `${consScore.toFixed(0)}% ${consRisk}` : consciousness === null ? '—' : '',
+      value: consScore > 0 ? `${consScore.toFixed(0)}%` : consciousness === null ? '—' : '',
       color: consScore > 50 ? 'text-red-400' : consScore > 30 ? 'text-amber-400' : 'text-emerald-400',
       bg: 'from-violet-500/8 border-violet-500/10',
       href: '/dashboard/discovery',
     },
     {
       label: 'Modules',
+      tip: '9 peer-reviewed analysis modules with 64 individual analysis endpoints',
       loading: false,
       value: '64 analyses',
       color: 'text-cyan-400',
@@ -99,6 +103,7 @@ function QuickStats() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05, duration: 0.4 }}
             onClick={() => router.push(card.href)}
+            title={card.tip}
             className={`px-3 py-2.5 rounded-xl bg-gradient-to-br ${card.bg} border cursor-pointer hover:scale-[1.02] transition-transform`}
           >
             <div className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{card.label}</div>
@@ -241,6 +246,14 @@ export default function DashboardPage() {
                 { title: 'Cross-Correlogram',    desc: 'Temporal correlation between electrode pairs',                         span: '', size: 'md' as const },
               ]).map((card, i) => {
                 const isLoading = status === 'loading' && spikes.length === 0;
+                const paramsText = [
+                  'window=full recording',
+                  'method=cofiring · bin=10ms · min_strength=0.02',
+                  'bin_size=1.0s',
+                  'n_samples=100 per electrode',
+                  'bin_width=auto · max_isi=100ms',
+                  'max_lag=50ms · bin_size=1ms',
+                ][i];
                 return (
                   <motion.div key={card.title} custom={i} initial="hidden" animate="visible" variants={cardVariants} className={card.span}>
                     <ChartCard title={card.title} description={card.desc} loading={isLoading} skeletonSize={card.size}>
@@ -250,6 +263,9 @@ export default function DashboardPage() {
                       {i === 3 && <SpikeWaveforms    spikes={spikes}                        electrodes={nElectrodes} />}
                       {i === 4 && <ISIHistogram      spikes={spikes}                        electrodes={nElectrodes} />}
                       {i === 5 && <CrossCorrelogram  spikes={spikes}                        electrodes={nElectrodes} />}
+                      <div className="text-[9px] mt-2 pt-2" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-faint)' }}>
+                        {paramsText}
+                      </div>
                     </ChartCard>
                   </motion.div>
                 );

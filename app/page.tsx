@@ -54,7 +54,7 @@ export default function HomePage() {
           <div className="hidden md:flex items-center gap-8 text-[13px]" style={{ color: 'var(--text-muted)' }}>
             <a href="#capabilities" className="hover:opacity-70 transition-colors duration-500">Capabilities</a>
             <a href="#workflow" className="hover:opacity-70 transition-colors duration-500">Workflow</a>
-            <a href="https://github.com/Luckyguybiz/neurobridge-api" target="_blank" rel="noopener" className="hover:opacity-70 transition-colors duration-500">Paper & Methods</a>
+            <a href="#methods" className="hover:opacity-70 transition-colors duration-500">Methods</a>
           </div>
           <Link href="/dashboard" className="text-[12px] px-4 py-1.5 rounded-lg transition-all duration-500" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
             Dashboard
@@ -253,6 +253,50 @@ export default function HomePage() {
               </ScrollReveal>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ═══════════ METHODS ═══════════ */}
+      <section id="methods" className="py-24 px-6">
+        <div className="max-w-[1100px] mx-auto">
+          <ScrollReveal variant="blur" className="mb-16">
+            <p className="text-[11px] uppercase tracking-[0.3em] mb-5" style={{ color: 'var(--section-label-cyan)' }}>Methods</p>
+            <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-display leading-[1.15] tracking-tight max-w-lg">
+              Every module grounded in{' '}
+              <span className="italic bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, var(--gradient-text-from), var(--gradient-text-to))' }}>peer-reviewed literature</span>
+            </h2>
+          </ScrollReveal>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {[
+              { name: 'Burst Detection', methods: 'MaxInterval (Bakkum 2013), Rank Surprise (Legendy & Salcman 1985), Poisson Surprise' },
+              { name: 'Connectivity', methods: 'Cross-correlation, Transfer Entropy (Schreiber 2000), Granger causality, PLV, Mutual Information' },
+              { name: 'Criticality', methods: 'Power-law fitting (Clauset et al. 2009), Branching ratio, DFA (Beggs & Plenz 2003)' },
+              { name: 'Emergence', methods: 'IIT Phi (Tononi 2004), Queyranne MIP, PID (Williams & Beer 2010), Causal Emergence (Hoel 2013)' },
+              { name: 'Metastability', methods: 'Kuramoto order parameter (Shanahan 2010), FCD (Deco & Kringelbach 2016)' },
+              { name: 'Predictive Coding', methods: 'Markov transitions, Mismatch negativity, Prediction error signals, Bayesian surprise. Bonferroni + Cohen\'s d' },
+              { name: 'Sleep-Wake', methods: 'HMM Baum-Welch, Lomb-Scargle periodogram, Cosinor analysis (Sokolove & Bushell 1983)' },
+              { name: 'Organoid IQ', methods: '6-dimension composite: signal quality, network complexity, information processing, temporal organization, adaptability, learning potential' },
+              { name: 'Comparative', methods: '15 metrics × 10 reference systems (C. elegans, mouse hippocampus, rat cortex, DishBrain, and 6 others)' },
+            ].map((m, i) => (
+              <ScrollReveal key={m.name} delay={i * 0.05}>
+                <div className="px-4 py-3.5 rounded-xl h-full" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+                  <div className="text-[12px] font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>{m.name}</div>
+                  <div className="text-[10px] leading-[1.6]" style={{ color: 'var(--text-faint)' }}>{m.methods}</div>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+
+          {/* How to cite */}
+          <ScrollReveal delay={0.3} className="mt-12">
+            <div className="px-5 py-4 rounded-xl" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+              <div className="text-[10px] uppercase tracking-[0.2em] mb-2" style={{ color: 'var(--text-faint)' }}>How to cite</div>
+              <div className="text-[12px] font-mono leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                Britikov, N. (2026). NeuroBridge: An Open-Source Platform for Multi-Dimensional Analysis of Brain Organoid Electrophysiology. <span className="italic">GitHub</span>. https://github.com/Luckyguybiz/neurobridge-api
+              </div>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 

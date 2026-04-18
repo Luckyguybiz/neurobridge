@@ -317,6 +317,9 @@ export default function SpikesPage() {
         >
           <ChartCard title="Firing Rate Timeline" description="Per-electrode firing rate (1s bins)" loading={firing.loading} error={firing.error}>
             <FiringRateTimeline data={firing.data} />
+            <div className="text-[9px] mt-2 pt-2" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-faint)' }}>
+              bin_size=1.0s
+            </div>
           </ChartCard>
         </motion.div>
       )}
@@ -332,6 +335,9 @@ export default function SpikesPage() {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
           <ChartCard title="ISI Distribution" description={selectedElectrode !== null ? `E${selectedElectrode} ISI` : "All electrodes ISI"}>
             <ISIHistogram spikes={filteredSpikes} electrodes={nElectrodes} />
+            <div className="text-[9px] mt-2 pt-2" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-faint)' }}>
+              bin_width=auto &middot; max_isi=100ms
+            </div>
           </ChartCard>
         </motion.div>
 
@@ -361,11 +367,17 @@ export default function SpikesPage() {
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}>
             <ChartCard title="PCA Embedding" description="Neural state space — 2D projection of activity windows" loading={pca.loading} error={pca.error}>
               <PCAScatter data={pca.data} />
+              <div className="text-[9px] mt-2 pt-2" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-faint)' }}>
+                n_components=3 &middot; bin=10ms
+              </div>
             </ChartCard>
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}>
             <ChartCard title="State Classification" description="Automatic classification: resting / active / bursting" loading={states.loading} error={states.error}>
               <StateClassification data={states.data} />
+              <div className="text-[9px] mt-2 pt-2" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-faint)' }}>
+                method=HMM &middot; n_states=auto
+              </div>
             </ChartCard>
           </motion.div>
         </div>

@@ -662,6 +662,9 @@ export default function NetworkPage() {
             <LargeConnectivityGraph spikes={spikes} electrodes={nElectrodes} />
           </div>
           {connectivity.data && <NetworkStats data={connectivity.data} />}
+          <div className="text-[9px] mt-2 pt-2" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-faint)' }}>
+            cofiring_bin=10ms &middot; min_strength=0.02
+          </div>
         </ChartCard>
       </motion.div>
 
@@ -678,6 +681,9 @@ export default function NetworkPage() {
             {crossCorr.data
               ? <CrossCorrHeatmap data={crossCorr.data} nElectrodes={nElectrodes} />
               : !crossCorr.loading && <div className="text-[11px] py-4" style={{ color: 'var(--text-muted)' }}>No dataset loaded</div>}
+            <div className="text-[9px] mt-2 pt-2" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-faint)' }}>
+              max_lag=50ms &middot; bin=1ms
+            </div>
           </ChartCard>
         </motion.div>
 
@@ -690,6 +696,9 @@ export default function NetworkPage() {
         >
           <ChartCard title="Transfer Entropy Matrix" description="Directed information flow between electrodes (bits)" loading={te.loading} error={te.error}>
             {te.data && <TEMatrix data={te.data} />}
+            <div className="text-[9px] mt-2 pt-2" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-faint)' }}>
+              bin_size=5ms &middot; history=5 bins
+            </div>
           </ChartCard>
         </motion.div>
 
