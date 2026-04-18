@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import * as api from '@/lib/api';
@@ -122,6 +122,17 @@ export default function DashboardPage() {
   const { datasetId, spikes, duration, nElectrodes, summary, burstInfo, status, loadingStep } = useDashboardContext();
   const [activeTab, setActiveTab] = useState<Tab>('visualizations');
   const [reportLoading, setReportLoading] = useState(false);
+
+  // Staggered chart rendering — avoid blocking browser with 6 D3 charts at once
+  const [chartsReady, setChartsReady] = useState(0);
+  useEffect(() => {
+    if (spikes.length === 0) { setChartsReady(0); return; }
+    // Render first 2 charts immediately, then add 2 more every 500ms
+    setChartsReady(2);
+    const t1 = setTimeout(() => setChartsReady(4), 500);
+    const t2 = setTimeout(() => setChartsReady(6), 1000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [spikes.length]);
 
   const downloadFullReport = async () => {
     if (!datasetId) return;
@@ -262,6 +273,7 @@ export default function DashboardPage() {
                   'bin_width=auto · max_isi=100ms',
                   'max_lag=50ms · bin_size=1ms',
                 ][i];
+                if (i >= chartsReady) return null; // staggered rendering
                 return (
                   <motion.div key={card.title} custom={i} initial="hidden" animate="visible" variants={cardVariants} className={card.span}>
                     <ChartCard title={card.title} description={card.desc} loading={isLoading} skeletonSize={card.size}>

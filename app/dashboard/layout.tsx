@@ -367,7 +367,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       setNElectrodes(result.n_electrodes);
 
       setLoadingStep('Loading spikes...');
-      const spikeData = await api.getSpikes(result.dataset_id, { limit: 5000 });
+      const spikeData = await api.getSpikes(result.dataset_id, { limit: 1000 });
       const times = spikeData?.times ?? [];
       const spikeArr: Spike[] = times.map((t: number, i: number) => ({
         time: t,
@@ -404,7 +404,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       setDuration(result.duration_s);
       setNElectrodes(result.n_electrodes);
 
-      const spikeData = await api.getSpikes(result.dataset_id, { limit: 5000 });
+      const spikeData = await api.getSpikes(result.dataset_id, { limit: 1000 });
       const spikeArr: Spike[] = spikeData.times.map((t: number, i: number) => ({
         time: t,
         electrode: spikeData.electrodes[i],
@@ -436,7 +436,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       setDuration(result.duration_s);
       setNElectrodes(result.n_electrodes);
 
-      const spikeData = await api.getSpikes(result.dataset_id, { limit: 5000 });
+      const spikeData = await api.getSpikes(result.dataset_id, { limit: 1000 });
       const spikeArr: Spike[] = spikeData.times.map((t: number, i: number) => ({
         time: t,
         electrode: spikeData.electrodes[i],
@@ -684,7 +684,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                       setDuration(result.duration_s);
                       setNElectrodes(result.n_electrodes);
                       setLoadingStep('Loading spike data for visualization...');
-                      const spikeData = await api.getSpikes(dsId, { limit: 5000 });
+                      const spikeData = await api.getSpikes(dsId, { limit: 1000 });
                       const times = spikeData?.times ?? [];
                       const electrodes = spikeData?.electrodes ?? [];
                       const amplitudes = spikeData?.amplitudes ?? [];
