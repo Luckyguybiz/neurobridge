@@ -303,39 +303,54 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     return () => clearInterval(timer);
   }, [status]);
 
-  /** Fetch background analysis after dataset loads (summary, bursts, IQ, health, consciousness).
-   *  Results cached in context — persist across page navigation. */
-  const fetchBackgroundAnalysis = useCallback((dsId: string) => {
-    // Reset all cached analysis for new dataset
+  /** Fetch background analysis SEQUENTIALLY to avoid overloading single API worker.
+   *  Fast endpoints first → UI updates quickly. Heavy endpoints later. */
+  const fetchBackgroundAnalysis = useCallback(async (dsId: string) => {
     clearCache();
     setCachedIQ(undefined);
     setCachedHealth(undefined);
     setCachedConsciousness(undefined);
 
-    // Summary + bursts
-    Promise.all([
-      api.getFullSummary(dsId),
-      api.getBursts(dsId),
-    ]).then(([summaryData, burstData]) => {
+    // Step 1: Summary (fast, needed for overview metrics)
+    try {
+      const summaryData = await api.getFullSummary(dsId);
       setSummary(summaryData);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const b = burstData as any;
-      setBurstInfo({
-        n_bursts: b?.summary?.n_network_bursts ?? b?.n_bursts ?? b?.network?.n_bursts ?? 0,
-        burst_rate_per_min: b?.summary?.burst_rate_per_min ?? b?.burst_rate_per_min ?? 0,
-        mean_duration_ms: b?.summary?.mean_duration_ms ?? b?.mean_duration_ms ?? 0,
-        total_burst_time_pct: b?.summary?.total_burst_time_pct ?? b?.total_burst_time_pct ?? 0,
-      });
-    }).catch((err) => {
-      console.error('[Dashboard] Summary/Bursts load failed:', err);
+    } catch (err) {
+      console.error('[Dashboard] Summary failed:', err);
       setSummary(null);
-      setBurstInfo(null);
-    });
+    }
 
-    // QuickStats (IQ, health, consciousness) — cached, no refetch on navigation
-    api.getOrganoidIQ(dsId).then(setCachedIQ).catch((err) => { console.error('[Dashboard] IQ load failed:', err); setCachedIQ(null); });
-    api.getHealth(dsId).then(setCachedHealth).catch((err) => { console.error('[Dashboard] Health load failed:', err); setCachedHealth(null); });
-    api.getConsciousness(dsId).then(setCachedConsciousness).catch((err) => { console.error('[Dashboard] Consciousness load failed:', err); setCachedConsciousness(null); });
+    // Step 2: Health (fast)
+    try {
+      const h = await api.getHealth(dsId);
+      setCachedHealth(h);
+    } catch { setCachedHealth(null); }
+
+    // Step 3: IQ (medium)
+    try {
+      const iq = await api.getOrganoidIQ(dsId);
+      setCachedIQ(iq);
+    } catch { setCachedIQ(null); }
+
+    // Step 4: Bursts (heavy — runs last)
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const burstData = await api.getBursts(dsId) as any;
+      setBurstInfo({
+        n_bursts: burstData?.summary?.n_network_bursts ?? burstData?.n_bursts ?? burstData?.network?.n_bursts ?? 0,
+        burst_rate_per_min: burstData?.summary?.burst_rate_per_min ?? burstData?.burst_rate_per_min ?? 0,
+        mean_duration_ms: burstData?.summary?.mean_duration_ms ?? burstData?.mean_duration_ms ?? 0,
+        total_burst_time_pct: burstData?.summary?.total_burst_time_pct ?? burstData?.total_burst_time_pct ?? 0,
+      });
+    } catch {
+      setBurstInfo(null);
+    }
+
+    // Step 5: Consciousness (last, least critical for overview)
+    try {
+      const c = await api.getConsciousness(dsId);
+      setCachedConsciousness(c);
+    } catch { setCachedConsciousness(null); }
   }, []);
 
   // ── Generate ───────────────────────────────────────────────────────────
