@@ -21,8 +21,8 @@ const capabilities = [
   },
   {
     tag: 'Analysis',
-    title: 'Decode hidden',
-    titleAccent: 'neural patterns',
+    title: 'Characterize',
+    titleAccent: 'neural dynamics',
     desc: 'Burst detection (Bakkum 2013), criticality assessment (Clauset et al. 2009), and IIT Phi computation — in one click.',
     visual: 'heatmap' as const,
   },
@@ -182,7 +182,7 @@ export default function HomePage() {
             <p className="text-[11px] uppercase tracking-[0.3em] mb-5" style={{ color: 'var(--section-label-cyan)' }}>Capabilities</p>
             <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-display leading-[1.15] tracking-tight max-w-lg">
               Everything you need to work with{' '}
-              <span className="italic bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, var(--gradient-text-from), var(--gradient-text-to))' }}>biological intelligence</span>
+              <span className="italic bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, var(--gradient-text-from), var(--gradient-text-to))' }}>organoid electrophysiology</span>
             </h2>
           </ScrollReveal>
 

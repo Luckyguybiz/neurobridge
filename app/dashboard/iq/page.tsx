@@ -281,7 +281,7 @@ export default function IQPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <ChartCard title="Organoid IQ Score" description="Composite Computational Capacity Index — 6 dimensions based on Quiroga 2004, Schreiber 2000, Watts & Strogatz 1998, Bi & Poo 1998" loading={iq.loading} error={iq.error}>
+        <ChartCard title="Network Complexity Score" description="Composite index of 6 network properties (Quiroga 2004, Schreiber 2000, Watts & Strogatz 1998). Not a measure of intelligence or cognition." loading={iq.loading} error={iq.error}>
           {iqData && (
             <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
               {/* Gauge column */}

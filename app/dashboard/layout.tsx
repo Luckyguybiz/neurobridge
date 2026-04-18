@@ -125,7 +125,7 @@ const NAV = [
   { href: '/dashboard',              label: 'Overview',     Icon: IconOverview },
   { href: '/dashboard/spikes',       label: 'Spikes',       Icon: IconSpikes },
   { href: '/dashboard/network',      label: 'Network',      Icon: IconNetwork },
-  { href: '/dashboard/iq',           label: 'IQ',           Icon: IconIQ },
+  { href: '/dashboard/iq',           label: 'Complexity',   Icon: IconIQ },
   { href: '/dashboard/discovery',    label: 'Discovery',    Icon: IconDiscovery },
   { href: '/dashboard/experiments',  label: 'Experiments',  Icon: IconExperiments },
   { href: '/dashboard/protocols',    label: 'Protocols',    Icon: IconProtocols },

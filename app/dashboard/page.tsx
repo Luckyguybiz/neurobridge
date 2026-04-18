@@ -50,8 +50,8 @@ function QuickStats() {
 
   const cards = [
     {
-      label: 'Organoid IQ',
-      tip: 'Composite Computational Capacity Index (6 dimensions, 0-100)',
+      label: 'NCI Score',
+      tip: 'Network Complexity Index: 6-dimension composite of signal, connectivity, information, temporal, adaptability, learning properties (0-100)',
       loading: iq === undefined,
       value: iqScore > 0 ? `${iqScore.toFixed(0)} (${iqGrade})` : iq === null ? '—' : '',
       color: iqScore >= 60 ? 'text-cyan-400' : iqScore >= 40 ? 'text-amber-400' : 'text-amber-400',
