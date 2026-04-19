@@ -1,4 +1,5 @@
-import * as d3 from 'd3';
+import { scaleSequential } from 'd3-scale';
+import { interpolateInferno } from 'd3-scale-chromatic';
 
 export const ELECTRODE_COLORS = [
   '#22d3ee', '#a78bfa', '#f472b6', '#fb923c',
@@ -16,7 +17,7 @@ export const ELECTRODE_POSITIONS = [
   { x: 3, y: 1, label: 'E7' },
 ];
 
-export const firingRateColorScale = d3.scaleSequential(d3.interpolateInferno).domain([0, 30]);
+export const firingRateColorScale = scaleSequential(interpolateInferno).domain([0, 30]);
 
 export function formatTime(seconds: number): string {
   if (seconds < 1) return `${(seconds * 1000).toFixed(0)} ms`;

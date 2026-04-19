@@ -1,7 +1,11 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
-import * as d3 from 'd3';
+import { select } from 'd3-selection';
+import { scaleLinear, scaleBand, scaleSequential } from 'd3-scale';
+import { interpolateInferno } from 'd3-scale-chromatic';
+import { axisBottom, axisLeft, axisRight } from 'd3-axis';
+import { max, range } from 'd3-array';
 import type { Spike } from '@/lib/types';
 import { getThemeColors } from '@/lib/utils';
 
@@ -11,7 +15,7 @@ export default function FiringRateHeatmap({ spikes, duration, electrodes }: { sp
   useEffect(() => {
     if (!svgRef.current || spikes.length === 0) return;
     const tc = getThemeColors();
-    const svg = d3.select(svgRef.current);
+    const svg = select(svgRef.current);
     svg.selectAll('*').remove();
 
     const rect = svgRef.current.getBoundingClientRect();
@@ -31,13 +35,13 @@ export default function FiringRateHeatmap({ spikes, duration, electrodes }: { sp
       counts[spike.electrode][bin]++;
     }
 
-    const maxCount = d3.max(counts.flat()) ?? 1;
-    const color = d3.scaleSequential(d3.interpolateInferno).domain([0, maxCount]);
+    const maxCount = max(counts.flat()) ?? 1;
+    const color = scaleSequential(interpolateInferno).domain([0, maxCount]);
 
     const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
-    const x = d3.scaleLinear().domain([0, duration]).range([0, w]);
-    const y = d3.scaleBand<number>().domain(d3.range(electrodes)).range([0, h]).padding(0.08);
+    const x = scaleLinear().domain([0, duration]).range([0, w]);
+    const y = scaleBand<number>().domain(range(electrodes)).range([0, h]).padding(0.08);
 
     const cellW = w / numBins;
 
@@ -55,12 +59,12 @@ export default function FiringRateHeatmap({ spikes, duration, electrodes }: { sp
 
     g.append('g')
       .attr('transform', `translate(0,${h})`)
-      .call(d3.axisBottom(x).ticks(6).tickFormat((d) => `${d}s`))
+      .call(axisBottom(x).ticks(6).tickFormat((d) => `${d}s`))
       .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
       .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
 
     g.append('g')
-      .call(d3.axisLeft(y).tickFormat((d) => `E${d}`))
+      .call(axisLeft(y).tickFormat((d) => `E${d}`))
       .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
       .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
 
@@ -68,7 +72,7 @@ export default function FiringRateHeatmap({ spikes, duration, electrodes }: { sp
     const legendW = 12;
     const legendH = h;
     const legendG = svg.append('g').attr('transform', `translate(${width - margin.right + 12},${margin.top})`);
-    const legendScale = d3.scaleLinear().domain([0, maxCount]).range([legendH, 0]);
+    const legendScale = scaleLinear().domain([0, maxCount]).range([legendH, 0]);
     const defs = svg.append('defs');
     const gradient = defs.append('linearGradient').attr('id', 'heatGrad').attr('x1', '0').attr('y1', '1').attr('x2', '0').attr('y2', '0');
     gradient.append('stop').attr('offset', '0%').attr('stop-color', color(0));
@@ -76,7 +80,7 @@ export default function FiringRateHeatmap({ spikes, duration, electrodes }: { sp
     gradient.append('stop').attr('offset', '100%').attr('stop-color', color(maxCount));
     legendG.append('rect').attr('width', legendW).attr('height', legendH).attr('fill', 'url(#heatGrad)').attr('rx', 3);
     legendG.append('g').attr('transform', `translate(${legendW},0)`)
-      .call(d3.axisRight(legendScale).ticks(4).tickSize(3))
+      .call(axisRight(legendScale).ticks(4).tickSize(3))
       .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '9px'))
       .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
   }, [spikes, duration, electrodes]);

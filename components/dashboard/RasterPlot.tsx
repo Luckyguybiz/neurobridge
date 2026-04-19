@@ -1,7 +1,10 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
-import * as d3 from 'd3';
+import { select } from 'd3-selection';
+import { scaleLinear, scaleBand } from 'd3-scale';
+import { axisBottom, axisLeft } from 'd3-axis';
+import { range } from 'd3-array';
 import type { Spike } from '@/lib/types';
 import { ELECTRODE_COLORS, getThemeColors } from '@/lib/utils';
 
@@ -11,7 +14,7 @@ export default function RasterPlot({ spikes, duration, electrodes }: { spikes: S
   useEffect(() => {
     if (!svgRef.current || spikes.length === 0) return;
     const tc = getThemeColors();
-    const svg = d3.select(svgRef.current);
+    const svg = select(svgRef.current);
     svg.selectAll('*').remove();
 
     const rect = svgRef.current.getBoundingClientRect();
@@ -23,23 +26,23 @@ export default function RasterPlot({ spikes, duration, electrodes }: { spikes: S
 
     const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
-    const x = d3.scaleLinear().domain([0, duration]).range([0, w]);
-    const y = d3.scaleBand<number>().domain(d3.range(electrodes)).range([0, h]).padding(0.3);
+    const x = scaleLinear().domain([0, duration]).range([0, w]);
+    const y = scaleBand<number>().domain(range(electrodes)).range([0, h]).padding(0.3);
 
     g.append('g')
       .attr('transform', `translate(0,${h})`)
-      .call(d3.axisBottom(x).ticks(6).tickFormat((d) => `${d}s`))
+      .call(axisBottom(x).ticks(6).tickFormat((d) => `${d}s`))
       .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
       .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
 
     g.append('g')
-      .call(d3.axisLeft(y).tickFormat((d) => `E${d}`))
+      .call(axisLeft(y).tickFormat((d) => `E${d}`))
       .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
       .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
 
     // Horizontal grid lines
     g.selectAll('.grid-line')
-      .data(d3.range(electrodes))
+      .data(range(electrodes))
       .join('line')
       .attr('x1', 0).attr('x2', w)
       .attr('y1', (d) => (y(d) ?? 0) + y.bandwidth() / 2)

@@ -1,16 +1,21 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
-import * as d3 from 'd3';
+import { select } from 'd3-selection';
+import { scaleLinear } from 'd3-scale';
+import { max } from 'd3-array';
+import { forceSimulation, forceLink, forceManyBody, forceCenter, forceCollide } from 'd3-force';
+import type { SimulationNodeDatum, SimulationLinkDatum } from 'd3-force';
+import { drag } from 'd3-drag';
 import type { Spike } from '@/lib/types';
 import { ELECTRODE_COLORS, ELECTRODE_POSITIONS, getThemeColors } from '@/lib/utils';
 
-interface SimNode extends d3.SimulationNodeDatum {
+interface SimNode extends SimulationNodeDatum {
   id: number;
   label: string;
 }
 
-interface SimLink extends d3.SimulationLinkDatum<SimNode> {
+interface SimLink extends SimulationLinkDatum<SimNode> {
   strength: number;
 }
 
@@ -20,7 +25,7 @@ export default function ConnectivityGraph({ spikes, electrodes }: { spikes: Spik
   useEffect(() => {
     if (!svgRef.current || spikes.length === 0) return;
     const tc = getThemeColors();
-    const svg = d3.select(svgRef.current);
+    const svg = select(svgRef.current);
     svg.selectAll('*').remove();
 
     const rect = svgRef.current.getBoundingClientRect();
@@ -58,15 +63,15 @@ export default function ConnectivityGraph({ spikes, electrodes }: { spikes: Spik
       y: height / 2 + (p.y - 0.5) * 80,
     }));
 
-    const maxStrength = d3.max(links, (l) => l.strength) ?? 1;
-    const linkWidth = d3.scaleLinear().domain([0, maxStrength]).range([0.5, 5]);
-    const linkOpacity = d3.scaleLinear().domain([0, maxStrength]).range([0.1, 0.8]);
+    const maxStrength = max(links, (l) => l.strength) ?? 1;
+    const linkWidth = scaleLinear().domain([0, maxStrength]).range([0.5, 5]);
+    const linkOpacity = scaleLinear().domain([0, maxStrength]).range([0.1, 0.8]);
 
-    const simulation = d3.forceSimulation(nodes)
-      .force('link', d3.forceLink<SimNode, SimLink>(links).id((d) => d.id).distance(80).strength(0.3))
-      .force('charge', d3.forceManyBody().strength(-200))
-      .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide(25));
+    const simulation = forceSimulation(nodes)
+      .force('link', forceLink<SimNode, SimLink>(links).id((d) => d.id).distance(80).strength(0.3))
+      .force('charge', forceManyBody().strength(-200))
+      .force('center', forceCenter(width / 2, height / 2))
+      .force('collision', forceCollide(25));
 
     const linkEls = svg.selectAll('.link')
       .data(links)
@@ -79,7 +84,7 @@ export default function ConnectivityGraph({ spikes, electrodes }: { spikes: Spik
       .data(nodes)
       .join('g');
 
-    nodeEls.call(d3.drag<SVGGElement, SimNode>()
+    nodeEls.call(drag<SVGGElement, SimNode>()
       .on('start', (event, d) => { if (!event.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
       .on('drag', (event, d) => { d.fx = event.x; d.fy = event.y; })
       .on('end', (event, d) => { if (!event.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; })

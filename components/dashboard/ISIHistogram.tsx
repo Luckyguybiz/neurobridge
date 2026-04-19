@@ -1,7 +1,10 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
-import * as d3 from 'd3';
+import { select } from 'd3-selection';
+import { scaleLog, scaleLinear } from 'd3-scale';
+import { axisBottom, axisLeft } from 'd3-axis';
+import { bin, max, range } from 'd3-array';
 import type { Spike } from '@/lib/types';
 import { ELECTRODE_COLORS, getThemeColors } from '@/lib/utils';
 
@@ -11,7 +14,7 @@ export default function ISIHistogram({ spikes, electrodes }: { spikes: Spike[]; 
   useEffect(() => {
     if (!svgRef.current || spikes.length === 0) return;
     const tc = getThemeColors();
-    const svg = d3.select(svgRef.current);
+    const svg = select(svgRef.current);
     svg.selectAll('*').remove();
 
     const rect = svgRef.current.getBoundingClientRect();
@@ -33,10 +36,10 @@ export default function ISIHistogram({ spikes, electrodes }: { spikes: Spike[]; 
 
     const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
-    const x = d3.scaleLog().domain([1, 1000]).range([0, w]).clamp(true);
-    const bins = d3.bin().domain([1, 1000] as [number, number]).thresholds(d3.range(0, 3, 0.1).map((v) => 10 ** v))(isiAll);
-    const maxCount = d3.max(bins, (b) => b.length) ?? 1;
-    const y = d3.scaleLinear().domain([0, maxCount]).range([h, 0]);
+    const x = scaleLog().domain([1, 1000]).range([0, w]).clamp(true);
+    const bins = bin().domain([1, 1000] as [number, number]).thresholds(range(0, 3, 0.1).map((v) => 10 ** v))(isiAll);
+    const maxCount = max(bins, (b) => b.length) ?? 1;
+    const y = scaleLinear().domain([0, maxCount]).range([h, 0]);
 
     g.selectAll('.bar')
       .data(bins)
@@ -51,12 +54,12 @@ export default function ISIHistogram({ spikes, electrodes }: { spikes: Spike[]; 
 
     g.append('g')
       .attr('transform', `translate(0,${h})`)
-      .call(d3.axisBottom(x).tickValues([1, 5, 10, 50, 100, 500]).tickFormat((d) => `${d}ms`))
+      .call(axisBottom(x).tickValues([1, 5, 10, 50, 100, 500]).tickFormat((d) => `${d}ms`))
       .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
       .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
 
     g.append('g')
-      .call(d3.axisLeft(y).ticks(5))
+      .call(axisLeft(y).ticks(5))
       .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
       .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
   }, [spikes, electrodes]);

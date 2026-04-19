@@ -1,7 +1,10 @@
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
-import * as d3 from 'd3';
+import { select } from 'd3-selection';
+import { scaleLinear } from 'd3-scale';
+import { axisBottom, axisLeft } from 'd3-axis';
+import { max } from 'd3-array';
 import type { Spike } from '@/lib/types';
 import { ELECTRODE_COLORS, getThemeColors } from '@/lib/utils';
 
@@ -13,7 +16,7 @@ export default function CrossCorrelogram({ spikes, electrodes }: { spikes: Spike
   useEffect(() => {
     if (!svgRef.current || spikes.length === 0) return;
     const tc = getThemeColors();
-    const svg = d3.select(svgRef.current);
+    const svg = select(svgRef.current);
     svg.selectAll('*').remove();
 
     const rect = svgRef.current.getBoundingClientRect();
@@ -44,9 +47,9 @@ export default function CrossCorrelogram({ spikes, electrodes }: { spikes: Spike
 
     const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
-    const x = d3.scaleLinear().domain([-maxLag, maxLag]).range([0, w]);
-    const maxC = d3.max(counts) ?? 1;
-    const y = d3.scaleLinear().domain([0, maxC]).range([h, 0]);
+    const x = scaleLinear().domain([-maxLag, maxLag]).range([0, w]);
+    const maxC = max(counts) ?? 1;
+    const y = scaleLinear().domain([0, maxC]).range([h, 0]);
 
     const barW = w / numBins;
 
@@ -68,12 +71,12 @@ export default function CrossCorrelogram({ spikes, electrodes }: { spikes: Spike
 
     g.append('g')
       .attr('transform', `translate(0,${h})`)
-      .call(d3.axisBottom(x).ticks(5).tickFormat((d) => `${d} ms`))
+      .call(axisBottom(x).ticks(5).tickFormat((d) => `${d} ms`))
       .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
       .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
 
     g.append('g')
-      .call(d3.axisLeft(y).ticks(4))
+      .call(axisLeft(y).ticks(4))
       .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
       .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
   }, [spikes, pairA, pairB, electrodes]);

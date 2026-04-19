@@ -1,7 +1,11 @@
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
-import * as d3 from 'd3';
+import { select } from 'd3-selection';
+import { scaleLinear } from 'd3-scale';
+import { axisBottom, axisLeft } from 'd3-axis';
+import { min, max, mean } from 'd3-array';
+import { line as d3Line } from 'd3-shape';
 import type { Spike } from '@/lib/types';
 import { ELECTRODE_COLORS, getThemeColors } from '@/lib/utils';
 
@@ -12,7 +16,7 @@ export default function SpikeWaveforms({ spikes, electrodes }: { spikes: Spike[]
   useEffect(() => {
     if (!svgRef.current) return;
     const tc = getThemeColors();
-    const svg = d3.select(svgRef.current);
+    const svg = select(svgRef.current);
     svg.selectAll('*').remove();
 
     const rect = svgRef.current.getBoundingClientRect();
@@ -28,29 +32,29 @@ export default function SpikeWaveforms({ spikes, electrodes }: { spikes: Spike[]
 
     const wfLen = sample[0].waveform.length;
     const allVals = sample.flatMap((s) => s.waveform);
-    const yMin = d3.min(allVals) ?? -200;
-    const yMax = d3.max(allVals) ?? 50;
+    const yMin = min(allVals) ?? -200;
+    const yMax = max(allVals) ?? 50;
 
     const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
-    const x = d3.scaleLinear().domain([0, wfLen - 1]).range([0, w]);
-    const y = d3.scaleLinear().domain([yMin * 1.1, yMax * 1.3]).range([h, 0]);
+    const x = scaleLinear().domain([0, wfLen - 1]).range([0, w]);
+    const y = scaleLinear().domain([yMin * 1.1, yMax * 1.3]).range([h, 0]);
 
     g.append('g')
       .attr('transform', `translate(0,${h})`)
-      .call(d3.axisBottom(x).ticks(5).tickFormat((d) => `${((+d / 30000) * 1000).toFixed(1)} ms`))
+      .call(axisBottom(x).ticks(5).tickFormat((d) => `${((+d / 30000) * 1000).toFixed(1)} ms`))
       .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
       .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
 
     g.append('g')
-      .call(d3.axisLeft(y).ticks(5).tickFormat((d) => `${d} uV`))
+      .call(axisLeft(y).ticks(5).tickFormat((d) => `${d} uV`))
       .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
       .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
 
     // Zero line
     g.append('line').attr('x1', 0).attr('x2', w).attr('y1', y(0)).attr('y2', y(0)).attr('stroke', tc.grid);
 
-    const line = d3.line<number>()
+    const line = d3Line<number>()
       .x((_, i) => x(i))
       .y((d) => y(d));
 
@@ -67,9 +71,9 @@ export default function SpikeWaveforms({ spikes, electrodes }: { spikes: Spike[]
     }
 
     // Mean waveform
-    const mean = Array.from({ length: wfLen }, (_, i) => d3.mean(sample.map((s) => s.waveform[i])) ?? 0);
+    const meanWf = Array.from({ length: wfLen }, (_, i) => mean(sample.map((s) => s.waveform[i])) ?? 0);
     g.append('path')
-      .datum(mean)
+      .datum(meanWf)
       .attr('d', line)
       .attr('fill', 'none')
       .attr('stroke', color)
