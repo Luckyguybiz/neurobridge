@@ -285,7 +285,7 @@ export default function IQPage() {
           {iqData && (
             <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
               {/* Gauge column */}
-              <div className="flex flex-col items-center gap-3 shrink-0">
+              <div className="flex flex-col items-center gap-3 shrink-0 w-full lg:w-auto">
                 <CircularGauge value={score} grade={grade} />
                 <div className="text-center max-w-[220px]">
                   <div className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{getGradeDesc(grade)}</div>
@@ -368,14 +368,14 @@ export default function IQPage() {
                              : isMed  ? 'bg-amber-500/15 text-amber-400 border-amber-500/20'
                              :          'bg-emerald-500/15 text-emerald-400 border-emerald-500/20';
             return (
-              <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
                 <div className="text-2xl font-bold tabular-nums" style={{ color: 'var(--text-secondary)' }}>{(riskScore * 100).toFixed(1)}%</div>
                 <div className={`px-3 py-1 rounded-lg border text-[11px] font-bold ${badgeColor}`}>
                   {riskLevel.toUpperCase()}
                 </div>
                 <Link
                   href="/dashboard/discovery"
-                  className="ml-auto text-[11px] text-cyan-400/70 hover:text-cyan-400 transition-colors"
+                  className="sm:ml-auto text-[11px] text-cyan-400/70 hover:text-cyan-400 transition-colors whitespace-nowrap"
                 >
                   View Details →
                 </Link>

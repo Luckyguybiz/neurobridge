@@ -325,8 +325,8 @@ function VowelCard({ datasetId }: { datasetId: string }) {
       {confMatrix.length > 0 && (
         <div className="space-y-1">
           <div className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>Confusion Matrix</div>
-          <div className="overflow-x-auto">
-            <div className="inline-grid gap-px" style={{ gridTemplateColumns: `auto repeat(${vowels.length}, 1fr)` }}>
+          <div className="overflow-x-auto -mx-1 px-1">
+            <div className="inline-grid gap-px min-w-full" style={{ gridTemplateColumns: `auto repeat(${vowels.length}, minmax(32px, 1fr))` }}>
               {/* Header row */}
               <div className="text-[8px] p-1" style={{ color: 'var(--text-faint)' }} />
               {vowels.map((v) => (
@@ -599,9 +599,9 @@ function ProtocolCard({ datasetId }: { datasetId: string }) {
           <div className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>Key Parameters</div>
           <div className="grid grid-cols-2 gap-1">
             {paramEntries.map(([k, v]) => (
-              <div key={k} className="px-2 py-1.5 rounded-md bg-white/[0.03] border border-white/[0.04]">
-                <div className="text-[8px] capitalize" style={{ color: 'var(--text-faint)' }}>{k.replace(/_/g, ' ')}</div>
-                <div className="text-[11px] text-cyan-400/70 tabular-nums font-mono">
+              <div key={k} className="px-2 py-1.5 rounded-md bg-white/[0.03] border border-white/[0.04] min-w-0">
+                <div className="text-[8px] capitalize truncate" style={{ color: 'var(--text-faint)' }}>{k.replace(/_/g, ' ')}</div>
+                <div className="text-[11px] text-cyan-400/70 tabular-nums font-mono truncate">
                   {typeof v === 'number' ? (Number.isInteger(v) ? v : Number(v).toFixed(3)) : String(v)}
                 </div>
               </div>
@@ -686,8 +686,8 @@ export default function ExperimentsPage() {
         transition={{ duration: 0.4 }}
         className="mb-4"
       >
-        <h1 className="text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Experiments Hub</h1>
-        <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+        <h1 className="text-[16px] sm:text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Experiments Hub</h1>
+        <p className="text-[11px] sm:text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
           6 computational experiments inspired by DishBrain & Brainoware research
         </p>
       </motion.div>

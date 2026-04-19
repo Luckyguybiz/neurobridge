@@ -94,7 +94,7 @@ export default function SpikeWaveforms({ spikes, electrodes }: { spikes: Spike[]
           </button>
         ))}
       </div>
-      <svg ref={svgRef} className="w-full h-56" />
+      <svg ref={svgRef} className="w-full h-44 sm:h-56" />
     </div>
   );
 }

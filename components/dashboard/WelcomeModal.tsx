@@ -75,7 +75,7 @@ export default function WelcomeModal() {
             {/* Gradient top bar */}
             <div className="h-1 bg-gradient-to-r from-cyan-500 via-violet-500 to-cyan-500" />
 
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               {/* Step content */}
               <AnimatePresence mode="wait">
                 <motion.div
@@ -86,10 +86,10 @@ export default function WelcomeModal() {
                   transition={{ duration: 0.2 }}
                 >
                   <div className="text-3xl mb-3">{steps[step].icon}</div>
-                  <h2 className="text-[18px] font-display mb-2" style={{ color: 'var(--text-primary)' }}>
+                  <h2 className="text-[16px] sm:text-[18px] font-display mb-2" style={{ color: 'var(--text-primary)' }}>
                     {steps[step].title}
                   </h2>
-                  <p className="text-[13px] leading-[1.7]" style={{ color: 'var(--text-muted)' }}>
+                  <p className="text-[12px] sm:text-[13px] leading-[1.7]" style={{ color: 'var(--text-muted)' }}>
                     {steps[step].desc}
                   </p>
                 </motion.div>
@@ -115,19 +115,19 @@ export default function WelcomeModal() {
               </div>
 
               {/* Buttons */}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
                 <button
                   onClick={dismiss}
-                  className="text-[11px] px-3 py-1.5 rounded-lg transition-colors"
+                  className="text-[11px] px-3 py-2 rounded-lg transition-colors min-h-[36px]"
                   style={{ color: 'var(--text-faint)' }}
                 >
                   Skip
                 </button>
-                <div className="flex gap-2">
+                <div className="flex gap-2 ml-auto">
                   {step > 0 && (
                     <button
                       onClick={prev}
-                      className="text-[11px] px-4 py-2 rounded-lg transition-all"
+                      className="text-[11px] px-4 py-2 rounded-lg transition-all min-h-[36px]"
                       style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
                     >
                       Back
@@ -135,7 +135,7 @@ export default function WelcomeModal() {
                   )}
                   <button
                     onClick={next}
-                    className="text-[11px] px-5 py-2 rounded-lg font-medium bg-gradient-to-r from-cyan-500 to-violet-500 text-white transition-all hover:shadow-[0_0_20px_rgba(34,211,238,0.2)]"
+                    className="text-[11px] px-5 py-2 rounded-lg font-medium bg-gradient-to-r from-cyan-500 to-violet-500 text-white transition-all hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] min-h-[36px]"
                   >
                     {step < steps.length - 1 ? 'Next' : 'Get Started'}
                   </button>

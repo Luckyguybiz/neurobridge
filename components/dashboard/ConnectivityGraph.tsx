@@ -113,5 +113,5 @@ export default function ConnectivityGraph({ spikes, electrodes }: { spikes: Spik
     return () => { simulation.stop(); };
   }, [spikes, electrodes]);
 
-  return <svg ref={svgRef} className="w-full h-64" />;
+  return <svg ref={svgRef} className="w-full h-52 sm:h-64" />;
 }

@@ -105,31 +105,31 @@ export default function LivePage() {
   return (
     <div className="p-3 sm:p-4 space-y-3">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
           <div>
-            <h1 className="text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Live Stream</h1>
-            <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Real-time spike streaming via WebSocket</p>
+            <h1 className="text-[16px] sm:text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Live Stream</h1>
+            <p className="text-[11px] sm:text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Real-time spike streaming via WebSocket</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {/* Connect / Resume */}
             {!live.connected ? (
               <button
                 onClick={liveConnect}
-                className="text-[11px] px-4 py-2 rounded-lg font-medium transition-all bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border border-cyan-500/20 text-cyan-400 hover:border-cyan-400/40"
+                className="text-[11px] px-4 py-2 rounded-lg font-medium transition-all bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border border-cyan-500/20 text-cyan-400 hover:border-cyan-400/40 min-h-[36px] whitespace-nowrap"
               >
                 Connect
               </button>
             ) : live.paused ? (
               <button
                 onClick={liveResume}
-                className="text-[11px] px-4 py-2 rounded-lg font-medium transition-all bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 hover:border-emerald-400/40"
+                className="text-[11px] px-4 py-2 rounded-lg font-medium transition-all bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 hover:border-emerald-400/40 min-h-[36px] whitespace-nowrap"
               >
                 ▶ Resume
               </button>
             ) : (
               <button
                 onClick={livePause}
-                className="text-[11px] px-4 py-2 rounded-lg font-medium transition-all bg-amber-500/15 border border-amber-500/20 text-amber-400 hover:border-amber-400/40"
+                className="text-[11px] px-4 py-2 rounded-lg font-medium transition-all bg-amber-500/15 border border-amber-500/20 text-amber-400 hover:border-amber-400/40 min-h-[36px] whitespace-nowrap"
               >
                 ⏸ Pause
               </button>
@@ -138,7 +138,8 @@ export default function LivePage() {
             {live.connected && (
               <button
                 onClick={liveDisconnect}
-                className="text-[11px] px-3 py-2 rounded-lg font-medium transition-all bg-red-500/10 border border-red-500/15 text-red-400/70 hover:text-red-400 hover:border-red-400/30"
+                className="text-[11px] px-3 py-2 rounded-lg font-medium transition-all bg-red-500/10 border border-red-500/15 text-red-400/70 hover:text-red-400 hover:border-red-400/30 min-h-[36px] min-w-[36px]"
+                aria-label="Disconnect"
               >
                 ✕
               </button>
@@ -169,7 +170,7 @@ export default function LivePage() {
 
       {/* Live raster */}
       <ChartCard title="Live Raster Plot" description="Real-time spike events across 8 electrodes">
-        <canvas ref={canvasRef} className="w-full rounded-lg" style={{ height: 300 }} />
+        <canvas ref={canvasRef} className="w-full rounded-lg h-[220px] sm:h-[300px]" />
       </ChartCard>
 
       {/* Per-electrode rates */}

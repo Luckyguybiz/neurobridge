@@ -159,7 +159,7 @@ export default function DashboardPage() {
       <div className="p-3 sm:p-4">
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="text-4xl mb-4">🧠</div>
-          <h2 className="text-[20px] font-display mb-2" style={{ color: 'var(--text-primary)' }}>Load data to begin analysis</h2>
+          <h2 className="text-[16px] sm:text-[20px] font-display mb-2" style={{ color: 'var(--text-primary)' }}>Load data to begin analysis</h2>
           <p className="text-[13px] max-w-md leading-relaxed mb-6" style={{ color: 'var(--text-muted)' }}>
             Choose a data source from the header: <strong className="text-emerald-400">FinalSpark</strong> for real organoid data (2.6M spikes, 32ch MEA, 118h),
             or <strong style={{ color: 'var(--text-secondary)' }}>30s/120s</strong> to generate synthetic spike data for testing.
@@ -190,7 +190,7 @@ export default function DashboardPage() {
 
       {/* Tab navigation */}
       {status === 'ready' && datasetId && (
-        <div className="flex gap-1 mb-3">
+        <div className="flex gap-1 mb-3 flex-wrap">
           {([
             { key: 'visualizations' as Tab, label: 'Visualizations', count: 6 },
             { key: 'advanced'       as Tab, label: 'Advanced', count: 12 },
@@ -198,7 +198,7 @@ export default function DashboardPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 ${
+              className={`text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 whitespace-nowrap ${
                 activeTab === tab.key
                   ? 'bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border border-cyan-500/20 text-cyan-400/90'
                   : 'border'
@@ -212,7 +212,7 @@ export default function DashboardPage() {
           <button
             onClick={downloadFullReport}
             disabled={reportLoading}
-            className="text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40 ml-auto"
+            className="text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40 ml-auto whitespace-nowrap"
             style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
           >
             {reportLoading ? 'Generating...' : 'Full Report JSON'}
@@ -297,7 +297,7 @@ export default function DashboardPage() {
           {activeTab === 'visualizations' && summary && burstInfo && (
             <motion.div custom={6} initial="hidden" animate="visible" variants={cardVariants} className="xl:col-span-3 lg:col-span-2">
               <ChartCard title="Analysis Summary" description={`Dataset ${datasetId} · Neurocomputers API`}>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-[12px]">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-[12px]">
                   <div>
                     <div className="mb-1.5" style={{ color: 'var(--text-faint)' }}>Population</div>
                     <div style={{ color: 'var(--text-secondary)' }}>Mean rate: <span className="text-cyan-400">{String(pop?.mean_firing_rate_hz ?? '—')} Hz</span></div>
@@ -312,7 +312,7 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <div className="mb-1.5" style={{ color: 'var(--text-faint)' }}>Dataset</div>
-                    <div style={{ color: 'var(--text-secondary)' }}>ID: <span className="font-mono text-[11px]" style={{ color: 'var(--text-muted)' }}>{datasetId}</span></div>
+                    <div style={{ color: 'var(--text-secondary)' }}>ID: <span className="font-mono text-[11px] break-all" style={{ color: 'var(--text-muted)' }}>{datasetId}</span></div>
                     <div style={{ color: 'var(--text-secondary)' }}>Electrodes: <span style={{ color: 'var(--text-muted)' }}>{nElectrodes}</span></div>
                     <div style={{ color: 'var(--text-secondary)' }}>Duration: <span style={{ color: 'var(--text-muted)' }}>{duration.toFixed(1)}s</span></div>
                   </div>

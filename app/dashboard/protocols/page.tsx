@@ -104,12 +104,12 @@ function ProtocolItem({
                     {paramEntries.map(([key, val]) => (
                       <div
                         key={key}
-                        className="px-2 py-1.5 rounded-md bg-white/[0.03] border border-white/[0.04]"
+                        className="px-2 py-1.5 rounded-md bg-white/[0.03] border border-white/[0.04] min-w-0"
                       >
                         <div className="text-[8px] capitalize" style={{ color: 'var(--text-faint)' }}>
                           {key.replace(/_/g, ' ')}
                         </div>
-                        <div className="text-[11px] text-cyan-400/70 tabular-nums font-mono">
+                        <div className="text-[11px] text-cyan-400/70 tabular-nums font-mono truncate">
                           {typeof val === 'number'
                             ? Number.isInteger(val)
                               ? val
@@ -229,8 +229,8 @@ export default function ProtocolsPage() {
         className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
       >
         <div>
-          <h1 className="text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Protocol Library</h1>
-          <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+          <h1 className="text-[16px] sm:text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Protocol Library</h1>
+          <p className="text-[11px] sm:text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
             Available stimulation protocols for organoid experiments
           </p>
         </div>
@@ -240,7 +240,7 @@ export default function ProtocolsPage() {
           <button
             onClick={fetchSuggestion}
             disabled={suggestLoading}
-            className="self-start px-5 py-2 rounded-full text-[12px] font-medium bg-gradient-to-r from-violet-500 to-cyan-500 text-white hover:from-violet-400 hover:to-cyan-400 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(139,92,246,0.2)]"
+            className="self-start sm:self-auto px-5 py-2 rounded-full text-[12px] font-medium bg-gradient-to-r from-violet-500 to-cyan-500 text-white hover:from-violet-400 hover:to-cyan-400 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(139,92,246,0.2)] whitespace-nowrap"
           >
             {suggestLoading ? 'Analyzing...' : 'Suggest Protocol'}
           </button>

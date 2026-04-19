@@ -611,12 +611,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <div className="flex-1 flex flex-col min-w-0 lg:pl-[220px]">
           {/* Header */}
           <header className="sticky top-0 z-20 backdrop-blur-2xl border-b" style={{ background: 'color-mix(in srgb, var(--bg-primary) 70%, transparent)', borderColor: 'var(--border)' }}>
-            <div className="px-4 sm:px-5 h-12 flex items-center justify-between gap-3">
+            <div className="px-3 sm:px-5 min-h-12 py-1.5 sm:py-0 sm:h-12 flex items-center justify-between gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
               {/* Mobile menu toggle */}
               <button
-                className="lg:hidden transition-colors"
+                className="lg:hidden transition-colors flex items-center justify-center w-10 h-10 -ml-2"
                 style={{ color: 'var(--text-muted)' }}
                 onClick={() => setSidebarOpen(true)}
+                aria-label="Open menu"
               >
                 <svg viewBox="0 0 20 20" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round">
                   <path d="M3 6h14M3 10h14M3 14h14" />
@@ -624,7 +625,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               </button>
 
               {/* Status badge + dataset name */}
-              <div className="flex items-center gap-2 min-w-0">
+              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
                 {status === 'ready' && (
                   <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/[0.08] border border-emerald-500/[0.12] shrink-0">
                     <LiveDot />
@@ -658,9 +659,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   </div>
                 )}
 
-                {/* Metrics (md+) */}
+                {/* Metrics (lg+) */}
                 {status === 'ready' && pop && (
-                  <div className="hidden md:flex items-center gap-1.5 overflow-x-auto">
+                  <div className="hidden lg:flex items-center gap-1.5 overflow-x-auto">
                     <MetricPill label="Spikes" value={String(pop.total_spikes).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} />
                     <MetricPill label="Rate" value={String(pop.mean_firing_rate_hz)} unit="Hz" />
                     <MetricPill label="Duration" value={String((dataset?.duration_s as number)?.toFixed(1))} unit="s" />
@@ -670,7 +671,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               </div>
 
               {/* Controls */}
-              <div className="flex items-center gap-1.5 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto max-w-full scrollbar-thin -mx-1 px-1 w-full sm:w-auto order-last sm:order-none basis-full sm:basis-auto">
                 <button
                   onClick={async () => {
                     setStatus('loading');
@@ -709,7 +710,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     }
                   }}
                   disabled={status === 'loading'}
-                  className={`text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40 ${
+                  className={`text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40 shrink-0 whitespace-nowrap ${
                     datasetSource === 'finalspark' && status === 'ready'
                       ? 'bg-gradient-to-r from-emerald-500/25 to-cyan-500/25 border border-emerald-400/30 text-emerald-300 ring-1 ring-emerald-400/20'
                       : 'bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 border border-emerald-500/20 text-emerald-400/80 hover:text-emerald-300'
@@ -737,7 +738,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                       onClick={btn.onClick}
                       disabled={status === 'loading'}
                       title={btn.title}
-                      className={`text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40 ${
+                      className={`text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40 shrink-0 whitespace-nowrap ${
                         isActive
                           ? 'bg-gradient-to-r from-cyan-500/25 to-violet-500/25 border border-cyan-400/30 text-cyan-300 ring-1 ring-cyan-400/20'
                           : isLoading
@@ -755,7 +756,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   onClick={() => fileInputRef.current?.click()}
                   disabled={status === 'loading'}
                   title="Upload your own MEA dataset (CSV, HDF5, Parquet)"
-                  className="text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40"
+                  className="text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40 shrink-0 whitespace-nowrap"
                   style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
                 >
                   Upload
@@ -763,7 +764,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 {datasetId && status === 'ready' && (
                   <a
                     href={api.getExportCSVUrl(datasetId)}
-                    className="hidden sm:block text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300"
+                    className="text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 shrink-0 whitespace-nowrap"
                     style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
                   >
                     CSV

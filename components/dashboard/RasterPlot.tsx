@@ -59,5 +59,5 @@ export default function RasterPlot({ spikes, duration, electrodes }: { spikes: S
       .attr('opacity', 0.7);
   }, [spikes, duration, electrodes]);
 
-  return <svg ref={svgRef} className="w-full h-64" />;
+  return <svg ref={svgRef} className="w-full h-52 sm:h-64" />;
 }

@@ -317,3 +317,13 @@ html.light svg text             { fill: var(--text-secondary); }
 
 /* Stats dividers use theme-aware color */
 .stats-grid > :not(:first-child) { border-color: var(--divider-color); }
+
+/* Thin scrollbars for horizontal scroll containers (mobile header controls, etc.) */
+.scrollbar-thin::-webkit-scrollbar { height: 4px; width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+
+/* Stats dividers on md breakpoint — vertical on wider screens only */
+@media (min-width: 768px) {
+  .stats-grid.md\:divide-x > :not(:first-child) { border-left-width: 1px; }
+}

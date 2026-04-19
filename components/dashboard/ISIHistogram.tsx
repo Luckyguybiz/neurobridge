@@ -61,5 +61,5 @@ export default function ISIHistogram({ spikes, electrodes }: { spikes: Spike[]; 
       .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
   }, [spikes, electrodes]);
 
-  return <svg ref={svgRef} className="w-full h-56" />;
+  return <svg ref={svgRef} className="w-full h-44 sm:h-56" />;
 }

@@ -176,7 +176,7 @@ function ProtocolCard({ protocol, datasetId }: { protocol: Protocol; datasetId: 
         </div>
 
         {/* Run button */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={runSimulation}
             disabled={loading || !datasetId}
@@ -303,9 +303,9 @@ export default function ConstructorPage() {
     <div className="p-3 sm:p-4">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mb-4">
-        <h1 className="text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Experiment Constructor</h1>
-        <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-          5 learning protocols from DishBrain, Brainoware, UCSC, and FinalSpark · {datasetId ? `Dataset: ${datasetId}` : 'Generate data first'}
+        <h1 className="text-[16px] sm:text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Experiment Constructor</h1>
+        <p className="text-[11px] sm:text-[12px] mt-0.5 break-words" style={{ color: 'var(--text-muted)' }}>
+          5 learning protocols from DishBrain, Brainoware, UCSC, and FinalSpark · {datasetId ? <>Dataset: <span className="font-mono text-[10px] break-all">{datasetId}</span></> : 'Generate data first'}
         </p>
       </motion.div>
 

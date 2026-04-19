@@ -640,9 +640,9 @@ function TuringTestCard({ data }: { data: Record<string, unknown> }) {
 
       {/* Feature comparison table */}
       {metrics.length > 0 && (
-        <div className="space-y-1 mt-2">
-          <div className="flex gap-2 text-[9px] uppercase tracking-widest border-b border-white/[0.06] pb-1" style={{ color: 'var(--text-faint)' }}>
-            <span className="w-24 shrink-0">Metric</span>
+        <div className="space-y-1 mt-2 overflow-x-auto -mx-1 px-1">
+          <div className="flex gap-2 text-[9px] uppercase tracking-widest border-b border-white/[0.06] pb-1 min-w-[320px]" style={{ color: 'var(--text-faint)' }}>
+            <span className="w-20 sm:w-24 shrink-0">Metric</span>
             <span className="flex-1 text-center">Real</span>
             <span className="flex-1 text-center">Poisson</span>
             <span className="flex-1 text-center">LIF</span>
@@ -650,8 +650,8 @@ function TuringTestCard({ data }: { data: Record<string, unknown> }) {
           {metrics.slice(0, 8).map((metric) => {
             const row = comparison[metric] ?? {};
             return (
-              <div key={metric} className="flex gap-2 text-[10px] py-0.5 border-b border-white/[0.03]">
-                <span className="w-24 shrink-0 truncate capitalize" style={{ color: 'var(--text-muted)' }}>{metric.replace(/_/g, ' ')}</span>
+              <div key={metric} className="flex gap-2 text-[10px] py-0.5 border-b border-white/[0.03] min-w-[320px]">
+                <span className="w-20 sm:w-24 shrink-0 truncate capitalize" style={{ color: 'var(--text-muted)' }}>{metric.replace(/_/g, ' ')}</span>
                 <span className="flex-1 text-center text-emerald-400/60 tabular-nums">
                   {typeof row.real === 'number' ? Number(row.real).toFixed(3) : String(row.real ?? '—')}
                 </span>
@@ -1129,8 +1129,8 @@ export default function DiscoveryPage() {
         transition={{ duration: 0.4 }}
         className="mb-4"
       >
-        <h1 className="text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Discovery Analysis</h1>
-        <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>17 advanced analyses grouped by domain</p>
+        <h1 className="text-[16px] sm:text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Discovery Analysis</h1>
+        <p className="text-[11px] sm:text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>17 advanced analyses grouped by domain</p>
       </motion.div>
 
       <DiscoveryGroups cards={cards} />

@@ -47,23 +47,23 @@ export default function HomePage() {
     <div className="min-h-screen overflow-x-clip grain" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl" style={{ background: 'color-mix(in srgb, var(--bg-primary) 60%, transparent)', borderBottom: '1px solid var(--border)' }}>
-        <div className="max-w-[1200px] mx-auto flex items-center justify-between px-6 h-14">
-          <Link href="/" className="flex items-center gap-2.5">
-            <span className="font-bold text-[16px] tracking-tight" style={{ color: 'var(--text-primary)' }}>neuro<span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, var(--accent-cyan), var(--accent-violet))' }}>computers</span></span>
+        <div className="max-w-[1200px] mx-auto flex items-center justify-between px-4 sm:px-6 h-14 gap-3">
+          <Link href="/" className="flex items-center gap-2.5 min-w-0">
+            <span className="font-bold text-[15px] sm:text-[16px] tracking-tight truncate" style={{ color: 'var(--text-primary)' }}>neuro<span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, var(--accent-cyan), var(--accent-violet))' }}>computers</span></span>
           </Link>
           <div className="hidden md:flex items-center gap-8 text-[13px]" style={{ color: 'var(--text-muted)' }}>
             <a href="#capabilities" className="hover:opacity-70 transition-colors duration-500">Capabilities</a>
             <a href="#workflow" className="hover:opacity-70 transition-colors duration-500">Workflow</a>
             <a href="#methods" className="hover:opacity-70 transition-colors duration-500">Methods</a>
           </div>
-          <Link href="/dashboard" className="text-[12px] px-4 py-1.5 rounded-lg transition-all duration-500" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+          <Link href="/dashboard" className="text-[12px] px-3 sm:px-4 py-1.5 rounded-lg transition-all duration-500 shrink-0 whitespace-nowrap" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
             Dashboard
           </Link>
         </div>
       </nav>
 
       {/* ═══════════ HERO ═══════════ */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center px-6">
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6">
         <NeuralBackground />
 
         {/* Ambient orbs */}
@@ -143,7 +143,7 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════ LIVE TRACE ═══════════ */}
-      <section className="py-4 px-6 max-w-[1100px] mx-auto">
+      <section className="py-4 px-4 sm:px-6 max-w-[1100px] mx-auto">
         <ScrollReveal variant="scale">
           <div className="relative">
             <div className="absolute -inset-px rounded-2xl border-glow" style={{ background: 'linear-gradient(to right, color-mix(in srgb, var(--accent-cyan) 10%, transparent), transparent, color-mix(in srgb, var(--accent-violet) 10%, transparent))' }} />
@@ -155,9 +155,9 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════ STATS ═══════════ */}
-      <section className="py-28">
-        <div className="max-w-[1100px] mx-auto px-6">
-          <div className="stats-grid grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-0 md:divide-x">
+      <section className="py-16 sm:py-28">
+        <div className="max-w-[1100px] mx-auto px-4 sm:px-6">
+          <div className="stats-grid grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-0 md:divide-x">
             {[
               { value: '9', label: 'Peer-Reviewed Methods' },
               { value: '12K', label: 'Lines of Analysis Code' },
@@ -176,9 +176,9 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════ CAPABILITIES ═══════════ */}
-      <section id="capabilities" className="py-20 px-6">
+      <section id="capabilities" className="py-16 sm:py-20 px-4 sm:px-6">
         <div className="max-w-[1100px] mx-auto">
-          <ScrollReveal variant="blur" className="mb-24">
+          <ScrollReveal variant="blur" className="mb-16 sm:mb-24">
             <p className="text-[11px] uppercase tracking-[0.3em] mb-5" style={{ color: 'var(--section-label-cyan)' }}>Capabilities</p>
             <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-display leading-[1.15] tracking-tight max-w-lg">
               Everything you need to work with{' '}
@@ -186,9 +186,9 @@ export default function HomePage() {
             </h2>
           </ScrollReveal>
 
-          <div className="space-y-36">
+          <div className="space-y-20 sm:space-y-36">
             {capabilities.map((cap, i) => (
-              <div key={cap.tag} className={`flex flex-col ${i % 2 === 1 ? 'lg:flex-row-reverse' : 'lg:flex-row'} gap-12 lg:gap-20 items-center`}>
+              <div key={cap.tag} className={`flex flex-col ${i % 2 === 1 ? 'lg:flex-row-reverse' : 'lg:flex-row'} gap-8 sm:gap-12 lg:gap-20 items-center`}>
                 {/* Text */}
                 <ScrollReveal variant={i % 2 === 0 ? 'fade-left' : 'fade-right'} className="flex-1">
                   <div className="space-y-5">
@@ -225,7 +225,7 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════ WORKFLOW ═══════════ */}
-      <section id="workflow" className="py-32 px-6 relative">
+      <section id="workflow" className="py-20 sm:py-32 px-4 sm:px-6 relative">
         {/* Ambient */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[150px] pointer-events-none" style={{ background: 'var(--accent-violet)', opacity: 'var(--ambient-blob-opacity)' }} />
 
@@ -241,13 +241,13 @@ export default function HomePage() {
           <div>
             {steps.map((step, i) => (
               <ScrollReveal key={step.title} delay={i * 0.08}>
-                <div className="group flex items-start gap-8 py-10 transition-all duration-700" style={{ borderTop: '1px solid var(--border)' }}>
+                <div className="group flex items-start gap-4 sm:gap-8 py-6 sm:py-10 transition-all duration-700" style={{ borderTop: '1px solid var(--border)' }}>
                   <span className="text-[11px] font-mono group-hover:text-cyan-400/40 transition-colors duration-700 pt-1 shrink-0 tabular-nums" style={{ color: 'var(--text-faint)' }}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   <div>
-                    <h3 className="text-[20px] font-display transition-colors duration-500" style={{ color: 'var(--text-secondary)' }}>{step.title}</h3>
-                    <p className="text-[13px] mt-2 leading-[1.7] max-w-md transition-colors duration-500" style={{ color: 'var(--text-faint)' }}>{step.desc}</p>
+                    <h3 className="text-[17px] sm:text-[20px] font-display transition-colors duration-500" style={{ color: 'var(--text-secondary)' }}>{step.title}</h3>
+                    <p className="text-[12px] sm:text-[13px] mt-2 leading-[1.7] max-w-md transition-colors duration-500" style={{ color: 'var(--text-faint)' }}>{step.desc}</p>
                   </div>
                 </div>
               </ScrollReveal>
@@ -257,7 +257,7 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════ METHODS ═══════════ */}
-      <section id="methods" className="py-24 px-6">
+      <section id="methods" className="py-16 sm:py-24 px-4 sm:px-6">
         <div className="max-w-[1100px] mx-auto">
           <ScrollReveal variant="blur" className="mb-16">
             <p className="text-[11px] uppercase tracking-[0.3em] mb-5" style={{ color: 'var(--section-label-cyan)' }}>Methods</p>
@@ -301,7 +301,7 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════ CTA ═══════════ */}
-      <section className="py-40 px-6 relative">
+      <section className="py-24 sm:py-40 px-4 sm:px-6 relative">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[130px] pointer-events-none" style={{ background: 'var(--accent-cyan)', opacity: 'var(--ambient-blob-opacity)' }} />
 
         <ScrollReveal variant="scale" className="text-center max-w-xl mx-auto relative z-10">
@@ -322,13 +322,13 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════ FOOTER ═══════════ */}
-      <footer className="px-6 py-10" style={{ borderTop: '1px solid var(--border)' }}>
+      <footer className="px-4 sm:px-6 py-10" style={{ borderTop: '1px solid var(--border)' }}>
         <div className="max-w-[1100px] mx-auto">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-bold tracking-wider" style={{ color: 'var(--text-faint)' }}>NEURO<span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, var(--accent-cyan), var(--accent-violet))' }}>COMPUTERS</span></span>
             </div>
-            <div className="flex items-center gap-6 text-[11px]" style={{ color: 'var(--text-faint)' }}>
+            <div className="flex items-center gap-4 sm:gap-6 text-[11px] flex-wrap" style={{ color: 'var(--text-faint)' }}>
               <a href="https://github.com/Luckyguybiz/neurobridge-api" target="_blank" rel="noopener" className="hover:text-cyan-400/60 transition-colors">GitHub</a>
               <a href="https://api.neurocomputers.io/docs" target="_blank" rel="noopener" className="hover:text-cyan-400/60 transition-colors">API Docs</a>
               <a href="https://pypi.org/project/neurocomputers/" target="_blank" rel="noopener" className="hover:text-cyan-400/60 transition-colors">PyPI</a>

@@ -118,7 +118,7 @@ function FiringRateTimeline({ data }: { data: { bins: number[]; rates: Record<st
   }, [data]);
 
   if (!data) return null;
-  return <svg ref={svgRef} className="w-full h-52" />;
+  return <svg ref={svgRef} className="w-full h-40 sm:h-52" />;
 }
 
 // ─── Amplitude Distribution ────────────────────────────────────────────────────
@@ -194,16 +194,16 @@ function AmplitudeHistogram({ spikes }: { spikes: Spike[] }) {
       .call((ax) => ax.selectAll('line,path').attr('stroke', tc.axis));
   }, [spikes]);
 
-  return <svg ref={svgRef} className="w-full h-48" />;
+  return <svg ref={svgRef} className="w-full h-40 sm:h-48" />;
 }
 
 // ─── Stats strip ──────────────────────────────────────────────────────────────
 
 function StatChip({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col items-center px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.04]">
-      <span className="text-[10px] uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>{label}</span>
-      <span className="text-[18px] font-medium tabular-nums" style={{ color: 'var(--text-primary)' }}>{value}</span>
+    <div className="flex flex-col items-center px-3 py-2 sm:px-4 sm:py-3 rounded-xl bg-white/[0.03] border border-white/[0.04]">
+      <span className="text-[9px] sm:text-[10px] uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>{label}</span>
+      <span className="text-[15px] sm:text-[18px] font-medium tabular-nums" style={{ color: 'var(--text-primary)' }}>{value}</span>
     </div>
   );
 }
@@ -302,7 +302,7 @@ export default function SpikesPage() {
         transition={{ duration: 0.5, delay: 0.05 }}
       >
         <ChartCard title="Raster Plot" description={`${filteredSpikes.length.toLocaleString()} spikes${selectedElectrode !== null ? ` · E${selectedElectrode}` : ` across ${nElectrodes} electrodes`} · ${duration.toFixed(1)}s`}>
-          <div className="w-full" style={{ height: 320 }}>
+          <div className="w-full h-[220px] sm:h-[320px]">
             <RasterPlotTall spikes={filteredSpikes} duration={duration} electrodes={nElectrodes} />
           </div>
         </ChartCard>
@@ -453,7 +453,7 @@ function PCAScatter({ data }: { data: Record<string, unknown> | null }) {
   }, [data]);
 
   if (!data) return null;
-  return <svg ref={svgRef} className="w-full" style={{ height: 220 }} />;
+  return <svg ref={svgRef} className="w-full h-[180px] sm:h-[220px]" />;
 }
 
 // ─── State Classification ────────────────────────────────────────────────────

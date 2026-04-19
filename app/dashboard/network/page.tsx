@@ -122,7 +122,7 @@ function TEMatrix({ data }: { data: TEData }) {
           <span className="text-violet-400">{(data.mean_te ?? 0).toFixed(4)}</span>
         </div>
       </div>
-      <svg ref={svgRef} className="w-full" style={{ height: 220 }} />
+      <svg ref={svgRef} className="w-full h-[180px] sm:h-[220px]" />
     </div>
   );
 }
@@ -188,7 +188,7 @@ function CrossCorrHeatmap({ data, nElectrodes }: { data: Record<string, unknown>
 
   return (
     <div className="relative">
-      <svg ref={svgRef} className="w-full" style={{ height: 220 }} />
+      <svg ref={svgRef} className="w-full h-[180px] sm:h-[220px]" />
       <div className="fallback-json hidden mt-2">
         <div className="text-[10px] mb-1" style={{ color: 'var(--text-muted)' }}>Cross-correlation data:</div>
         <div className="space-y-1 font-mono text-[10px]">
@@ -257,7 +257,7 @@ function NetworkStats({ data }: { data: Record<string, unknown> }) {
   ];
 
   return (
-    <div className="flex flex-wrap gap-2 mt-3">
+    <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 mt-3">
       {stats.map((s) => (
         <div key={s.label} className="px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.04]">
           <div className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>{s.label}</div>
@@ -365,7 +365,7 @@ function CommunitiesCard({ data }: { data: Record<string, unknown> }) {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 flex-wrap">
         <div className="text-2xl font-bold text-violet-400 tabular-nums">{nCommunities}</div>
         <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>communities<br/>Q = {modularity.toFixed(3)}</div>
       </div>
@@ -431,8 +431,8 @@ function InfoFlowCard({ data }: { data: Record<string, unknown> }) {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-4">
-        <div className="px-3 py-2 rounded-lg bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border border-cyan-500/10">
+      <div className="flex items-center gap-4 flex-wrap">
+        <div className="px-3 py-2 rounded-lg bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border border-cyan-500/10 shrink-0">
           <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Hub Electrode</div>
           <div className="text-lg font-bold text-cyan-400 tabular-nums">E{hubElectrode}</div>
         </div>
@@ -658,7 +658,7 @@ export default function NetworkPage() {
         transition={{ duration: 0.5 }}
       >
         <ChartCard title="Functional Connectivity Graph" description="Force-directed layout · nodes = electrodes · edges = co-firing strength" loading={connectivity.loading} error={connectivity.error}>
-          <div className="w-full" style={{ height: 300 }}>
+          <div className="w-full h-[220px] sm:h-[300px]">
             <LargeConnectivityGraph spikes={spikes} electrodes={nElectrodes} />
           </div>
           {connectivity.data && <NetworkStats data={connectivity.data} />}

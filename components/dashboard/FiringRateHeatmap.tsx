@@ -81,5 +81,5 @@ export default function FiringRateHeatmap({ spikes, duration, electrodes }: { sp
       .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
   }, [spikes, duration, electrodes]);
 
-  return <svg ref={svgRef} className="w-full h-64" />;
+  return <svg ref={svgRef} className="w-full h-52 sm:h-64" />;
 }

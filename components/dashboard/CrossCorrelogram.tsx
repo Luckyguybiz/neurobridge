@@ -90,7 +90,7 @@ export default function CrossCorrelogram({ spikes, electrodes }: { spikes: Spike
           {Array.from({ length: electrodes }, (_, i) => <option key={i} value={i}>E{i}</option>)}
         </select>
       </div>
-      <svg ref={svgRef} className="w-full h-56" />
+      <svg ref={svgRef} className="w-full h-44 sm:h-56" />
     </div>
   );
 }

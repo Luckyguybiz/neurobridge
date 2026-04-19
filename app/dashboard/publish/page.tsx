@@ -180,23 +180,23 @@ function PaperGenerator({ datasetId }: { datasetId: string }) {
       {draft.markdown && (
         <div className="space-y-1.5">
           <div className="text-[9px] uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>Preview</div>
-          <pre className="max-h-64 overflow-auto rounded-lg p-3 text-[10px] leading-relaxed font-mono whitespace-pre-wrap" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+          <pre className="max-h-64 overflow-auto rounded-lg p-3 text-[10px] leading-relaxed font-mono whitespace-pre-wrap break-words" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
             {draft.markdown}
           </pre>
         </div>
       )}
 
       {/* Actions */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         <button
           onClick={copyToClipboard}
-          className="px-4 py-1.5 rounded-full text-[11px] font-medium bg-gradient-to-r from-cyan-500 to-cyan-400 text-black hover:from-cyan-400 hover:to-cyan-300 transition-all duration-300 shadow-[0_0_12px_rgba(6,182,212,0.15)]"
+          className="px-4 py-2 rounded-full text-[11px] font-medium bg-gradient-to-r from-cyan-500 to-cyan-400 text-black hover:from-cyan-400 hover:to-cyan-300 transition-all duration-300 shadow-[0_0_12px_rgba(6,182,212,0.15)]"
         >
           {copied ? 'Copied!' : 'Copy to Clipboard'}
         </button>
         <button
           onClick={generate}
-          className="px-4 py-1.5 rounded-full text-[11px] font-medium transition-all duration-300"
+          className="px-4 py-2 rounded-full text-[11px] font-medium transition-all duration-300"
           style={{ background: 'var(--bg-card)', color: 'var(--text-secondary)' }}
         >
           Regenerate
@@ -370,8 +370,8 @@ export default function PublishPage() {
         transition={{ duration: 0.4 }}
         className="mb-4"
       >
-        <h1 className="text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Publish & Funding</h1>
-        <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+        <h1 className="text-[16px] sm:text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Publish & Funding</h1>
+        <p className="text-[11px] sm:text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
           Generate analysis reports and explore relevant grant programs
         </p>
       </motion.div>

@@ -33,10 +33,10 @@ export default function ChartCard({
       onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-hover)'; }}
       onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
     >
-      <div className="relative z-10 p-4 sm:p-5">
-        <div className="mb-3 flex items-start justify-between">
-          <div>
-            <h3 className="text-[14px] font-display" style={{ color: 'var(--text-primary)' }}>{title}</h3>
+      <div className="relative z-10 p-3 sm:p-5">
+        <div className="mb-3 flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h3 className="text-[13px] sm:text-[14px] font-display" style={{ color: 'var(--text-primary)' }}>{title}</h3>
             {description && <p className="text-[10px] mt-0.5 tracking-wide" style={{ color: 'var(--text-muted)' }}>{description}</p>}
           </div>
           <div className="w-1.5 h-1.5 rounded-full transition-colors duration-700 mt-1.5 shrink-0"

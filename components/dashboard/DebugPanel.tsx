@@ -75,7 +75,7 @@ export default function DebugPanel({ open, onClose }: { open: boolean; onClose: 
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           transition={{ duration: 0.2 }}
-          className="fixed bottom-4 right-4 z-50 w-[420px] max-h-[480px] rounded-2xl overflow-hidden flex flex-col"
+          className="fixed bottom-4 right-4 left-4 sm:left-auto z-50 sm:w-[420px] max-h-[480px] rounded-2xl overflow-hidden flex flex-col"
           style={{
             background: 'var(--bg-card)',
             border: '1px solid var(--border)',
@@ -101,7 +101,7 @@ export default function DebugPanel({ open, onClose }: { open: boolean; onClose: 
           </div>
 
           {/* Summary strip */}
-          <div className="flex gap-3 px-4 py-2 text-[10px] border-b" style={{ borderColor: 'var(--border)' }}>
+          <div className="flex gap-3 px-4 py-2 text-[10px] border-b flex-wrap" style={{ borderColor: 'var(--border)' }}>
             <span className="text-emerald-400 tabular-nums">{summary.success} ok</span>
             <span className="text-red-400 tabular-nums">{summary.errors} err</span>
             <span style={{ color: 'var(--text-muted)' }} className="tabular-nums">avg {formatDuration(Math.round(summary.avgDuration))}</span>
