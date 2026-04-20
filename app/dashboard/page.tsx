@@ -24,14 +24,13 @@ const cardVariants = {
   }),
 };
 
-/** Shimmer bar for loading stat values */
+/** Obvious loading indicator for stat values — spinner + "Loading..." text */
 function StatShimmer() {
   return (
-    <div className="h-[18px] w-16 rounded-md mt-0.5" style={{
-      background: 'linear-gradient(90deg, var(--border) 25%, rgba(255,255,255,0.08) 50%, var(--border) 75%)',
-      backgroundSize: '200% 100%',
-      animation: 'stat-shimmer 1.5s ease-in-out infinite',
-    }} />
+    <div className="flex items-center gap-1.5 mt-0.5">
+      <div className="w-3 h-3 border-2 border-cyan-400/40 border-t-cyan-400 rounded-full animate-spin shrink-0" />
+      <span className="text-[11px] animate-pulse" style={{ color: 'var(--text-muted)' }}>Loading…</span>
+    </div>
   );
 }
 
@@ -183,8 +182,51 @@ export default function DashboardPage() {
     );
   }
 
+  // Background analysis progress — cached === undefined means "still loading"
+  const { cached } = useDashboardContext();
+  const bgSteps = [
+    { label: 'Summary', done: summary != null },
+    { label: 'Health', done: cached.health !== undefined },
+    { label: 'NCI Score', done: cached.iq !== undefined },
+    { label: 'Bursts', done: burstInfo != null },
+    { label: 'Complexity', done: cached.consciousness !== undefined },
+  ];
+  const bgDone = bgSteps.filter((s) => s.done).length;
+  const bgTotal = bgSteps.length;
+  const bgLoading = status === 'ready' && datasetId && bgDone < bgTotal;
+
   return (
     <div className="p-3 sm:p-4">
+      {/* Background analysis progress banner */}
+      {bgLoading && (
+        <motion.div
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-3 px-3 py-2 rounded-xl flex items-center gap-3 flex-wrap"
+          style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+        >
+          <div className="w-4 h-4 border-2 border-cyan-400/40 border-t-cyan-400 rounded-full animate-spin shrink-0" />
+          <span className="text-[11px] font-medium" style={{ color: 'var(--text-secondary)' }}>
+            Running analysis {bgDone}/{bgTotal}
+          </span>
+          <div className="flex-1 min-w-[100px] h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
+            <motion.div
+              className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-violet-500"
+              initial={{ width: 0 }}
+              animate={{ width: `${(bgDone / bgTotal) * 100}%` }}
+              transition={{ duration: 0.4 }}
+            />
+          </div>
+          <div className="flex gap-1.5 text-[10px]" style={{ color: 'var(--text-faint)' }}>
+            {bgSteps.map((s, i) => (
+              <span key={i} className={s.done ? 'text-emerald-400' : ''}>
+                {s.done ? '✓' : '○'} {s.label}
+              </span>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
       {/* Quick Stats */}
       {status === 'ready' && datasetId && <QuickStats />}
 
