@@ -169,7 +169,7 @@ export default function LivePage() {
       </div>
 
       {/* Live raster */}
-      <ChartCard title="Live Raster Plot" description="Real-time spike events across 8 electrodes">
+      <ChartCard title="Live Raster Plot" description="Real-time spike events (10s sliding window)">
         <canvas ref={canvasRef} className="w-full rounded-lg h-[220px] sm:h-[300px]" />
       </ChartCard>
 

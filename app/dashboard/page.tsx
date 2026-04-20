@@ -220,16 +220,36 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Loading */}
+      {/* Loading — with detailed progress stages */}
       {status === 'loading' && spikes.length === 0 && (
-        <div className="flex items-center justify-center py-32">
-          <div className="text-center">
-            <div className="w-10 h-10 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-[13px] font-medium" style={{ color: 'var(--text-secondary)' }}>
+        <div className="flex items-center justify-center py-20 sm:py-32">
+          <div className="text-center max-w-md px-4">
+            <div className="w-12 h-12 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-5" />
+            <p className="text-[14px] font-medium mb-4" style={{ color: 'var(--text-secondary)' }}>
               {loadingStep || 'Preparing...'}
             </p>
-            <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>
-              First load may take longer while the app compiles
+            {/* Progress checklist — shows what's done, in-progress, pending */}
+            <div className="text-left space-y-2 text-[11px]">
+              {[
+                { label: 'Parse data file', done: loadingStep?.includes('spike data') || loadingStep === '' },
+                { label: 'Load spike events', done: loadingStep === '', active: loadingStep?.includes('spike data') },
+                { label: 'Run background analysis', done: false, active: loadingStep === '' },
+              ].map((s, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0" style={{
+                    background: s.done ? 'var(--accent-emerald)' : s.active ? 'var(--accent-cyan)' : 'var(--border)',
+                  }}>
+                    {s.done && <span className="text-[10px] text-black">✓</span>}
+                    {s.active && <div className="w-2 h-2 border border-black/40 border-t-transparent rounded-full animate-spin" />}
+                  </div>
+                  <span style={{ color: s.done ? 'var(--text-muted)' : s.active ? 'var(--text-primary)' : 'var(--text-faint)' }}>
+                    {s.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] mt-5" style={{ color: 'var(--text-faint)' }}>
+              First load of FinalSpark takes ~10s (parsing 129MB CSV). Subsequent loads are cached.
             </p>
           </div>
         </div>

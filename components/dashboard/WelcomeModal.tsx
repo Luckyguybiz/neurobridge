@@ -8,17 +8,17 @@ const STORAGE_KEY = 'neuro_onboarded';
 const steps = [
   {
     title: 'Welcome to Neurocomputers',
-    desc: 'An open-source platform for analyzing brain organoid data. Visualize neural activity, measure intelligence, and discover patterns in living neural networks.',
+    desc: 'An open-source platform for brain organoid electrophysiology. Visualize spike activity, compute criticality and connectivity, and compare against reference neural systems.',
     icon: '🧠',
   },
   {
     title: 'Load Data',
-    desc: 'Click FinalSpark to load real organoid data (2.6M spikes), or generate synthetic data with the 30s/120s buttons. You can also upload your own MEA recordings.',
+    desc: 'Click FinalSpark to load real organoid data (2.6M spikes, 32ch MEA, 118h), or generate synthetic data with the 30s/120s buttons. You can also upload your own MEA recordings (CSV, HDF5, NWB, Parquet).',
     icon: '📊',
   },
   {
     title: 'Explore Pages',
-    desc: 'Use the sidebar to navigate: Spikes for sorting, Network for connectivity, IQ for intelligence scoring, Discovery for 17 advanced analyses. Each page loads data in the background.',
+    desc: 'Sidebar navigation: Spikes for sorting and firing rates, Network for connectivity and transfer entropy, Complexity for composite index, Discovery for 17 advanced analyses. Each page loads data in the background.',
     icon: '🔬',
   },
   {

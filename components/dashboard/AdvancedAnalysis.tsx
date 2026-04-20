@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import * as api from '@/lib/api';
 import { useCachedAnalysis } from '@/lib/use-cached-analysis';
 import ChartCard from './ChartCard';
@@ -261,11 +262,30 @@ function AnalysisCard({ section, datasetId }: { section: AnalysisSection; datase
 }
 
 export default function AdvancedAnalysis({ datasetId }: { datasetId: string }) {
+  // Staggered rendering: reveal 3 cards every 400ms to avoid overwhelming
+  // the API (sequentially queued via semaphore) and the browser (fewer D3 renders at once).
+  const [visible, setVisible] = useState(3);
+
+  useEffect(() => {
+    if (visible >= sections.length) return;
+    const t = setTimeout(() => setVisible((n) => Math.min(n + 3, sections.length)), 400);
+    return () => clearTimeout(t);
+  }, [visible]);
+
+  // Reset when dataset changes
+  useEffect(() => { setVisible(3); }, [datasetId]);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-      {sections.map((section) => (
+      {sections.slice(0, visible).map((section) => (
         <AnalysisCard key={section.key} section={section} datasetId={datasetId} />
       ))}
+      {visible < sections.length && (
+        <div className="col-span-full flex items-center justify-center gap-2 py-4 text-[11px]" style={{ color: 'var(--text-faint)' }}>
+          <div className="w-3 h-3 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
+          <span>Loading {sections.length - visible} more analyses...</span>
+        </div>
+      )}
     </div>
   );
 }
