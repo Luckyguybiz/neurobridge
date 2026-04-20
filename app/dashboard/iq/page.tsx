@@ -8,6 +8,7 @@ import { useCachedAnalysis } from '@/lib/use-cached-analysis';
 import { getThemeColors } from '@/lib/utils';
 import * as api from '@/lib/api';
 import ChartCard from '@/components/dashboard/ChartCard';
+import QueueStatus from '@/components/dashboard/QueueStatus';
 
 // ─── Circular Gauge ───────────────────────────────────────────────────────────
 // 270° sweep: from 7:30 (225° CW from top) to 4:30 (135° CW from top)
@@ -275,6 +276,7 @@ export default function IQPage() {
 
   return (
     <div className="p-3 sm:p-4 space-y-3">
+      <QueueStatus />
       {/* Hero: gauge + grade + subscores */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}

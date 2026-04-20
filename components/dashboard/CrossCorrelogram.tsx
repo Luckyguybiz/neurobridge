@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useMemo, useState } from 'react';
 import { select } from 'd3-selection';
 import { scaleLinear } from 'd3-scale';
 import { axisBottom, axisLeft } from 'd3-axis';
@@ -8,13 +8,54 @@ import { max } from 'd3-array';
 import type { Spike } from '@/lib/types';
 import { ELECTRODE_COLORS, getThemeColors } from '@/lib/utils';
 
+const MAX_LAG_MS = 50;
+const BIN_WIDTH_MS = 1;
+const NUM_BINS = (MAX_LAG_MS * 2) / BIN_WIDTH_MS;
+const MAX_LAG_S = MAX_LAG_MS / 1000;
+
 export default function CrossCorrelogram({ spikes, electrodes }: { spikes: Spike[]; electrodes: number }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [pairA, setPairA] = useState(0);
   const [pairB, setPairB] = useState(1);
 
+  // Index once: electrode → sorted times[]. Re-running .filter on every pair
+  // change was ~32× wasted work. Indexing is O(N), pair lookup is O(1).
+  const spikesByElectrode = useMemo(() => {
+    const idx: number[][] = Array.from({ length: electrodes }, () => []);
+    for (const s of spikes) {
+      if (s.electrode >= 0 && s.electrode < electrodes) idx[s.electrode].push(s.time);
+    }
+    for (const arr of idx) arr.sort((a, b) => a - b);
+    return idx;
+  }, [spikes, electrodes]);
+
+  // Sliding window cross-correlogram, O(|A| + |B|) per pair (was O(|A| × |B|),
+  // i.e. up to 1M ops on main thread per pair-selector change → frozen UI).
+  const counts = useMemo(() => {
+    const A = spikesByElectrode[pairA] ?? [];
+    const B = spikesByElectrode[pairB] ?? [];
+    const c = new Array(NUM_BINS).fill(0);
+    if (A.length === 0 || B.length === 0) return c;
+
+    let jLo = 0;
+    let jHi = 0;
+    for (const tA of A) {
+      const lo = tA - MAX_LAG_S;
+      const hi = tA + MAX_LAG_S;
+      while (jLo < B.length && B[jLo] < lo) jLo++;
+      if (jHi < jLo) jHi = jLo;
+      while (jHi < B.length && B[jHi] < hi) jHi++;
+      for (let j = jLo; j < jHi; j++) {
+        const lag = (B[j] - tA) * 1000;
+        const bin = Math.floor((lag + MAX_LAG_MS) / BIN_WIDTH_MS);
+        if (bin >= 0 && bin < NUM_BINS) c[bin]++;
+      }
+    }
+    return c;
+  }, [spikesByElectrode, pairA, pairB]);
+
   useEffect(() => {
-    if (!svgRef.current || spikes.length === 0) return;
+    if (!svgRef.current) return;
     const tc = getThemeColors();
     const svg = select(svgRef.current);
     svg.selectAll('*').remove();
@@ -26,32 +67,12 @@ export default function CrossCorrelogram({ spikes, electrodes }: { spikes: Spike
     const w = width - margin.left - margin.right;
     const h = height - margin.top - margin.bottom;
 
-    const spikesA = spikes.filter((s) => s.electrode === pairA).map((s) => s.time);
-    const spikesB = spikes.filter((s) => s.electrode === pairB).map((s) => s.time);
-
-    // Compute cross-correlogram (±50ms, 1ms bins)
-    const maxLag = 50; // ms
-    const binWidth = 1; // ms
-    const numBins = (maxLag * 2) / binWidth;
-    const counts = new Array(numBins).fill(0);
-
-    for (const tA of spikesA) {
-      for (const tB of spikesB) {
-        const lag = (tB - tA) * 1000; // ms
-        if (lag >= -maxLag && lag < maxLag) {
-          const bin = Math.floor((lag + maxLag) / binWidth);
-          counts[bin]++;
-        }
-      }
-    }
-
     const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
-    const x = scaleLinear().domain([-maxLag, maxLag]).range([0, w]);
+    const x = scaleLinear().domain([-MAX_LAG_MS, MAX_LAG_MS]).range([0, w]);
     const maxC = max(counts) ?? 1;
     const y = scaleLinear().domain([0, maxC]).range([h, 0]);
-
-    const barW = w / numBins;
+    const barW = w / NUM_BINS;
 
     g.selectAll('.bar')
       .data(counts)
@@ -61,12 +82,11 @@ export default function CrossCorrelogram({ spikes, electrodes }: { spikes: Spike
       .attr('width', barW - 0.5)
       .attr('height', (d) => h - y(d))
       .attr('fill', (_, i) => {
-        const lag = i * binWidth - maxLag;
-        return lag >= 0 ? ELECTRODE_COLORS[pairB] : ELECTRODE_COLORS[pairA];
+        const lag = i * BIN_WIDTH_MS - MAX_LAG_MS;
+        return lag >= 0 ? ELECTRODE_COLORS[pairB % ELECTRODE_COLORS.length] : ELECTRODE_COLORS[pairA % ELECTRODE_COLORS.length];
       })
       .attr('opacity', 0.6);
 
-    // Zero line
     g.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', 0).attr('y2', h).attr('stroke', tc.textMuted).attr('stroke-dasharray', '3,3');
 
     g.append('g')
@@ -79,7 +99,7 @@ export default function CrossCorrelogram({ spikes, electrodes }: { spikes: Spike
       .call(axisLeft(y).ticks(4))
       .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
       .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
-  }, [spikes, pairA, pairB, electrodes]);
+  }, [counts, pairA, pairB]);
 
   return (
     <div>

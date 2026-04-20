@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDashboardContext } from '@/lib/dashboard-context';
 import { useCachedAnalysis } from '@/lib/use-cached-analysis';
+import QueueStatus from '@/components/dashboard/QueueStatus';
 import * as api from '@/lib/api';
 import ChartCard from '@/components/dashboard/ChartCard';
 
@@ -1132,6 +1133,8 @@ export default function DiscoveryPage() {
         <h1 className="text-[16px] sm:text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Discovery Analysis</h1>
         <p className="text-[11px] sm:text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>17 advanced analyses grouped by domain</p>
       </motion.div>
+
+      <QueueStatus />
 
       <DiscoveryGroups cards={cards} />
     </div>

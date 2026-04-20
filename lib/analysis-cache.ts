@@ -4,7 +4,13 @@
  *
  * Also stores in-flight promises so that navigating away and back
  * doesn't restart the same fetch — it reattaches to the existing one.
+ *
+ * Heavy fetches are routed through fetch-queue (max 2 concurrent) so we
+ * don't flood the API with 15+ parallel requests that all sit waiting
+ * on the backend Semaphore(1) and look frozen to the user.
  */
+
+import { enqueue, cancel as cancelQueued } from './fetch-queue';
 
 const cache = new Map<string, unknown>();
 const inflight = new Map<string, Promise<unknown>>();
@@ -60,8 +66,10 @@ export function getOrFetch<T>(
   const existing = inflight.get(k);
   if (existing) return existing as Promise<T>;
 
-  // Start new fetch
-  const promise = fetcher()
+  // Route through shared queue — max 2 concurrent heavy fetches, rest wait.
+  // This is the second gate after backend Semaphore(1): frontend queue
+  // keeps sockets free and surfaces "N queued" to UI.
+  const promise = enqueue<T>(k, fetcher)
     .then((result) => {
       cache.set(k, result);
       inflight.delete(k);
@@ -74,6 +82,14 @@ export function getOrFetch<T>(
 
   inflight.set(k, promise);
   return promise;
+}
+
+/** Cancel a pending fetch if it hasn't started yet. No-op if in-flight. */
+export function cancelFetch(datasetId: string, path: string): boolean {
+  const k = key(datasetId, path);
+  const removed = cancelQueued(k);
+  if (removed) inflight.delete(k);
+  return removed;
 }
 
 /** Check if a fetch is currently in-flight for this key. */

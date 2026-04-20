@@ -7,6 +7,7 @@ import { useDashboardContext } from '@/lib/dashboard-context';
 import { useCachedAnalysis } from '@/lib/use-cached-analysis';
 import * as api from '@/lib/api';
 import ChartCard from '@/components/dashboard/ChartCard';
+import QueueStatus from '@/components/dashboard/QueueStatus';
 import RasterPlot from '@/components/dashboard/RasterPlot';
 import SpikeWaveforms from '@/components/dashboard/SpikeWaveforms';
 import ISIHistogram from '@/components/dashboard/ISIHistogram';
@@ -248,6 +249,7 @@ export default function SpikesPage() {
 
   return (
     <div className="p-3 sm:p-4 space-y-3">
+      <QueueStatus />
       {/* Stats strip */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}

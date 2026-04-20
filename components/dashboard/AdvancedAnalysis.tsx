@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react';
 import * as api from '@/lib/api';
 import { useCachedAnalysis } from '@/lib/use-cached-analysis';
+import { useInView } from '@/lib/use-in-view';
 import ChartCard from './ChartCard';
+import QueueStatus from './QueueStatus';
 
 type AnalysisSection = {
   key: string;
@@ -251,13 +253,31 @@ const sections: AnalysisSection[] = [
   },
 ];
 
-/** Wrapper component — each card uses useCachedAnalysis independently */
+/** Wrapper component — each card uses useCachedAnalysis independently.
+ *  Lazy: fetch only starts when card scrolls near viewport (IntersectionObserver). */
 function AnalysisCard({ section, datasetId }: { section: AnalysisSection; datasetId: string }) {
-  const { data, loading, error } = useCachedAnalysis(datasetId, section.key, () => section.fetcher(datasetId));
+  const [ref, inView] = useInView<HTMLDivElement>('250px');
+  const { data, loading, error } = useCachedAnalysis(
+    datasetId,
+    section.key,
+    () => section.fetcher(datasetId),
+    inView,
+  );
   return (
-    <ChartCard title={section.title} description={section.desc} loading={loading} error={error}>
-      {data ? section.render(data) : null}
-    </ChartCard>
+    <div ref={ref}>
+      <ChartCard
+        title={section.title}
+        description={section.desc}
+        loading={inView && loading}
+        error={error}
+      >
+        {!inView ? (
+          <div className="text-[11px] py-6 text-center" style={{ color: 'var(--text-faint)' }}>
+            Scroll into view to load
+          </div>
+        ) : data ? section.render(data) : null}
+      </ChartCard>
+    </div>
   );
 }
 
@@ -276,16 +296,19 @@ export default function AdvancedAnalysis({ datasetId }: { datasetId: string }) {
   useEffect(() => { setVisible(3); }, [datasetId]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-      {sections.slice(0, visible).map((section) => (
-        <AnalysisCard key={section.key} section={section} datasetId={datasetId} />
-      ))}
-      {visible < sections.length && (
-        <div className="col-span-full flex items-center justify-center gap-2 py-4 text-[11px]" style={{ color: 'var(--text-faint)' }}>
-          <div className="w-3 h-3 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
-          <span>Loading {sections.length - visible} more analyses...</span>
-        </div>
-      )}
-    </div>
+    <>
+      <QueueStatus />
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+        {sections.slice(0, visible).map((section) => (
+          <AnalysisCard key={section.key} section={section} datasetId={datasetId} />
+        ))}
+        {visible < sections.length && (
+          <div className="col-span-full flex items-center justify-center gap-2 py-4 text-[11px]" style={{ color: 'var(--text-faint)' }}>
+            <div className="w-3 h-3 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
+            <span>Revealing {sections.length - visible} more cards…</span>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

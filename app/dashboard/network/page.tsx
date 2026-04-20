@@ -7,6 +7,7 @@ import { useDashboardContext } from '@/lib/dashboard-context';
 import { useCachedAnalysis } from '@/lib/use-cached-analysis';
 import * as api from '@/lib/api';
 import ChartCard from '@/components/dashboard/ChartCard';
+import QueueStatus from '@/components/dashboard/QueueStatus';
 import { ELECTRODE_COLORS, getThemeColors } from '@/lib/utils';
 import type { Spike } from '@/lib/types';
 
@@ -651,6 +652,7 @@ export default function NetworkPage() {
 
   return (
     <div className="p-3 sm:p-4 space-y-3">
+      <QueueStatus />
       {/* Large connectivity graph */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
