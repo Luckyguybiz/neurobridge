@@ -1,9 +1,9 @@
 # NeuroBridge
 
-**The Vercel for living neurons.** A biocomputing analytics platform for brain organoid research.
+**Open-source brain organoid analysis platform.** Scientific toolkit for biological neural networks (in-vitro MEA recordings).
 
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](http://57.128.254.111:3847)
-[![API Docs](https://img.shields.io/badge/api-swagger-blue)](http://57.128.254.111:8847/docs)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://neurocomputers.io)
+[![API Docs](https://img.shields.io/badge/api-swagger-blue)](https://api.neurocomputers.io/docs)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
 
 ---
