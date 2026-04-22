@@ -7,6 +7,7 @@ import { axisBottom, axisLeft } from 'd3-axis';
 import { max } from 'd3-array';
 import type { Spike } from '@/lib/types';
 import { ELECTRODE_COLORS, getThemeColors } from '@/lib/utils';
+import { useTheme } from '@/lib/theme-context';
 
 const MAX_LAG_MS = 50;
 const BIN_WIDTH_MS = 1;
@@ -17,6 +18,7 @@ export default function CrossCorrelogram({ spikes, electrodes }: { spikes: Spike
   const svgRef = useRef<SVGSVGElement>(null);
   const [pairA, setPairA] = useState(0);
   const [pairB, setPairB] = useState(1);
+  const { theme } = useTheme();
 
   // Index once: electrode → sorted times[]. Re-running .filter on every pair
   // change was ~32× wasted work. Indexing is O(N), pair lookup is O(1).
@@ -99,7 +101,7 @@ export default function CrossCorrelogram({ spikes, electrodes }: { spikes: Spike
       .call(axisLeft(y).ticks(4))
       .call((g) => g.selectAll('text').attr('fill', tc.textSecondary).style('font-size', '10px'))
       .call((g) => g.selectAll('line, path').attr('stroke', tc.axis));
-  }, [counts, pairA, pairB]);
+  }, [counts, pairA, pairB, theme]);
 
   return (
     <div>

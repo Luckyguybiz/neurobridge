@@ -1,12 +1,13 @@
 'use client';
 
-import { useRef, useEffect, useMemo } from 'react';
+import { useRef, useEffect, useMemo, useState } from 'react';
 import { select } from 'd3-selection';
 import { scaleLinear, scaleBand } from 'd3-scale';
 import { axisBottom, axisLeft } from 'd3-axis';
 import { range } from 'd3-array';
 import type { Spike } from '@/lib/types';
 import { ELECTRODE_COLORS, getThemeColors } from '@/lib/utils';
+import { useTheme } from '@/lib/theme-context';
 
 const SVG_THRESHOLD = 1500;
 
@@ -21,6 +22,19 @@ const SVG_THRESHOLD = 1500;
 export default function RasterPlot({ spikes, duration, electrodes }: { spikes: Spike[]; duration: number; electrodes: number }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const { theme } = useTheme();
+
+  // See FiringRateHeatmap for rationale — ResizeObserver bump + zero-size guard
+  // prevents IndexSizeError on first mount in hidden tab / slow layout.
+  const [sizeTick, setSizeTick] = useState(0);
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => setSizeTick((n) => n + 1));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // Decimate up-front so both renderers stay snappy. Canvas could handle more
   // but visual density above ~8K stops being informative anyway.
@@ -45,6 +59,9 @@ export default function RasterPlot({ spikes, duration, electrodes }: { spikes: S
     const margin = { top: 10, right: 15, bottom: 30, left: 40 };
     const w = width - margin.left - margin.right;
     const h = height - margin.top - margin.bottom;
+
+    // Pre-layout safety: 0-width → negative canvas → throw. Wait for resize.
+    if (w <= 0 || h <= 0) return;
 
     const x = scaleLinear().domain([0, duration]).range([0, w]);
     const y = scaleBand<number>().domain(range(electrodes)).range([0, h]).padding(0.3);
@@ -109,10 +126,10 @@ export default function RasterPlot({ spikes, duration, electrodes }: { spikes: S
         .attr('fill', (d) => ELECTRODE_COLORS[d.electrode % ELECTRODE_COLORS.length])
         .attr('opacity', 0.7);
     }
-  }, [drawSpikes, duration, electrodes]);
+  }, [drawSpikes, duration, electrodes, theme, sizeTick]);
 
   return (
-    <div className="relative w-full h-52 sm:h-64">
+    <div ref={wrapRef} className="relative w-full h-52 sm:h-64">
       <canvas ref={canvasRef} className="absolute pointer-events-none" />
       <svg ref={svgRef} className="absolute inset-0 w-full h-full" />
     </div>

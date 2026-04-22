@@ -69,9 +69,18 @@ export function getOrFetch<T>(
   // Route through shared queue — max 2 concurrent heavy fetches, rest wait.
   // This is the second gate after backend Semaphore(1): frontend queue
   // keeps sockets free and surfaces "N queued" to UI.
+  //
+  // IMPORTANT: capture datasetId in closure. If the active dataset changes
+  // while this fetch is in flight, the result must NOT be cached into the
+  // new dataset's namespace. Without this guard, dataset A's slow analysis
+  // finishing after user switched to dataset B would poison B's cache.
+  const requestDatasetId = datasetId;
   const promise = enqueue<T>(k, fetcher)
     .then((result) => {
-      cache.set(k, result);
+      if (activeDatasetId === requestDatasetId) {
+        cache.set(k, result);
+      }
+      // Always remove from inflight — whether we kept the result or not
       inflight.delete(k);
       return result;
     })
