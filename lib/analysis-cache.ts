@@ -8,11 +8,22 @@
  * Heavy fetches are routed through fetch-queue (max 2 concurrent) so we
  * don't flood the API with 15+ parallel requests that all sit waiting
  * on the backend Semaphore(1) and look frozen to the user.
+ *
+ * Entries also carry a timestamp so stale results (>TTL_MS old) expire
+ * automatically — a user who leaves a tab open for hours and returns
+ * will get fresh data rather than a possibly-outdated report.
  */
 
 import { enqueue, cancel as cancelQueued } from './fetch-queue';
 
-const cache = new Map<string, unknown>();
+interface CacheEntry {
+  value: unknown;
+  ts: number;
+}
+
+const TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+const cache = new Map<string, CacheEntry>();
 const inflight = new Map<string, Promise<unknown>>();
 let activeDatasetId: string | null = null;
 
@@ -29,17 +40,26 @@ function ensureDataset(datasetId: string): void {
   }
 }
 
-/** Get cached value. Returns undefined if not cached. */
+function isFresh(entry: CacheEntry | undefined): boolean {
+  return !!entry && (Date.now() - entry.ts) < TTL_MS;
+}
+
+/** Get cached value. Returns undefined if not cached or expired. */
 export function getCached<T>(datasetId: string, path: string): T | undefined {
   ensureDataset(datasetId);
-  return cache.get(key(datasetId, path)) as T | undefined;
+  const entry = cache.get(key(datasetId, path));
+  if (!isFresh(entry)) {
+    if (entry) cache.delete(key(datasetId, path)); // drop stale
+    return undefined;
+  }
+  return entry!.value as T;
 }
 
 /** Store value in cache. */
 export function setCached(datasetId: string, path: string, data: unknown): void {
   ensureDataset(datasetId);
   const k = key(datasetId, path);
-  cache.set(k, data);
+  cache.set(k, { value: data, ts: Date.now() });
   inflight.delete(k); // fetch is done, remove promise
 }
 
@@ -59,9 +79,10 @@ export function getOrFetch<T>(
   ensureDataset(datasetId);
   const k = key(datasetId, path);
 
-  // Already have result
-  const hit = cache.get(k);
-  if (hit !== undefined) return Promise.resolve(hit as T);
+  // Already have a fresh result
+  const entry = cache.get(k);
+  if (isFresh(entry)) return Promise.resolve(entry!.value as T);
+  if (entry) cache.delete(k); // expired — drop and refetch
 
   // Already fetching — reattach
   const existing = inflight.get(k);
@@ -79,7 +100,7 @@ export function getOrFetch<T>(
   const promise = enqueue<T>(k, fetcher, priority)
     .then((result) => {
       if (activeDatasetId === requestDatasetId) {
-        cache.set(k, result);
+        cache.set(k, { value: result, ts: Date.now() });
       }
       // Always remove from inflight — whether we kept the result or not
       inflight.delete(k);
