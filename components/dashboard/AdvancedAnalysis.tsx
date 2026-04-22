@@ -257,7 +257,7 @@ const sections: AnalysisSection[] = [
  *  Lazy: fetch only starts when card scrolls near viewport (IntersectionObserver). */
 function AnalysisCard({ section, datasetId }: { section: AnalysisSection; datasetId: string }) {
   const [ref, inView] = useInView<HTMLDivElement>('250px');
-  const { data, loading, error } = useCachedAnalysis(
+  const { data, loading, error, refetch } = useCachedAnalysis(
     datasetId,
     section.key,
     () => section.fetcher(datasetId),
@@ -270,6 +270,7 @@ function AnalysisCard({ section, datasetId }: { section: AnalysisSection; datase
         description={section.desc}
         loading={inView && loading}
         error={error}
+        onRetry={refetch}
       >
         {!inView ? (
           <div className="text-[11px] py-6 text-center" style={{ color: 'var(--text-faint)' }}>

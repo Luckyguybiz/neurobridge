@@ -101,6 +101,15 @@ export function cancelFetch(datasetId: string, path: string): boolean {
   return removed;
 }
 
+/** Remove a single cache entry (for retry after error). Also drops any in-flight
+ *  promise so the next getOrFetch genuinely re-runs the fetcher. */
+export function clearOne(datasetId: string, path: string): void {
+  const k = key(datasetId, path);
+  cache.delete(k);
+  inflight.delete(k);
+  cancelQueued(k);
+}
+
 /** Check if a fetch is currently in-flight for this key. */
 export function isInflight(datasetId: string, path: string): boolean {
   ensureDataset(datasetId);
