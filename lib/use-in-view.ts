@@ -39,7 +39,15 @@ export function useInView<T extends Element = HTMLDivElement>(
       { rootMargin },
     );
     io.observe(el);
-    return () => io.disconnect();
+
+    // Safety fallback — if IO never fires within 8s (hidden tab, broken
+    // viewport, browser bug), assume visible so the card at least tries to
+    // load. Clears any chance of a permanently-waiting card.
+    const fallback = setTimeout(() => setInView(true), 8000);
+    return () => {
+      io.disconnect();
+      clearTimeout(fallback);
+    };
   }, [inView, rootMargin]);
 
   return [ref, inView];

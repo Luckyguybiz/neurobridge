@@ -54,6 +54,7 @@ export function getOrFetch<T>(
   datasetId: string,
   path: string,
   fetcher: () => Promise<T>,
+  priority: 'user' | 'background' = 'user',
 ): Promise<T> {
   ensureDataset(datasetId);
   const k = key(datasetId, path);
@@ -75,7 +76,7 @@ export function getOrFetch<T>(
   // new dataset's namespace. Without this guard, dataset A's slow analysis
   // finishing after user switched to dataset B would poison B's cache.
   const requestDatasetId = datasetId;
-  const promise = enqueue<T>(k, fetcher)
+  const promise = enqueue<T>(k, fetcher, priority)
     .then((result) => {
       if (activeDatasetId === requestDatasetId) {
         cache.set(k, result);

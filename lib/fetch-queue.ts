@@ -16,10 +16,14 @@ type QueueItem = {
   run: () => Promise<unknown>;
   resolve: (v: unknown) => void;
   reject: (e: unknown) => void;
+  priority: 'user' | 'background';
 };
 
 const MAX_CONCURRENT = 2;
 
+// Two-tier priority. User-initiated fetches (a card scrolled into view, a
+// retry click) go to the head, so background analyses started by the layout
+// don't starve the interactive work.
 const pending: QueueItem[] = [];
 const running = new Set<string>();
 const listeners = new Set<() => void>();
@@ -45,12 +49,25 @@ function drain(): void {
   }
 }
 
-/** Enqueue a task. Resolves when task finishes. De-duped by key. */
-export function enqueue<T>(key: string, run: () => Promise<T>): Promise<T> {
-  // Already running or queued with same key → share the promise via cache layer
-  // (caller should check cache first; this is a fallback safety net).
+/** Enqueue a task. Resolves when task finishes. Dedup handled by the caller
+ *  (analysis-cache has an inflight map). Priority controls head/tail. */
+export function enqueue<T>(key: string, run: () => Promise<T>, priority: 'user' | 'background' = 'user'): Promise<T> {
   return new Promise<T>((resolve, reject) => {
-    pending.push({ key, run: run as () => Promise<unknown>, resolve: resolve as (v: unknown) => void, reject });
+    const item: QueueItem = {
+      key,
+      run: run as () => Promise<unknown>,
+      resolve: resolve as (v: unknown) => void,
+      reject,
+      priority,
+    };
+    if (priority === 'user') {
+      // Insert after any already-running-turn user items but before background items.
+      const firstBg = pending.findIndex((p) => p.priority === 'background');
+      if (firstBg === -1) pending.push(item);
+      else pending.splice(firstBg, 0, item);
+    } else {
+      pending.push(item);
+    }
     notify();
     drain();
   });

@@ -27,12 +27,17 @@ export function useCachedAnalysis<T = Record<string, unknown>>(
   cacheKey: string,
   fetcher: () => Promise<T>,
   enabled: boolean = true,
+  priority: 'user' | 'background' = 'user',
 ): { data: T | null; loading: boolean; error: string; refetch: () => void } {
   // Check cache synchronously for instant return (no loading flash)
   const cached = datasetId ? getCached<T>(datasetId, cacheKey) : undefined;
 
   const [data, setData] = useState<T | null>(cached ?? null);
-  const [loading, setLoading] = useState(!cached && !!datasetId && enabled);
+  // Initialise loading based on whether data is available or will be needed.
+  // Intentionally ignores `enabled` — when a lazy card becomes visible we want
+  // to stay in the loading state, not flash a "no data" empty state for one
+  // frame before the effect kicks off the fetch.
+  const [loading, setLoading] = useState(!cached && !!datasetId);
   const [error, setError] = useState('');
   // Bump to force the fetch effect to re-run (used by refetch).
   const [refetchTick, setRefetchTick] = useState(0);
@@ -55,7 +60,7 @@ export function useCachedAnalysis<T = Record<string, unknown>>(
     setLoading(true);
     setError('');
 
-    getOrFetch<T>(datasetId, cacheKey, fetcher)
+    getOrFetch<T>(datasetId, cacheKey, fetcher, priority)
       .then((result) => {
         if (!cancelled) {
           setData(result);
