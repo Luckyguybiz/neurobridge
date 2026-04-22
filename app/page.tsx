@@ -333,6 +333,9 @@ export default function HomePage() {
               <a href="https://api.neurocomputers.io/docs" target="_blank" rel="noopener" className="hover:text-cyan-400/60 transition-colors">API Docs</a>
               <a href="https://pypi.org/project/neurocomputers/" target="_blank" rel="noopener" className="hover:text-cyan-400/60 transition-colors">PyPI</a>
               <Link href="/dashboard" className="hover:text-cyan-400/60 transition-colors">Dashboard</Link>
+              <Link href="/privacy" className="hover:text-cyan-400/60 transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-cyan-400/60 transition-colors">Terms</Link>
+              <Link href="/contact" className="hover:text-cyan-400/60 transition-colors">Contact</Link>
             </div>
           </div>
           <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-2 text-[10px]" style={{ color: 'var(--text-faint)' }}>
