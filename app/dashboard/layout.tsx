@@ -307,6 +307,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
    *  Fast endpoints first → UI updates quickly. Heavy endpoints later. */
   const fetchBackgroundAnalysis = useCallback(async (dsId: string) => {
     clearCache();
+    // Reset all derived-from-summary state up-front, otherwise the header keeps
+    // showing the previous dataset's SPIKES / DURATION / BURSTS until the new
+    // summary arrives (visible 1-2s race during dataset switch).
+    setSummary(null);
+    setBurstInfo(null);
     setCachedIQ(undefined);
     setCachedHealth(undefined);
     setCachedConsciousness(undefined);

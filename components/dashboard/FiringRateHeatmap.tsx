@@ -41,13 +41,18 @@ export default function FiringRateHeatmap({ spikes, duration, electrodes }: { sp
 
   // Pre-compute per-bin counts only when inputs actually change.
   // useMemo skips work when React re-renders for unrelated reasons (theme, parent state).
+  //
+  // Adaptive binSize — a fixed 1s bin made 118h FinalSpark recordings render
+  // as a nearly-black strip (425,000 near-empty bins, inferno(0) ≈ black).
+  // Cap bin count to ~400 so colour variance stays visible at any duration.
   const { counts, maxCount, numBins } = useMemo(() => {
     if (spikes.length === 0) return { counts: [], maxCount: 1, numBins: 0 };
-    const binSize = 1; // 1 second bins
-    const nBins = Math.ceil(duration / binSize);
+    const TARGET_BINS = 400;
+    const bs = Math.max(0.05, duration / TARGET_BINS); // never below 50ms (safety)
+    const nBins = Math.max(1, Math.ceil(duration / bs));
     const c: number[][] = Array.from({ length: electrodes }, () => new Array(nBins).fill(0));
     for (const spike of spikes) {
-      const bin = Math.min(Math.floor(spike.time / binSize), nBins - 1);
+      const bin = Math.min(Math.floor(spike.time / bs), nBins - 1);
       if (spike.electrode >= 0 && spike.electrode < electrodes) c[spike.electrode][bin]++;
     }
     const m = max(c.flat()) ?? 1;

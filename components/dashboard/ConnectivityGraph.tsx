@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import { select } from 'd3-selection';
 import { scaleLinear } from 'd3-scale';
 import { max } from 'd3-array';
@@ -9,6 +9,7 @@ import type { SimulationNodeDatum, SimulationLinkDatum } from 'd3-force';
 import { drag } from 'd3-drag';
 import type { Spike } from '@/lib/types';
 import { ELECTRODE_COLORS, ELECTRODE_POSITIONS, getThemeColors } from '@/lib/utils';
+import { useTheme } from '@/lib/theme-context';
 
 interface SimNode extends SimulationNodeDatum {
   id: number;
@@ -21,22 +22,21 @@ interface SimLink extends SimulationLinkDatum<SimNode> {
 
 export default function ConnectivityGraph({ spikes, electrodes }: { spikes: Spike[]; electrodes: number }) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const { theme } = useTheme();
 
-  useEffect(() => {
-    if (!svgRef.current || spikes.length === 0) return;
-    const tc = getThemeColors();
-    const svg = select(svgRef.current);
-    svg.selectAll('*').remove();
+  // Index by electrode once per spikes change — reused across pair iteration.
+  const spikesByEl = useMemo(() => {
+    const idx: number[][] = Array.from({ length: electrodes }, () => []);
+    for (const s of spikes) {
+      if (s.electrode >= 0 && s.electrode < electrodes) idx[s.electrode].push(s.time);
+    }
+    for (const arr of idx) arr.sort((a, b) => a - b);
+    return idx;
+  }, [spikes, electrodes]);
 
-    const rect = svgRef.current.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-
-    // Compute pairwise correlation (co-firing within 10ms window)
-    const spikesByEl: number[][] = Array.from({ length: electrodes }, () => []);
-    for (const s of spikes) spikesByEl[s.electrode].push(s.time);
-
-    const links: SimLink[] = [];
+  // Compute co-firing links once per spike set — force simulation re-uses them.
+  const links = useMemo(() => {
+    const result: SimLink[] = [];
     for (let i = 0; i < electrodes; i++) {
       for (let j = i + 1; j < electrodes; j++) {
         let count = 0;
@@ -51,10 +51,23 @@ export default function ConnectivityGraph({ spikes, electrodes }: { spikes: Spik
         const norm = Math.min(a.length, b.length) || 1;
         const strength = count / norm;
         if (strength > 0.02) {
-          links.push({ source: i, target: j, strength });
+          result.push({ source: i, target: j, strength });
         }
       }
     }
+    return result;
+  }, [spikesByEl, electrodes]);
+
+  useEffect(() => {
+    if (!svgRef.current || spikes.length === 0) return;
+    const tc = getThemeColors();
+    const svg = select(svgRef.current);
+    svg.selectAll('*').remove();
+
+    const rect = svgRef.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    if (width <= 0 || height <= 0) return; // pre-layout safety
 
     const nodes: SimNode[] = ELECTRODE_POSITIONS.slice(0, electrodes).map((p, i) => ({
       id: i,
@@ -116,7 +129,7 @@ export default function ConnectivityGraph({ spikes, electrodes }: { spikes: Spik
     });
 
     return () => { simulation.stop(); };
-  }, [spikes, electrodes]);
+  }, [spikes, electrodes, links, theme]);
 
   return <svg ref={svgRef} className="w-full h-52 sm:h-64" />;
 }

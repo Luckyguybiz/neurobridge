@@ -8,10 +8,12 @@ import { min, max, mean } from 'd3-array';
 import { line as d3Line } from 'd3-shape';
 import type { Spike } from '@/lib/types';
 import { ELECTRODE_COLORS, getThemeColors } from '@/lib/utils';
+import { useTheme } from '@/lib/theme-context';
 
 export default function SpikeWaveforms({ spikes, electrodes }: { spikes: Spike[]; electrodes: number }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [selectedElectrode, setSelectedElectrode] = useState(0);
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (!svgRef.current) return;
@@ -25,6 +27,7 @@ export default function SpikeWaveforms({ spikes, electrodes }: { spikes: Spike[]
     const margin = { top: 10, right: 15, bottom: 30, left: 50 };
     const w = width - margin.left - margin.right;
     const h = height - margin.top - margin.bottom;
+    if (w <= 0 || h <= 0) return; // pre-layout safety
 
     const electrodeSpikes = spikes.filter((s) => s.electrode === selectedElectrode);
     const sample = electrodeSpikes.length > 80 ? electrodeSpikes.slice(0, 80) : electrodeSpikes;
@@ -60,15 +63,16 @@ export default function SpikeWaveforms({ spikes, electrodes }: { spikes: Spike[]
 
     const color = ELECTRODE_COLORS[selectedElectrode % ELECTRODE_COLORS.length];
 
-    for (const spike of sample) {
-      g.append('path')
-        .datum(spike.waveform)
-        .attr('d', line)
-        .attr('fill', 'none')
-        .attr('stroke', color)
-        .attr('stroke-width', 0.8)
-        .attr('opacity', 0.2);
-    }
+    // One enter() pass instead of 80 g.append('path') calls — fewer DOM writes.
+    g.selectAll('path.waveform')
+      .data(sample)
+      .join('path')
+      .attr('class', 'waveform')
+      .attr('d', (spike) => line(spike.waveform))
+      .attr('fill', 'none')
+      .attr('stroke', color)
+      .attr('stroke-width', 0.8)
+      .attr('opacity', 0.2);
 
     // Mean waveform
     const meanWf = Array.from({ length: wfLen }, (_, i) => mean(sample.map((s) => s.waveform[i])) ?? 0);
@@ -79,7 +83,7 @@ export default function SpikeWaveforms({ spikes, electrodes }: { spikes: Spike[]
       .attr('stroke', color)
       .attr('stroke-width', 2.5)
       .attr('opacity', 1);
-  }, [spikes, selectedElectrode, electrodes]);
+  }, [spikes, selectedElectrode, electrodes, theme]);
 
   return (
     <div>
