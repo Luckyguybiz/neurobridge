@@ -88,6 +88,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+        {/* Skip link — visible only when keyboard-focused, lets screen-reader
+            and keyboard users jump past the sidebar straight to content. */}
+        <a href="#main-content" className="skip-to-main">Skip to main content</a>
         {/* JSON-LD structured data (safe: constant content, no user input) */}
         <Script
           id="ld-json"

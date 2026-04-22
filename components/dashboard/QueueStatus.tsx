@@ -23,10 +23,13 @@ export default function QueueStatus() {
 
   return (
     <div
+      role="status"
+      aria-live="polite"
+      aria-label={`${stats.running} analyses running, ${stats.queued} queued, ${total} total`}
       className="mb-3 px-3 py-2 rounded-xl flex items-center gap-3 flex-wrap text-[11px]"
       style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
     >
-      <div className="w-3.5 h-3.5 border-[1.5px] border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin shrink-0" />
+      <div className="w-3.5 h-3.5 border-[1.5px] border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin shrink-0" aria-hidden="true" />
       <span className="font-medium" style={{ color: 'var(--text-secondary)' }}>
         <span className="text-cyan-400">{stats.running}</span> running
         {stats.queued > 0 && (

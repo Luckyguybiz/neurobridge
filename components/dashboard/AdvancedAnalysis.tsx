@@ -6,6 +6,7 @@ import { useCachedAnalysis } from '@/lib/use-cached-analysis';
 import { useInView } from '@/lib/use-in-view';
 import ChartCard from './ChartCard';
 import QueueStatus from './QueueStatus';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 type AnalysisSection = {
   key: string;
@@ -276,7 +277,13 @@ function AnalysisCard({ section, datasetId }: { section: AnalysisSection; datase
           <div className="text-[11px] py-6 text-center" style={{ color: 'var(--text-faint)' }}>
             Scroll into view to load
           </div>
-        ) : data ? section.render(data) : null}
+        ) : data ? (
+          // Per-card ErrorBoundary — a buggy render for one analysis (e.g.
+          // malformed API response) shouldn't crash the whole tab.
+          <ErrorBoundary compact label={section.key}>
+            {section.render(data)}
+          </ErrorBoundary>
+        ) : null}
       </ChartCard>
     </div>
   );

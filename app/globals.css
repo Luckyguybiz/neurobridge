@@ -327,3 +327,42 @@ html.light svg text             { fill: var(--text-secondary); }
 @media (min-width: 768px) {
   .stats-grid.md\:divide-x > :not(:first-child) { border-left-width: 1px; }
 }
+
+/* ─── Accessibility ─── */
+
+/* Keyboard focus ring — every focusable element gets a visible outline
+   when reached via Tab, invisible for mouse clicks. The default browser
+   outline is suppressed by Tailwind's reset; we restore it deliberately. */
+:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Skip-link — hidden until focused */
+.skip-to-main {
+  position: absolute;
+  top: -40px;
+  left: 8px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border: 1px solid var(--accent-cyan);
+  border-radius: 8px;
+  z-index: 100;
+  transition: top 0.2s;
+}
+.skip-to-main:focus {
+  top: 8px;
+}
+
+/* Respect users who prefer reduced motion — disable scroll-reveal,
+   framer-motion transitions, and our own shimmer animations. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -592,6 +592,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               }`}
               style={{ color: debugOpen ? 'var(--accent-cyan)' : 'var(--text-muted)' }}
               title="Toggle API Debug Panel (Ctrl+Shift+D)"
+              aria-label="Toggle API debug panel"
+              aria-expanded={debugOpen}
             >
               <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="8" cy="8" r="6" />
@@ -787,7 +789,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </header>
 
           {/* Page content */}
-          <main className="flex-1 relative z-10 min-h-0">
+          <main id="main-content" className="flex-1 relative z-10 min-h-0" tabIndex={-1}>
             <ErrorBoundary>{children}</ErrorBoundary>
           </main>
         </div>
