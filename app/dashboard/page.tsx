@@ -68,10 +68,15 @@ function QuickStats() {
     },
     {
       label: 'Complexity',
-      tip: 'Network integration index: information integration + recurrence + dynamics. Higher = more complex network',
+      // Complexity is not pre-fetched on Overview (its server cost would stall
+      // everything else). Card deep-links to Discovery where the analysis
+      // runs on demand — the value slot shows a CTA instead of "—".
+      tip: 'Network integration index (IIT Phi + PCI + transfer entropy). Computed on demand on the Discovery page — click to open.',
       loading: consciousness === undefined,
-      value: consScore > 0 ? `${consScore.toFixed(0)}%` : consciousness === null ? '—' : '',
-      color: consScore > 50 ? 'text-red-400' : consScore > 30 ? 'text-amber-400' : 'text-emerald-400',
+      value: consScore > 0
+        ? `${consScore.toFixed(0)}%`
+        : 'Open →',
+      color: consScore > 50 ? 'text-red-400' : consScore > 30 ? 'text-amber-400' : 'text-violet-400',
       bg: 'from-violet-500/8 border-violet-500/10',
       href: '/dashboard/discovery',
     },
