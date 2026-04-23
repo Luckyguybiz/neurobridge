@@ -4,6 +4,7 @@
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://neurocomputers.io)
 [![API Docs](https://img.shields.io/badge/api-swagger-blue)](https://api.neurocomputers.io/docs)
+[![Deployed on Vercel](https://img.shields.io/badge/deployed-vercel-black?logo=vercel)](https://vercel.com/luckyguybizs-projects/neurobridge)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE)
 
 ---
