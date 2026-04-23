@@ -264,6 +264,10 @@ function AnalysisCard({ section, datasetId }: { section: AnalysisSection; datase
     () => section.fetcher(datasetId),
     inView,
   );
+  // Backend sets _subsampled/_subsampled_spikes when it had to trim the dataset
+  const subsampled = Boolean((data as Record<string, unknown> | null)?._subsampled);
+  const subsampledSpikes = Number((data as Record<string, unknown> | null)?._subsampled_spikes ?? 0) || undefined;
+
   return (
     <div ref={ref}>
       <ChartCard
@@ -272,6 +276,8 @@ function AnalysisCard({ section, datasetId }: { section: AnalysisSection; datase
         loading={inView && loading}
         error={error}
         onRetry={refetch}
+        subsampled={subsampled}
+        subsampledSpikes={subsampledSpikes}
       >
         {!inView ? (
           <div className="text-[11px] py-6 text-center" style={{ color: 'var(--text-faint)' }}>

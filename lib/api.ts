@@ -10,6 +10,19 @@ const API_BASE = typeof window !== 'undefined'
     : `http://${window.location.hostname}:8847`
   : 'http://localhost:8847';
 
+/** Map HTTP status + backend detail into a short, human-friendly message.
+ *  Lets ChartCard show "Analysis ran out of time" instead of raw error blobs. */
+function friendlyError(status: number, detail: string): string {
+  if (status === 504) return 'Analysis ran longer than the 45s budget. Try again or switch to a smaller dataset (30s synthetic).';
+  if (status === 503) return 'API is temporarily overloaded. Retry in a few seconds.';
+  if (status === 429) return 'Rate limit reached. Wait a minute before retrying.';
+  if (status === 413) return 'File too large (100MB max).';
+  if (status === 410) return 'Your dataset was released to free memory. Reload the page to start a new session.';
+  if (status === 404) return 'Dataset not found. Reload the page or pick a data source.';
+  if (status === 0) return 'Network error — could not reach the API.';
+  return detail || `API error ${status}`;
+}
+
 export async function apiFetchRaw<T>(path: string, options?: RequestInit): Promise<T> {
   const method = options?.method ?? 'GET';
   const logId = logStart(path, method);
@@ -18,7 +31,7 @@ export async function apiFetchRaw<T>(path: string, options?: RequestInit): Promi
     const res = await fetch(`${API_BASE}${path}`, options);
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: res.statusText }));
-      const msg = err.detail || `API error: ${res.status}`;
+      const msg = friendlyError(res.status, err.detail);
       logError(logId, msg, res.status);
       logged = true;
       throw new Error(msg);
@@ -26,7 +39,7 @@ export async function apiFetchRaw<T>(path: string, options?: RequestInit): Promi
     logSuccess(logId, res.status);
     return res.json();
   } catch (e) {
-    if (!logged && e instanceof Error) logError(logId, e.message);
+    if (!logged && e instanceof Error) logError(logId, friendlyError(0, e.message));
     throw e;
   }
 }
@@ -42,7 +55,7 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: res.statusText }));
-      const msg = err.detail || `API error: ${res.status}`;
+      const msg = friendlyError(res.status, err.detail);
       logError(logId, msg, res.status);
       logged = true;
       throw new Error(msg);
@@ -50,7 +63,7 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
     logSuccess(logId, res.status);
     return res.json();
   } catch (e) {
-    if (!logged && e instanceof Error) logError(logId, e.message);
+    if (!logged && e instanceof Error) logError(logId, friendlyError(0, e.message));
     throw e;
   }
 }
