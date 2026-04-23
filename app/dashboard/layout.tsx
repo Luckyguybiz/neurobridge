@@ -351,11 +351,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       setBurstInfo(null);
     }
 
-    // Step 5: Consciousness (last, least critical for overview)
-    try {
-      const c = await api.getConsciousness(dsId);
-      setCachedConsciousness(c);
-    } catch { setCachedConsciousness(null); }
+    // NOTE: consciousness is NOT fetched here. It's the single most expensive
+    // endpoint (IIT Phi + PCI + transfer entropy) and on FinalSpark it can
+    // saturate the backend Semaphore for a minute+, blocking every other
+    // request. Loaded on demand from the Discovery page instead.
+    setCachedConsciousness(null);
   }, []);
 
   // ── Generate ───────────────────────────────────────────────────────────

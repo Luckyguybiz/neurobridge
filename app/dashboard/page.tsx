@@ -182,14 +182,16 @@ export default function DashboardPage() {
     );
   }
 
-  // Background analysis progress — cached === undefined means "still loading"
+  // Background analysis progress — cached === undefined means "still loading".
+  // Consciousness/Complexity is intentionally not in the background chain:
+  // it's the single most expensive endpoint and would block everything else.
+  // Users get it on demand from the Discovery page.
   const { cached } = useDashboardContext();
   const bgSteps = [
     { label: 'Summary', done: summary != null },
     { label: 'Health', done: cached.health !== undefined },
     { label: 'NCI Score', done: cached.iq !== undefined },
     { label: 'Bursts', done: burstInfo != null },
-    { label: 'Complexity', done: cached.consciousness !== undefined },
   ];
   const bgDone = bgSteps.filter((s) => s.done).length;
   const bgTotal = bgSteps.length;
