@@ -216,12 +216,16 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     setLiveElapsed(0);
     setLiveRates(new Array(8).fill(0));
 
-    const isDomain = typeof window !== 'undefined' && (window.location.hostname === 'neurocomputers.io' || window.location.hostname === 'www.neurocomputers.io');
-    const wsUrl = isDomain
+    // WS endpoint: route production (neurocomputers.io or Vercel preview) to
+    // the VPS-hosted API over wss://. Localhost uses plain ws; anything else
+    // falls back to same-host:8847 (dev on LAN IP).
+    const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+    const isProd = host === 'neurocomputers.io' || host === 'www.neurocomputers.io' || host.endsWith('.vercel.app');
+    const wsUrl = isProd
       ? 'wss://api.neurocomputers.io/ws/spikes'
-      : typeof window !== 'undefined' && window.location.hostname === 'localhost'
+      : host === 'localhost'
         ? 'ws://localhost:8847/ws/spikes'
-        : `ws://${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}:8847/ws/spikes`;
+        : `ws://${host}:8847/ws/spikes`;
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => setLiveConnected(true);

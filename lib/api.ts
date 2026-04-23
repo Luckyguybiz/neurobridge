@@ -4,11 +4,23 @@
 
 import { logStart, logSuccess, logError } from './api-logger';
 
-const API_BASE = typeof window !== 'undefined'
-  ? window.location.hostname === 'neurocomputers.io' || window.location.hostname === 'www.neurocomputers.io'
-    ? 'https://api.neurocomputers.io'
-    : `http://${window.location.hostname}:8847`
-  : 'http://localhost:8847';
+// Resolution order:
+// 1. NEXT_PUBLIC_API_BASE env (set in Vercel → always wins)
+// 2. Production hostname (neurocomputers.io or *.vercel.app) → api.neurocomputers.io
+// 3. Local dev (localhost, any non-prod host) → assume API on port 8847 of same host
+const ENV_API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+
+function resolveApiBase(): string {
+  if (ENV_API_BASE) return ENV_API_BASE;
+  if (typeof window === 'undefined') return 'http://localhost:8847';
+  const host = window.location.hostname;
+  if (host === 'neurocomputers.io' || host === 'www.neurocomputers.io' || host.endsWith('.vercel.app')) {
+    return 'https://api.neurocomputers.io';
+  }
+  return `http://${host}:8847`;
+}
+
+const API_BASE = resolveApiBase();
 
 /** Map HTTP status + backend detail into a short, human-friendly message.
  *  Lets ChartCard show "Analysis ran out of time" instead of raw error blobs. */
