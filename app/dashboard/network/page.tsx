@@ -5,6 +5,7 @@ import * as d3 from 'd3';
 import { motion } from 'framer-motion';
 import { useDashboardContext } from '@/lib/dashboard-context';
 import { useCachedAnalysis } from '@/lib/use-cached-analysis';
+import { useSubset } from '@/lib/subset-context';
 import * as api from '@/lib/api';
 import ChartCard from '@/components/dashboard/ChartCard';
 import QueueStatus from '@/components/dashboard/QueueStatus';
@@ -590,50 +591,52 @@ function LargeConnectivityGraph({ spikes, electrodes }: { spikes: Spike[]; elect
 
 export default function NetworkPage() {
   const { datasetId, spikes, nElectrodes, status } = useDashboardContext();
+  const { subset } = useSubset();
+  const k = (name: string) => `${name}:${subset ?? 'default'}`;
 
   // All data fetching via useCachedAnalysis — survives navigation
   const te = useCachedAnalysis<TEData>(
-    datasetId, 'transfer-entropy',
-    () => api.getTransferEntropy(datasetId!) as Promise<TEData>,
+    datasetId, k('transfer-entropy'),
+    () => api.getTransferEntropy(datasetId!, subset) as Promise<TEData>,
   );
 
   const crossCorr = useCachedAnalysis<Record<string, unknown>>(
-    datasetId, 'cross-correlation',
-    () => api.getCrossCorrelation(datasetId!, 50, 1),
+    datasetId, k('cross-correlation'),
+    () => api.getCrossCorrelation(datasetId!, 50, 1, subset),
   );
 
   const connectivity = useCachedAnalysis<Record<string, unknown>>(
-    datasetId, 'connectivity',
-    () => api.getConnectivity(datasetId!) as Promise<Record<string, unknown>>,
+    datasetId, k('connectivity'),
+    () => api.getConnectivity(datasetId!, subset) as Promise<Record<string, unknown>>,
   );
 
   const weights = useCachedAnalysis<Record<string, unknown>>(
-    datasetId, 'weights',
-    () => api.getWeights(datasetId!) as Promise<Record<string, unknown>>,
+    datasetId, k('weights'),
+    () => api.getWeights(datasetId!, subset) as Promise<Record<string, unknown>>,
   );
 
   const motifs = useCachedAnalysis<Record<string, unknown>>(
-    datasetId, 'motifs',
-    () => api.getMotifs(datasetId!) as Promise<Record<string, unknown>>,
+    datasetId, k('motifs'),
+    () => api.getMotifs(datasetId!, subset) as Promise<Record<string, unknown>>,
   );
 
   const infoFlow = useCachedAnalysis<Record<string, unknown>>(
-    datasetId, 'information-flow',
-    () => api.getInformationFlow(datasetId!) as Promise<Record<string, unknown>>,
+    datasetId, k('information-flow'),
+    () => api.getInformationFlow(datasetId!, subset) as Promise<Record<string, unknown>>,
   );
 
   const graphTheory = useCachedAnalysis<Record<string, unknown>>(
-    datasetId, 'graph-theory',
+    datasetId, k('graph-theory'),
     () => api.getGraphTheory(datasetId!) as Promise<Record<string, unknown>>,
   );
 
   const communities = useCachedAnalysis<Record<string, unknown>>(
-    datasetId, 'communities',
+    datasetId, k('communities'),
     () => api.getCommunities(datasetId!) as Promise<Record<string, unknown>>,
   );
 
   const topology = useCachedAnalysis<Record<string, unknown>>(
-    datasetId, 'topology',
+    datasetId, k('topology'),
     () => api.getTopology(datasetId!) as Promise<Record<string, unknown>>,
   );
 

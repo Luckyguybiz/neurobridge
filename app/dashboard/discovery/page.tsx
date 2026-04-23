@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDashboardContext } from '@/lib/dashboard-context';
 import { useCachedAnalysis } from '@/lib/use-cached-analysis';
+import { useSubset } from '@/lib/subset-context';
 import QueueStatus from '@/components/dashboard/QueueStatus';
 import * as api from '@/lib/api';
 import ChartCard from '@/components/dashboard/ChartCard';
@@ -864,24 +865,28 @@ function DiscoveryGroups({ cards }: { cards: CardDef[] }) {
 
 export default function DiscoveryPage() {
   const { datasetId, status, spikes } = useDashboardContext();
+  const { subset } = useSubset();
+  // Cache keys embed the subset so switching 1h→10h triggers a fresh fetch
+  // instead of returning stale 1h-slice results.
+  const k = (name: string) => `${name}:${subset ?? 'default'}`;
 
-  const emergence     = useCachedAnalysis(datasetId, 'emergence',       () => api.getEmergence(datasetId!));
-  const predictive    = useCachedAnalysis(datasetId, 'predictive',      () => api.getPredictiveCoding(datasetId!));
-  const attractors    = useCachedAnalysis(datasetId, 'attractors',      () => api.getAttractors(datasetId!));
-  const phase         = useCachedAnalysis(datasetId, 'phase',           () => api.getPhaseTransitions(datasetId!));
-  const replay        = useCachedAnalysis(datasetId, 'replay',          () => api.getReplay(datasetId!));
-  const multiscale    = useCachedAnalysis(datasetId, 'multiscale',      () => api.getMultiscale(datasetId!));
-  const sleepWake     = useCachedAnalysis(datasetId, 'sleep-wake',      () => api.getSleepWake(datasetId!));
-  const habituation   = useCachedAnalysis(datasetId, 'habituation',     () => api.getHabituation(datasetId!));
-  const metastability = useCachedAnalysis(datasetId, 'metastability',   () => api.getMetastability(datasetId!));
-  const consciousness = useCachedAnalysis(datasetId, 'consciousness',   () => api.getConsciousness(datasetId!));
-  const turingTest    = useCachedAnalysis(datasetId, 'turing-test',     () => api.getTuringTest(datasetId!));
-  const energyLand    = useCachedAnalysis(datasetId, 'energy-landscape',() => api.getEnergyLandscape(datasetId!));
-  const welfare       = useCachedAnalysis(datasetId, 'welfare',         () => api.getWelfare(datasetId!));
-  const homeostasis   = useCachedAnalysis(datasetId, 'homeostasis',     () => api.getHomeostasis(datasetId!));
-  const forgetting    = useCachedAnalysis(datasetId, 'forgetting',      () => api.getForgetting(datasetId!));
-  const transferL     = useCachedAnalysis(datasetId, 'transfer-learning',() => api.getTransferLearning(datasetId!));
-  const morphology    = useCachedAnalysis(datasetId, 'morphology',      () => api.getMorphology(datasetId!));
+  const emergence     = useCachedAnalysis(datasetId, k('emergence'),       () => api.getEmergence(datasetId!, subset));
+  const predictive    = useCachedAnalysis(datasetId, k('predictive'),      () => api.getPredictiveCoding(datasetId!, subset));
+  const attractors    = useCachedAnalysis(datasetId, k('attractors'),      () => api.getAttractors(datasetId!));
+  const phase         = useCachedAnalysis(datasetId, k('phase'),           () => api.getPhaseTransitions(datasetId!, subset));
+  const replay        = useCachedAnalysis(datasetId, k('replay'),          () => api.getReplay(datasetId!, subset));
+  const multiscale    = useCachedAnalysis(datasetId, k('multiscale'),      () => api.getMultiscale(datasetId!, subset));
+  const sleepWake     = useCachedAnalysis(datasetId, k('sleep-wake'),      () => api.getSleepWake(datasetId!, subset));
+  const habituation   = useCachedAnalysis(datasetId, k('habituation'),     () => api.getHabituation(datasetId!, subset));
+  const metastability = useCachedAnalysis(datasetId, k('metastability'),   () => api.getMetastability(datasetId!, subset));
+  const consciousness = useCachedAnalysis(datasetId, k('consciousness'),   () => api.getConsciousness(datasetId!, subset));
+  const turingTest    = useCachedAnalysis(datasetId, k('turing-test'),     () => api.getTuringTest(datasetId!, subset));
+  const energyLand    = useCachedAnalysis(datasetId, k('energy-landscape'),() => api.getEnergyLandscape(datasetId!));
+  const welfare       = useCachedAnalysis(datasetId, k('welfare'),         () => api.getWelfare(datasetId!));
+  const homeostasis   = useCachedAnalysis(datasetId, k('homeostasis'),     () => api.getHomeostasis(datasetId!, subset));
+  const forgetting    = useCachedAnalysis(datasetId, k('forgetting'),      () => api.getForgetting(datasetId!, subset));
+  const transferL     = useCachedAnalysis(datasetId, k('transfer-learning'),() => api.getTransferLearning(datasetId!));
+  const morphology    = useCachedAnalysis(datasetId, k('morphology'),      () => api.getMorphology(datasetId!));
 
   if (status === 'loading' && spikes.length === 0) {
     return (

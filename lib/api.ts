@@ -25,7 +25,7 @@ const API_BASE = resolveApiBase();
 /** Map HTTP status + backend detail into a short, human-friendly message.
  *  Lets ChartCard show "Analysis ran out of time" instead of raw error blobs. */
 function friendlyError(status: number, detail: string): string {
-  if (status === 504) return 'Analysis ran longer than the 45s budget. Try again or switch to a smaller dataset (30s synthetic).';
+  if (status === 504) return 'Analysis ran out of time. Try a smaller time range (use the 1h / 10h selector at the top).';
   if (status === 503) return 'API is temporarily overloaded. Retry in a few seconds.';
   if (status === 429) return 'Rate limit reached. Wait a minute before retrying.';
   if (status === 413) return 'File too large (100MB max).';
@@ -33,6 +33,19 @@ function friendlyError(status: number, detail: string): string {
   if (status === 404) return 'Dataset not found. Reload the page or pick a data source.';
   if (status === 0) return 'Network error — could not reach the API.';
   return detail || `API error ${status}`;
+}
+
+/**
+ * Time-slice preset appended to heavy analysis requests. FinalSpark is 118h
+ * but many O(N²) endpoints only complete on ~5min slices. The selector on
+ * the dashboard lets users pick the trade-off between coverage and latency.
+ */
+export type Subset = '1h' | '10h' | 'full' | undefined;
+
+function withSubset(path: string, subset: Subset): string {
+  if (!subset || subset === 'full') return path;
+  const sep = path.includes('?') ? '&' : '?';
+  return `${path}${sep}subset=${subset}`;
 }
 
 export async function apiFetchRaw<T>(path: string, options?: RequestInit): Promise<T> {
@@ -192,29 +205,29 @@ export async function getBursts(datasetId: string, params?: {
   }>(`/api/analysis/${datasetId}/bursts?${q}`);
 }
 
-export async function getConnectivity(datasetId: string) {
+export async function getConnectivity(datasetId: string, subset?: Subset) {
   return apiFetch<{
     nodes: Array<{ id: number; n_spikes: number; firing_rate_hz: number; degree: number; strength: number }>;
     edges: Array<{ source: number; target: number; weight: number }>;
     n_edges: number;
     density: number;
     mean_clustering: number;
-  }>(`/api/analysis/${datasetId}/connectivity`);
+  }>(withSubset(`/api/analysis/${datasetId}/connectivity`, subset));
 }
 
-export async function getCrossCorrelation(datasetId: string, maxLagMs = 50, binSizeMs = 1) {
+export async function getCrossCorrelation(datasetId: string, maxLagMs = 50, binSizeMs = 1, subset?: Subset) {
   return apiFetch<Record<string, unknown>>(
-    `/api/analysis/${datasetId}/cross-correlation?max_lag_ms=${maxLagMs}&bin_size_ms=${binSizeMs}`
+    withSubset(`/api/analysis/${datasetId}/cross-correlation?max_lag_ms=${maxLagMs}&bin_size_ms=${binSizeMs}`, subset)
   );
 }
 
-export async function getTransferEntropy(datasetId: string) {
+export async function getTransferEntropy(datasetId: string, subset?: Subset) {
   return apiFetch<{
     te_matrix: number[][];
     electrode_ids: number[];
     max_te_pair: { source: number; target: number; value: number };
     mean_te: number;
-  }>(`/api/analysis/${datasetId}/transfer-entropy`);
+  }>(withSubset(`/api/analysis/${datasetId}/transfer-entropy`, subset));
 }
 
 export async function getTemporal(datasetId: string, binSize = 60) {
@@ -227,8 +240,8 @@ export async function getAmplitudes(datasetId: string) {
 
 // ─── Advanced Analysis ───
 
-export async function getOrganoidIQ(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/iq`);
+export async function getOrganoidIQ(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/iq`, subset));
 }
 
 export async function getSTDP(datasetId: string) {
@@ -247,40 +260,40 @@ export async function getStateSpace(datasetId: string) {
   return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/state-space`);
 }
 
-export async function getPhaseTransitions(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/phase-transitions`);
+export async function getPhaseTransitions(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/phase-transitions`, subset));
 }
 
-export async function getPredictiveCoding(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/predictive-coding`);
+export async function getPredictiveCoding(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/predictive-coding`, subset));
 }
 
-export async function getWeights(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/weights`);
+export async function getWeights(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/weights`, subset));
 }
 
-export async function getWeightTracking(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/weight-tracking`);
+export async function getWeightTracking(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/weight-tracking`, subset));
 }
 
-export async function getEmergence(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/emergence`);
+export async function getEmergence(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/emergence`, subset));
 }
 
-export async function getReplay(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/replay`);
+export async function getReplay(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/replay`, subset));
 }
 
-export async function getSequences(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/sequences`);
+export async function getSequences(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/sequences`, subset));
 }
 
 export async function getMemoryCapacity(datasetId: string) {
   return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/memory-capacity`);
 }
 
-export async function getFingerprint(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/fingerprint`);
+export async function getFingerprint(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/fingerprint`, subset));
 }
 
 export async function getAnomalies(datasetId: string) {
@@ -295,8 +308,8 @@ export async function getPCA(datasetId: string) {
   return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/pca`);
 }
 
-export async function getMultiscale(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/multiscale`);
+export async function getMultiscale(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/multiscale`, subset));
 }
 
 export async function getHealth(datasetId: string) {
@@ -307,8 +320,8 @@ export async function getPredictBursts(datasetId: string) {
   return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/predict/bursts`);
 }
 
-export async function getFullReport(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/full-report`);
+export async function getFullReport(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/full-report`, subset));
 }
 
 export async function getAvalanches(datasetId: string) {
@@ -325,32 +338,32 @@ export async function getComplexity(datasetId: string) {
 
 // ─── Discovery Analysis (new modules) ───
 
-export async function getSleepWake(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/sleep-wake`);
+export async function getSleepWake(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/sleep-wake`, subset));
 }
 
-export async function getHabituation(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/habituation`);
+export async function getHabituation(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/habituation`, subset));
 }
 
-export async function getMetastability(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/metastability`);
+export async function getMetastability(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/metastability`, subset));
 }
 
-export async function getInformationFlow(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/information-flow`);
+export async function getInformationFlow(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/information-flow`, subset));
 }
 
-export async function getMotifs(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/motifs`);
+export async function getMotifs(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/motifs`, subset));
 }
 
 export async function getEnergyLandscape(datasetId: string) {
   return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/energy-landscape`);
 }
 
-export async function getConsciousness(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/consciousness`);
+export async function getConsciousness(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/consciousness`, subset));
 }
 
 export async function getComparative(datasetId: string) {
@@ -402,16 +415,16 @@ export async function generateDraft(datasetId: string) {
 
 // ─── Extended Analysis ───
 
-export async function getTuringTest(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/turing-test`);
+export async function getTuringTest(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/turing-test`, subset));
 }
 
 export async function getWelfare(datasetId: string) {
   return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/welfare`);
 }
 
-export async function getHomeostasis(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/homeostasis`);
+export async function getHomeostasis(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/homeostasis`, subset));
 }
 
 export async function getSuffering(datasetId: string) {
@@ -426,8 +439,8 @@ export async function getSwarm(datasetId: string) {
   return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/swarm`);
 }
 
-export async function getForgetting(datasetId: string) {
-  return apiFetch<Record<string, unknown>>(`/api/analysis/${datasetId}/forgetting`);
+export async function getForgetting(datasetId: string, subset?: Subset) {
+  return apiFetch<Record<string, unknown>>(withSubset(`/api/analysis/${datasetId}/forgetting`, subset));
 }
 
 export async function getTransferLearning(datasetId: string) {

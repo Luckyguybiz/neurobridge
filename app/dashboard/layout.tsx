@@ -12,6 +12,8 @@ import { ThemeToggle } from '@/lib/theme-context';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import DebugPanel from '@/components/dashboard/DebugPanel';
 import WelcomeModal from '@/components/dashboard/WelcomeModal';
+import { SubsetSelector } from '@/components/dashboard/SubsetSelector';
+import { SubsetProvider } from '@/lib/subset-context';
 import { clearCache } from '@/lib/analysis-cache';
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
@@ -489,6 +491,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   };
 
   return (
+    <SubsetProvider>
     <DashboardContext.Provider value={{
       datasetId, datasetSource, loadingStep, spikes, duration, nElectrodes,
       summary, burstInfo, cached: { iq: cachedIQ, health: cachedHealth, consciousness: cachedConsciousness },
@@ -681,6 +684,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     {burstInfo && <MetricPill label="Bursts" value={String(burstInfo.n_bursts)} />}
                   </div>
                 )}
+
+                {/* Subset selector — only shown for recordings > 1h (FinalSpark, large uploads) */}
+                {status === 'ready' && (
+                  <SubsetSelector datasetId={datasetId} durationSeconds={duration} />
+                )}
               </div>
 
               {/* Controls */}
@@ -812,5 +820,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <WelcomeModal />
       </div>
     </DashboardContext.Provider>
+    </SubsetProvider>
   );
 }
