@@ -129,7 +129,9 @@ const NAV = [
   { href: '/dashboard/discovery',    label: 'Discovery',    Icon: IconDiscovery },
   { href: '/dashboard/experiments',  label: 'Experiments',  Icon: IconExperiments },
   { href: '/dashboard/protocols',    label: 'Protocols',    Icon: IconProtocols },
-  { href: '/dashboard/publish',      label: 'Publish',      Icon: IconPublish },
+  // Publish hidden from public nav until the template-draft generator is
+  // polished and carries proper caveats. Route still works by URL for internal use.
+  // { href: '/dashboard/publish',      label: 'Publish',      Icon: IconPublish },
   { href: '/dashboard/constructor',  label: 'Constructor',  Icon: IconConstructor },
   { href: '/dashboard/live',         label: 'Live',         Icon: IconLive },
 ];

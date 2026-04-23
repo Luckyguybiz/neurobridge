@@ -13,7 +13,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: '/dashboard/discovery', priority: 0.7, changeFrequency: 'monthly' as const },
     { url: '/dashboard/experiments', priority: 0.7, changeFrequency: 'monthly' as const },
     { url: '/dashboard/protocols', priority: 0.6, changeFrequency: 'monthly' as const },
-    { url: '/dashboard/publish', priority: 0.6, changeFrequency: 'monthly' as const },
+    // /dashboard/publish intentionally omitted — hidden from public nav
+    //  until the generator is polished; keep it out of search index too.
     { url: '/dashboard/constructor', priority: 0.6, changeFrequency: 'monthly' as const },
     { url: '/dashboard/live', priority: 0.5, changeFrequency: 'monthly' as const },
     { url: '/privacy', priority: 0.3, changeFrequency: 'yearly' as const },
