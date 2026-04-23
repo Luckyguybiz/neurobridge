@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     title: SITE_TITLE,
     description: SITE_DESC,
     images: [`${SITE_URL}/og-image.svg`],
-    creator: '@luckyguybiz',
+    creator: '@nikitabritikov',
   },
   robots: {
     index: true,

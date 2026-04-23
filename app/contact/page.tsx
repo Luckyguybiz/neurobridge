@@ -43,8 +43,12 @@ export default function ContactPage() {
           <h2 className="text-[16px] font-display mt-6" style={{ color: 'var(--text-primary)' }}>Social</h2>
           <ul className="list-disc pl-5 space-y-1">
             <li>
-              Twitter/X:{' '}
-              <a href="https://twitter.com/luckyguybiz" target="_blank" rel="noopener" className="text-cyan-400 hover:underline">@luckyguybiz</a>
+              X (Twitter):{' '}
+              <a href="https://x.com/nikitabritikov" target="_blank" rel="noopener" className="text-cyan-400 hover:underline">@nikitabritikov</a>
+            </li>
+            <li>
+              LinkedIn:{' '}
+              <a href="https://www.linkedin.com/in/nik-britikov-3b6b79350/" target="_blank" rel="noopener" className="text-cyan-400 hover:underline">Nik Britikov</a>
             </li>
             <li>
               GitHub:{' '}
