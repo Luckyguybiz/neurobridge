@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { ThemeProviderWrapper } from "./theme-wrapper";
 
@@ -113,6 +114,9 @@ export default function RootLayout({
           })}
         </Script>
         <ThemeProviderWrapper>{children}</ThemeProviderWrapper>
+        {/* Vercel Analytics — page views / visitors / top pages. No cookies,
+            no PII. Free on Pro plan. Enabled in Vercel dashboard → Analytics. */}
+        <Analytics />
       </body>
     </html>
   );
