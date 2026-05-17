@@ -1,0 +1,184 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Motion — Spring animations + micro-interactions
+   ───────────────────────────────────────────────────────────────────────────
+   All keyframes use the easings defined in tokens.css.
+   Class naming: `anim-<name>` for keyframe utilities, `motion-<name>` for
+   transition presets.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Keyframes ─── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes springIn {
+  0%   { opacity: 0; transform: translateY(16px) scale(0.96); }
+  60%  { opacity: 1; transform: translateY(-3px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--bio-primary-500) 40%, transparent); }
+  50%      { box-shadow: 0 0 0 8px color-mix(in srgb, var(--bio-primary-500) 0%, transparent); }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.04); }
+}
+
+@keyframes shimmerWave {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes spinSlow {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+@keyframes spikeFlash {
+  0%   { opacity: 0; transform: scaleY(0.2); }
+  20%  { opacity: 1; transform: scaleY(1); }
+  100% { opacity: 0; transform: scaleY(1); }
+}
+
+@keyframes sheetSlideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes toastSlideIn {
+  from { transform: translateX(120%); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+
+/* ─── Animation utilities ─── */
+.anim-fade-in       { animation: fadeIn       var(--dur-base)  var(--ease-out)    both; }
+.anim-fade-in-up    { animation: fadeInUp     var(--dur-slow)  var(--ease-out)    both; }
+.anim-fade-in-down  { animation: fadeInDown   var(--dur-slow)  var(--ease-out)    both; }
+.anim-scale-in      { animation: scaleIn      var(--dur-base)  var(--ease-spring) both; }
+.anim-spring-in     { animation: springIn     var(--dur-slower) var(--ease-spring) both; }
+.anim-pulse-glow    { animation: pulseGlow    1.6s             var(--ease-in-out) infinite; }
+.anim-breathe       { animation: breathe      3s               var(--ease-in-out) infinite; }
+.anim-float         { animation: floatY       4s               var(--ease-in-out) infinite; }
+.anim-spin-slow     { animation: spinSlow     2s               linear             infinite; }
+
+/* Stagger delays — utility classes for 8-item grids */
+.anim-delay-0  { animation-delay: 0ms; }
+.anim-delay-1  { animation-delay: 60ms; }
+.anim-delay-2  { animation-delay: 120ms; }
+.anim-delay-3  { animation-delay: 180ms; }
+.anim-delay-4  { animation-delay: 240ms; }
+.anim-delay-5  { animation-delay: 300ms; }
+.anim-delay-6  { animation-delay: 360ms; }
+.anim-delay-7  { animation-delay: 420ms; }
+.anim-delay-8  { animation-delay: 480ms; }
+
+/* ─── Transition presets ─── */
+.motion-fast     { transition: all var(--dur-fast)    var(--ease-out); }
+.motion-base     { transition: all var(--dur-base)    var(--ease-out); }
+.motion-slow     { transition: all var(--dur-slow)    var(--ease-out); }
+.motion-spring   { transition: all var(--dur-base)    var(--ease-spring); }
+.motion-fluid    { transition: all var(--dur-slower)  var(--ease-in-out); }
+
+/* ─── Hover lift ─── */
+.lift-on-hover {
+  transition:
+    transform var(--dur-base) var(--ease-spring),
+    box-shadow var(--dur-base) var(--ease-out);
+  will-change: transform;
+}
+.lift-on-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+.lift-on-hover:active {
+  transform: translateY(0) scale(0.985);
+  transition-duration: var(--dur-fast);
+}
+
+/* ─── Press ripple (via ::after pulse) ─── */
+.ripple-on-press {
+  position: relative;
+  overflow: hidden;
+}
+.ripple-on-press::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center,
+    color-mix(in srgb, var(--bio-primary-500) 35%, transparent),
+    transparent 60%);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+  pointer-events: none;
+}
+.ripple-on-press:active::after {
+  opacity: 1;
+  transition-duration: 40ms;
+}
+
+/* ─── Shimmer loading bar ─── */
+.anim-shimmer {
+  position: relative;
+  background: linear-gradient(
+    90deg,
+    var(--glass-ultra-thin) 0%,
+    var(--glass-regular) 40%,
+    var(--glass-thick) 50%,
+    var(--glass-regular) 60%,
+    var(--glass-ultra-thin) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmerWave 1.8s linear infinite;
+}
+
+/* ─── Pulsing dot — for live status ─── */
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--bio-spark-500);
+  box-shadow: 0 0 12px var(--bio-spark-500);
+  animation: breathe 1.4s var(--ease-in-out) infinite;
+}
+
+/* ─── Reduced motion fallback ─── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .anim-shimmer {
+    animation: none;
+    background: var(--glass-regular);
+  }
+  .lift-on-hover:hover,
+  .lift-on-hover:active {
+    transform: none;
+  }
+}

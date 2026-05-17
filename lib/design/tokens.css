@@ -1,0 +1,215 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Design Tokens — Liquid Glass (Apple macOS Tahoe 26 / iOS 26 inspired)
+   ───────────────────────────────────────────────────────────────────────────
+   Loaded by app/globals.css. Legacy --accent-cyan/violet/etc still work —
+   they're re-mapped to the new semantic tokens for incremental migration.
+
+   Rules:
+   - All colors defined in :root (dark) + .light override for theme switch
+   - Semantic tokens reference primitives (no hard-coded hex in components)
+   - Numeric scales are octave-based (2x) where possible for visual rhythm
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ─── Bio-Accent Palette (primitives) ─── */
+  --bio-primary-400:   #4DEAC5;
+  --bio-primary-500:   #1DE9B6;  /* mint — life/activity */
+  --bio-primary-600:   #00BFA5;
+  --bio-primary-700:   #008E75;
+
+  --bio-neural-400:    #B388FF;
+  --bio-neural-500:    #7C4DFF;  /* deep purple — neural flow */
+  --bio-neural-600:    #5E35B1;
+  --bio-neural-700:    #4527A0;
+
+  --bio-spark-400:     #84FFFF;
+  --bio-spark-500:     #18FFFF;  /* electric cyan — spikes/live */
+  --bio-spark-600:     #00E5FF;
+  --bio-spark-700:     #00B8D4;
+
+  --bio-warn-400:      #FFD740;
+  --bio-warn-500:      #FFAB00;  /* amber — critical */
+  --bio-warn-600:      #FF8F00;
+
+  --bio-error-400:     #FF8A80;
+  --bio-error-500:     #FF5252;  /* red — errors */
+  --bio-error-600:     #E53935;
+
+  --bio-success-400:   #69F0AE;
+  --bio-success-500:   #00E676;  /* green — confirmed */
+  --bio-success-600:   #00C853;
+
+  /* ─── Surface (dark theme) ─── */
+  --surface-0:         #000000;  /* deepest */
+  --surface-1:         #0A0C14;  /* page bg */
+  --surface-2:         #0F1220;  /* raised */
+  --surface-3:         #151929;  /* card */
+  --surface-4:         #1D2237;  /* hover */
+  --surface-5:         #262C45;  /* active */
+
+  /* ─── Glass materials (alpha overlays on surface) ─── */
+  --glass-ultra-thin:  rgba(255,255,255,0.04);
+  --glass-thin:        rgba(255,255,255,0.06);
+  --glass-regular:     rgba(255,255,255,0.08);
+  --glass-thick:       rgba(255,255,255,0.12);
+  --glass-ultra-thick: rgba(255,255,255,0.18);
+
+  /* Edge highlights — subtle light lines on top/bottom of glass */
+  --edge-top:          rgba(255,255,255,0.14);
+  --edge-bottom:       rgba(0,0,0,0.24);
+  --edge-outline:      rgba(255,255,255,0.06);
+
+  /* ─── Text (perceptually-scaled opacities) ─── */
+  --text-primary:      rgba(255,255,255,0.92);
+  --text-secondary:    rgba(255,255,255,0.66);
+  --text-tertiary:     rgba(255,255,255,0.42);
+  --text-quaternary:   rgba(255,255,255,0.24);
+  --text-disabled:     rgba(255,255,255,0.12);
+
+  /* ─── Semantic tokens ─── */
+  --accent-primary:    var(--bio-primary-500);
+  --accent-secondary:  var(--bio-neural-500);
+  --accent-spark:      var(--bio-spark-600);
+  --accent-warn:       var(--bio-warn-500);
+  --accent-error:      var(--bio-error-500);
+  --accent-success:    var(--bio-success-500);
+
+  /* Hero gradients — used on marquee numbers, headlines */
+  --accent-hero-from:  #1DE9B6;
+  --accent-hero-via:   #18FFFF;
+  --accent-hero-to:    #B388FF;
+
+  /* ─── Shadows (layered elevation) ─── */
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.2);
+  --shadow-sm:  0 2px 6px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.15);
+  --shadow-md:  0 6px 16px rgba(0,0,0,0.30), 0 2px 4px rgba(0,0,0,0.20);
+  --shadow-lg:  0 12px 32px rgba(0,0,0,0.40), 0 4px 8px rgba(0,0,0,0.20);
+  --shadow-xl:  0 24px 48px rgba(0,0,0,0.45), 0 8px 16px rgba(0,0,0,0.25);
+  --shadow-glow-primary: 0 0 40px color-mix(in srgb, var(--bio-primary-500) 28%, transparent);
+  --shadow-glow-neural:  0 0 40px color-mix(in srgb, var(--bio-neural-500) 28%, transparent);
+  --shadow-glow-spark:   0 0 40px color-mix(in srgb, var(--bio-spark-600) 28%, transparent);
+
+  /* ─── Radius scale ─── */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-3xl: 40px;
+  --radius-full: 9999px;
+
+  /* ─── Spacing scale (0-8 = 0 to 64px) ─── */
+  --space-0: 0;
+  --space-0_5: 2px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* ─── Typography scale ─── */
+  /* --font-display is owned by Next/Font (Instrument_Serif) in layout.tsx */
+  --font-body:    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter var', system-ui, sans-serif;
+  --font-mono:    'SF Mono', 'JetBrains Mono', Menlo, 'Fira Code', monospace;
+
+  --t-xs:    0.6875rem;   /* 11 caption */
+  --t-sm:    0.8125rem;   /* 13 body-small */
+  --t-base:  0.9375rem;   /* 15 body */
+  --t-md:    1.0625rem;   /* 17 body-large */
+  --t-lg:    1.25rem;     /* 20 title-3 */
+  --t-xl:    1.5rem;      /* 24 title-2 */
+  --t-2xl:   2.125rem;    /* 34 title-1 */
+  --t-3xl:   2.75rem;     /* 44 display */
+  --t-4xl:   4.25rem;     /* 68 hero */
+  --t-5xl:   6rem;        /* 96 banner */
+
+  --tw-light:   400;
+  --tw-normal:  450;
+  --tw-medium:  520;
+  --tw-semibold: 620;
+  --tw-bold:    720;
+
+  --lh-tight:   1.1;
+  --lh-snug:    1.25;
+  --lh-normal:  1.45;
+  --lh-relaxed: 1.65;
+
+  --ls-tight:    -0.022em;
+  --ls-normal:    0;
+  --ls-wide:     0.02em;
+  --ls-extrawide: 0.08em;
+
+  /* ─── Motion ─── */
+  --ease-out:   cubic-bezier(0.16, 1, 0.30, 1);          /* expo-out */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);          /* sine-io */
+  --ease-spring: cubic-bezier(0.20, 1.35, 0.30, 1);       /* apple spring-y */
+  --ease-linear: linear;
+
+  --dur-instant: 80ms;
+  --dur-fast:    140ms;
+  --dur-base:    220ms;
+  --dur-slow:    360ms;
+  --dur-slower:  540ms;
+  --dur-slowest: 820ms;
+
+  /* ─── Legacy aliases (for incremental migration) ─── */
+  --bg-primary:   var(--surface-1);
+  --bg-secondary: var(--surface-2);
+  --bg-card:      var(--glass-thin);
+  --bg-card-hover: var(--glass-regular);
+  --bg-input:     var(--glass-ultra-thin);
+  --border:       var(--edge-outline);
+  --border-hover: var(--edge-top);
+  --text-muted:   var(--text-tertiary);
+  --text-faint:   var(--text-quaternary);
+  --accent-cyan:   var(--bio-spark-600);
+  --accent-violet: var(--bio-neural-500);
+  --accent-emerald: var(--bio-primary-500);
+  --accent-amber:  var(--bio-warn-500);
+  --accent-red:    var(--bio-error-500);
+  --shadow:       rgba(0,0,0,0.3);
+}
+
+/* ═══ Light theme override ═══ */
+.light {
+  --surface-0: #F5F5F7;
+  --surface-1: #FAFAFC;
+  --surface-2: #FFFFFF;
+  --surface-3: #F2F2F7;
+  --surface-4: #E5E5EA;
+  --surface-5: #D1D1D6;
+
+  --glass-ultra-thin:  rgba(0,0,0,0.02);
+  --glass-thin:        rgba(0,0,0,0.04);
+  --glass-regular:     rgba(0,0,0,0.06);
+  --glass-thick:       rgba(0,0,0,0.09);
+  --glass-ultra-thick: rgba(0,0,0,0.14);
+
+  --edge-top:     rgba(255,255,255,0.9);
+  --edge-bottom:  rgba(0,0,0,0.10);
+  --edge-outline: rgba(0,0,0,0.08);
+
+  --text-primary:    rgba(0,0,0,0.92);
+  --text-secondary:  rgba(0,0,0,0.60);
+  --text-tertiary:   rgba(0,0,0,0.38);
+  --text-quaternary: rgba(0,0,0,0.22);
+  --text-disabled:   rgba(0,0,0,0.12);
+
+  --bio-primary-500:  #00A896;
+  --bio-neural-500:   #5E35B1;
+  --bio-spark-600:    #0097A7;
+
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.04);
+  --shadow-sm:  0 2px 6px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:  0 6px 16px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-lg:  0 12px 32px rgba(0,0,0,0.14), 0 4px 8px rgba(0,0,0,0.08);
+  --shadow-xl:  0 24px 48px rgba(0,0,0,0.18), 0 8px 16px rgba(0,0,0,0.10);
+}

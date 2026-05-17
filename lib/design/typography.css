@@ -1,0 +1,190 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Typography — SF Pro-inspired type system
+   ───────────────────────────────────────────────────────────────────────────
+   Font families, scale, weights, leading, tracking.
+   Class namespaces: `.t-` for type scale, `.tw-` for weights,
+   `.tr-` for tracking, `.lh-` for leading.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Font stack classes ─── */
+.font-display {
+  font-family: var(--font-display);
+  font-feature-settings: 'ss01', 'ss02', 'cv11';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: 'tnum', 'zero';
+}
+
+/* ─── Type scale — from --t-xs to --t-5xl ─── */
+.t-xs    { font-size: var(--t-xs);    line-height: var(--lh-normal); }
+.t-sm    { font-size: var(--t-sm);    line-height: var(--lh-normal); }
+.t-base  { font-size: var(--t-base);  line-height: var(--lh-relaxed); }
+.t-md    { font-size: var(--t-md);    line-height: var(--lh-relaxed); }
+.t-lg    { font-size: var(--t-lg);    line-height: var(--lh-snug); }
+.t-xl    { font-size: var(--t-xl);    line-height: var(--lh-snug); }
+.t-2xl   { font-size: var(--t-2xl);   line-height: var(--lh-tight); letter-spacing: var(--ls-tight); }
+.t-3xl   { font-size: var(--t-3xl);   line-height: var(--lh-tight); letter-spacing: var(--ls-tight); }
+.t-4xl   { font-size: var(--t-4xl);   line-height: var(--lh-tight); letter-spacing: var(--ls-tight); }
+.t-5xl   { font-size: var(--t-5xl);   line-height: 1.02;            letter-spacing: -0.028em; }
+
+/* ─── Weights ─── */
+.tw-light    { font-weight: var(--tw-light); }
+.tw-normal   { font-weight: var(--tw-normal); }
+.tw-medium   { font-weight: var(--tw-medium); }
+.tw-semibold { font-weight: var(--tw-semibold); }
+.tw-bold     { font-weight: var(--tw-bold); }
+
+/* ─── Leading ─── */
+.lh-tight   { line-height: var(--lh-tight); }
+.lh-snug    { line-height: var(--lh-snug); }
+.lh-normal  { line-height: var(--lh-normal); }
+.lh-relaxed { line-height: var(--lh-relaxed); }
+
+/* ─── Tracking ─── */
+.tr-tight      { letter-spacing: var(--ls-tight); }
+.tr-normal     { letter-spacing: var(--ls-normal); }
+.tr-wide       { letter-spacing: var(--ls-wide); }
+.tr-extrawide  { letter-spacing: var(--ls-extrawide); text-transform: uppercase; }
+
+/* ─── Text color ─── */
+.text-primary    { color: var(--text-primary); }
+.text-secondary  { color: var(--text-secondary); }
+.text-tertiary   { color: var(--text-tertiary); }
+.text-quaternary { color: var(--text-quaternary); }
+.text-disabled   { color: var(--text-disabled); }
+
+/* ─── Semantic accent text ─── */
+.text-accent-primary { color: var(--bio-primary-500); }
+.text-accent-neural  { color: var(--bio-neural-500); }
+.text-accent-spark   { color: var(--bio-spark-600); }
+.text-accent-warn    { color: var(--bio-warn-500); }
+.text-accent-error   { color: var(--bio-error-500); }
+.text-accent-success { color: var(--bio-success-500); }
+
+/* ─── Hero gradient text ─── */
+.text-hero-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--accent-hero-from) 0%,
+    var(--accent-hero-via) 50%,
+    var(--accent-hero-to) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ─── Semantic role combinations ─── */
+.type-eyebrow {
+  font-size: var(--t-xs);
+  font-weight: var(--tw-semibold);
+  letter-spacing: var(--ls-extrawide);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.type-label {
+  font-size: var(--t-sm);
+  font-weight: var(--tw-medium);
+  color: var(--text-secondary);
+  letter-spacing: var(--ls-wide);
+}
+
+.type-caption {
+  font-size: var(--t-xs);
+  font-weight: var(--tw-normal);
+  color: var(--text-tertiary);
+  line-height: var(--lh-normal);
+}
+
+.type-body {
+  font-size: var(--t-base);
+  font-weight: var(--tw-normal);
+  color: var(--text-primary);
+  line-height: var(--lh-relaxed);
+}
+
+.type-body-large {
+  font-size: var(--t-md);
+  font-weight: var(--tw-normal);
+  color: var(--text-primary);
+  line-height: var(--lh-relaxed);
+}
+
+.type-title-3 {
+  font-size: var(--t-lg);
+  font-weight: var(--tw-semibold);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-tight);
+  color: var(--text-primary);
+}
+
+.type-title-2 {
+  font-size: var(--t-xl);
+  font-weight: var(--tw-semibold);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-tight);
+  color: var(--text-primary);
+}
+
+.type-title-1 {
+  font-size: var(--t-2xl);
+  font-weight: var(--tw-semibold);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--text-primary);
+}
+
+.type-display {
+  font-size: var(--t-3xl);
+  font-weight: var(--tw-semibold);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-tight);
+  color: var(--text-primary);
+}
+
+.type-hero {
+  font-size: var(--t-4xl);
+  font-weight: var(--tw-bold);
+  line-height: var(--lh-tight);
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+}
+
+.type-banner {
+  font-size: var(--t-5xl);
+  font-weight: var(--tw-bold);
+  line-height: 1.02;
+  letter-spacing: -0.028em;
+  color: var(--text-primary);
+}
+
+/* ─── Tabular numerals — for metric displays ─── */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+/* ─── Responsive hero — scales down on mobile ─── */
+@media (max-width: 768px) {
+  .type-banner { font-size: calc(var(--t-4xl) * 0.85); }
+  .type-hero   { font-size: var(--t-3xl); }
+  .type-display { font-size: var(--t-2xl); }
+  .type-title-1 { font-size: var(--t-xl); }
+}
+
+@media (max-width: 480px) {
+  .type-banner { font-size: var(--t-3xl); }
+  .type-hero   { font-size: var(--t-2xl); }
+}
