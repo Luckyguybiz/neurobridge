@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* ─── Liquid Glass design system (Apple macOS Tahoe 26 / iOS 26) ─── */
+@import "../lib/design/tokens.css";
+@import "../lib/design/glass.css";
+@import "../lib/design/motion.css";
+@import "../lib/design/typography.css";
+
 /* ─── Theme Variables ─── */
 
 :root {
@@ -284,6 +290,16 @@ html.light .text-red-400,
 html.light .text-red-400\/80,
 html.light .text-red-400\/70,
 html.light .text-red-400\/60     { color: var(--accent-red); }
+
+html.light .text-pink-400,
+html.light .text-pink-400\/60    { color: #be185d; } /* pink-700 — readable on white */
+
+html.light .bg-pink-500\/\[0\.08\],
+html.light .bg-pink-500\/10,
+html.light .bg-pink-500\/15      { background: rgba(190,24,93,0.08); }
+
+html.light .border-pink-500\/15,
+html.light .border-pink-500\/20  { border-color: rgba(190,24,93,0.18); }
 
 /* --- Accent hover links --- */
 html.light .hover\:text-cyan-400\/70:hover,

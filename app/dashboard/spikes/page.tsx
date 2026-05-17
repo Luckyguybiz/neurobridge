@@ -1,7 +1,16 @@
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
-import * as d3 from 'd3';
+// Tree-shaken d3 imports — avoid the umbrella package (≈250 KB savings).
+import { select } from 'd3-selection';
+import { scaleBand, scaleLinear } from 'd3-scale';
+import { axisBottom, axisLeft } from 'd3-axis';
+import { bin, max, mean, min, range } from 'd3-array';
+import { area, curveCatmullRom, line } from 'd3-shape';
+const d3 = {
+  select, scaleBand, scaleLinear, axisBottom, axisLeft,
+  bin, max, mean, min, range, area, curveCatmullRom, line,
+};
 import { motion } from 'framer-motion';
 import { useDashboardContext } from '@/lib/dashboard-context';
 import { useCachedAnalysis } from '@/lib/use-cached-analysis';
@@ -248,8 +257,26 @@ export default function SpikesPage() {
   const meanRate = (totalSpikes / uniqueElectrodes / duration).toFixed(1);
 
   return (
-    <div className="p-3 sm:p-4 space-y-3">
+    <div className="p-3 sm:p-5 space-y-4">
       <QueueStatus />
+
+      {/* Page header */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <h1
+          className="font-display"
+          style={{ fontSize: 'var(--t-2xl)', fontWeight: 'var(--tw-semibold)', letterSpacing: '-0.022em', lineHeight: 1.1, color: 'var(--text-primary)' }}
+        >
+          Spike Activity
+        </h1>
+        <p className="type-body" style={{ color: 'var(--text-secondary)', marginTop: 'var(--space-1)' }}>
+          Raster plots, waveforms, and per-electrode firing statistics.
+        </p>
+      </motion.div>
+
       {/* Stats strip */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
@@ -468,7 +495,7 @@ function StateClassification({ data }: { data: Record<string, unknown> | null })
   const rawStates = data.states;
   const stateColors = ['#818cf8', '#22d3ee', '#f87171', '#fbbf24', '#34d399'];
 
-  let counts: Record<string, number> = {};
+  const counts: Record<string, number> = {};
   let total = 1;
 
   if (Array.isArray(rawLabels)) {

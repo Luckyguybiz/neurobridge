@@ -1,7 +1,20 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
-import * as d3 from 'd3';
+// Tree-shaken d3 imports — avoid pulling in the umbrella package (≈250 KB).
+// Aliased under the `d3` namespace so existing call sites stay unchanged.
+import { select } from 'd3-selection';
+import { drag } from 'd3-drag';
+import { forceCenter, forceCollide, forceLink, forceManyBody, forceSimulation, type SimulationLinkDatum, type SimulationNodeDatum } from 'd3-force';
+import { interpolatePlasma, interpolateRdBu } from 'd3-scale-chromatic';
+import { max } from 'd3-array';
+import { scaleDiverging, scaleLinear, scaleSequential } from 'd3-scale';
+const d3 = {
+  select, drag,
+  forceCenter, forceCollide, forceLink, forceManyBody, forceSimulation,
+  interpolatePlasma, interpolateRdBu, max,
+  scaleDiverging, scaleLinear, scaleSequential,
+};
 import { motion } from 'framer-motion';
 import { useDashboardContext } from '@/lib/dashboard-context';
 import { useCachedAnalysis } from '@/lib/use-cached-analysis';
@@ -470,8 +483,8 @@ function InfoFlowCard({ data }: { data: Record<string, unknown> }) {
 
 // ─── Large connectivity graph (taller version) ────────────────────────────────
 
-interface SimNode extends d3.SimulationNodeDatum { id: number; label: string }
-interface SimLink extends d3.SimulationLinkDatum<SimNode> { strength: number }
+interface SimNode extends SimulationNodeDatum { id: number; label: string }
+interface SimLink extends SimulationLinkDatum<SimNode> { strength: number }
 
 function LargeConnectivityGraph({ spikes, electrodes }: { spikes: Spike[]; electrodes: number }) {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -654,8 +667,26 @@ export default function NetworkPage() {
   if (spikes.length === 0) return null;
 
   return (
-    <div className="p-3 sm:p-4 space-y-3">
+    <div className="p-3 sm:p-5 space-y-4">
       <QueueStatus />
+
+      {/* Page header */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <h1
+          className="font-display"
+          style={{ fontSize: 'var(--t-2xl)', fontWeight: 'var(--tw-semibold)', letterSpacing: '-0.022em', lineHeight: 1.1, color: 'var(--text-primary)' }}
+        >
+          Functional Network
+        </h1>
+        <p className="type-body" style={{ color: 'var(--text-secondary)', marginTop: 'var(--space-1)' }}>
+          Co-firing connectivity, cross-correlation, and graph-theoretic metrics.
+        </p>
+      </motion.div>
+
       {/* Large connectivity graph */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}

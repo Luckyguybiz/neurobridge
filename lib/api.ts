@@ -5,18 +5,26 @@
 import { logStart, logSuccess, logError } from './api-logger';
 
 // Resolution order:
-// 1. NEXT_PUBLIC_API_BASE env (set in Vercel → always wins)
-// 2. Production hostname (neurocomputers.io or *.vercel.app) → api.neurocomputers.io
-// 3. Local dev (localhost, any non-prod host) → assume API on port 8847 of same host
+// 1. NEXT_PUBLIC_API_BASE env (set in Vercel or .env.local → always wins)
+// 2. Production hostname (neurocomputers.io / *.vercel.app) → api.neurocomputers.io
+// 3. LAN IP dev (e.g. 192.168.x.x:3000) → assume Python API on same host port 8847
+// 4. Localhost dev → DEFAULT TO PRODUCTION API. Most local devs don't run the
+//    Python backend; pointing to prod API "just works" for UI demos. Override
+//    with `NEXT_PUBLIC_API_BASE=http://localhost:8847` if you DO run it.
 const ENV_API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
 function resolveApiBase(): string {
   if (ENV_API_BASE) return ENV_API_BASE;
-  if (typeof window === 'undefined') return 'http://localhost:8847';
+  if (typeof window === 'undefined') return 'https://api.neurocomputers.io';
   const host = window.location.hostname;
   if (host === 'neurocomputers.io' || host === 'www.neurocomputers.io' || host.endsWith('.vercel.app')) {
     return 'https://api.neurocomputers.io';
   }
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return 'https://api.neurocomputers.io';
+  }
+  // LAN IP — phone/tablet hitting `dev` from another device. Assume Python
+  // backend on same host:8847 (the typical local-dev setup).
   return `http://${host}:8847`;
 }
 
