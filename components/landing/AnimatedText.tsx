@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 const wordVariants = {
   hidden: { opacity: 0, y: 40 },
@@ -14,6 +14,10 @@ const wordVariants = {
   }),
 };
 
+/**
+ * Hero word-by-word entrance. Reduced-motion → plain static text.
+ * NEVER renders the words at opacity:0 forever — that would hide the page.
+ */
 export function AnimatedWords({
   text,
   className = '',
@@ -23,7 +27,12 @@ export function AnimatedWords({
   className?: string;
   startDelay?: number;
 }) {
+  const reducedMotion = useReducedMotion();
   const words = text.split(' ');
+
+  if (reducedMotion) {
+    return <span className={className}>{text}</span>;
+  }
 
   return (
     <span className={`inline-flex flex-wrap justify-center gap-x-[0.3em] ${className}`} style={{ perspective: '800px' }}>
@@ -64,6 +73,12 @@ export function AnimatedChars({
   className?: string;
   startDelay?: number;
 }) {
+  const reducedMotion = useReducedMotion();
+
+  if (reducedMotion) {
+    return <span className={className}>{text}</span>;
+  }
+
   return (
     <span className={className}>
       {text.split('').map((char, i) => (

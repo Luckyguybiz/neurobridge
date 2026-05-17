@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, type Variants } from 'framer-motion';
+import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import { ReactNode } from 'react';
 
 type RevealVariant = 'fade-up' | 'fade-left' | 'fade-right' | 'fade' | 'scale' | 'blur';
@@ -32,6 +32,15 @@ const variants: Record<RevealVariant, Variants> = {
   },
 };
 
+/**
+ * Reveals children on scroll. With prefers-reduced-motion, renders content
+ * IMMEDIATELY (no fade) — never traps users in a permanently-hidden state.
+ *
+ * Bug history: an earlier implementation kept `initial="hidden"` even with
+ * reduced motion, which froze the page blank for users with that pref set
+ * (e.g. default on macOS Safari with Reduce Motion). See vault memory:
+ * `feedback_framer_motion_reduced_motion.md`.
+ */
 export default function ScrollReveal({
   children,
   className = '',
@@ -45,13 +54,19 @@ export default function ScrollReveal({
   variant?: RevealVariant;
   direction?: 'up' | 'left' | 'right' | 'none';
 }) {
-  // Legacy support for direction prop
+  const reducedMotion = useReducedMotion();
+
   const v = direction
     ? direction === 'up' ? 'fade-up'
     : direction === 'left' ? 'fade-left'
     : direction === 'right' ? 'fade-right'
     : 'fade'
     : variant;
+
+  // Reduced motion: NO animation at all. Just render content visible.
+  if (reducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
 
   return (
     <motion.div

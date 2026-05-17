@@ -77,6 +77,11 @@ export const metadata: Metadata = {
   },
 };
 
+// Blocking script that sets theme class on <html> BEFORE React hydration.
+// Prevents flash-of-default-theme (FODT) when user prefers light or has
+// localStorage override. Pure constant — no user input — safe to inline.
+const THEME_INIT_SCRIPT = "(function(){try{var s=localStorage.getItem('neurobridge-theme');var t=s==='light'||s==='dark'?s:(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');var c=document.documentElement.classList;c.remove('light','dark');c.add(t);document.documentElement.style.colorScheme=t;}catch(e){}})();";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -85,10 +90,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+        {/* Theme init — beforeInteractive puts this in <head> and runs before
+            React hydrates. Prevents flash from default dark → user's light. */}
+        <Script id="theme-init" strategy="beforeInteractive">{THEME_INIT_SCRIPT}</Script>
         {/* Skip link — visible only when keyboard-focused, lets screen-reader
             and keyboard users jump past the sidebar straight to content. */}
         <a href="#main-content" className="skip-to-main">Skip to main content</a>

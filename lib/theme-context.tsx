@@ -16,26 +16,36 @@ const ThemeContext = createContext<ThemeContextValue>({
   isDark: true,
 });
 
+// Read the theme that the blocking init script in <head> already applied to
+// <html>. This keeps React's initial state in sync with the painted DOM — no
+// flash, no hydration mismatch. SSR returns 'dark' as a stable default.
+function getInitialTheme(): Theme {
+  if (typeof document === 'undefined') return 'dark';
+  return document.documentElement.classList.contains('light') ? 'light' : 'dark';
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark');
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
   useEffect(() => {
-    // Read from localStorage or system preference
-    const stored = localStorage.getItem('neurobridge-theme') as Theme | null;
-    if (stored) {
-      setTheme(stored);
-    } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
-      setTheme('light');
-    }
-  }, []);
-
-  useEffect(() => {
-    // Apply theme class to html element
+    // Apply theme class + persist. The init script handled the FIRST paint;
+    // this effect only runs on subsequent toggle changes.
     const root = document.documentElement;
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
+    root.style.colorScheme = theme;
     localStorage.setItem('neurobridge-theme', theme);
   }, [theme]);
+
+  // Follow system preference changes when user has no explicit override.
+  useEffect(() => {
+    const stored = localStorage.getItem('neurobridge-theme');
+    if (stored) return; // user has explicit choice, don't override
+    const mq = window.matchMedia('(prefers-color-scheme: light)');
+    const onChange = (e: MediaQueryListEvent) => setTheme(e.matches ? 'light' : 'dark');
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
 
   const toggleTheme = useCallback(() => {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
