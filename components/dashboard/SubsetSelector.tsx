@@ -64,12 +64,16 @@ export function SubsetSelector({ datasetId, durationSeconds }: SubsetSelectorPro
             onClick={() => handleChange(opt.value)}
             title={opt.hint}
             aria-pressed={active}
-            className={`text-[10px] px-2 py-1 rounded-md transition-colors whitespace-nowrap ${
-              active
-                ? 'bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-300 font-medium'
-                : 'hover:text-cyan-300'
-            }`}
-            style={!active ? { color: 'var(--text-muted)' } : undefined}
+            className="text-[10px] px-2 py-1 rounded-md transition-colors whitespace-nowrap motion-fast"
+            style={active
+              ? {
+                  background: 'color-mix(in srgb, var(--bio-success-500) 18%, transparent)',
+                  color: 'var(--bio-success-500)',
+                  fontWeight: 'var(--tw-semibold)' as unknown as number,
+                  boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--bio-success-500) 35%, transparent)',
+                }
+              : { color: 'var(--text-muted)' }
+            }
           >
             {opt.label}
           </button>
