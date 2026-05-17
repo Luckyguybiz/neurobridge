@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import type { Subset } from './api';
 
 /**
@@ -27,23 +27,22 @@ type SubsetContextValue = {
 
 const SubsetContext = createContext<SubsetContextValue | null>(null);
 
-export function SubsetProvider({ children }: { children: ReactNode }) {
-  const [subset, setSubsetState] = useState<Subset>(DEFAULT_SUBSET);
+// Read prior choice from sessionStorage on first client render. On SSR returns
+// the default — a one-frame flash is acceptable since the selector is at the
+// top of the header and no fetches fire before hydration completes.
+function readInitialSubset(): Subset {
+  if (typeof window === 'undefined') return DEFAULT_SUBSET;
+  try {
+    const stored = sessionStorage.getItem(STORAGE_KEY);
+    if (stored === '1h' || stored === '10h' || stored === 'full') return stored;
+  } catch {
+    // sessionStorage unavailable (private mode) — use default silently
+  }
+  return DEFAULT_SUBSET;
+}
 
-  // Hydrate from sessionStorage on client mount. SSR renders with the default,
-  // then effect picks up any prior choice. A one-frame flash of the default is
-  // acceptable — the selector is at the top of the header and the network
-  // request hasn't fired yet by the time this runs.
-  useEffect(() => {
-    try {
-      const stored = sessionStorage.getItem(STORAGE_KEY);
-      if (stored === '1h' || stored === '10h' || stored === 'full') {
-        setSubsetState(stored);
-      }
-    } catch {
-      // sessionStorage unavailable (private mode, SSR) — use default silently
-    }
-  }, []);
+export function SubsetProvider({ children }: { children: ReactNode }) {
+  const [subset, setSubsetState] = useState<Subset>(readInitialSubset);
 
   const setSubset = useCallback((s: Subset) => {
     setSubsetState(s);

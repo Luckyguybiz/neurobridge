@@ -13,18 +13,17 @@ export function useInView<T extends Element = HTMLDivElement>(
   rootMargin: string = '200px',
 ): [React.RefObject<T | null>, boolean] {
   const ref = useRef<T>(null);
-  const [inView, setInView] = useState(false);
+  // Lazy initializer: on SSR + browsers without IO, start as `true` (assume
+  // visible) so content always loads — never traps the user in a hidden state.
+  // This avoids a setState-in-effect for the fallback path.
+  const [inView, setInView] = useState<boolean>(
+    () => typeof window === 'undefined' || typeof IntersectionObserver === 'undefined'
+  );
 
   useEffect(() => {
     if (inView) return;
     const el = ref.current;
     if (!el) return;
-
-    // Fallback for old browsers / SSR — assume visible
-    if (typeof IntersectionObserver === 'undefined') {
-      setInView(true);
-      return;
-    }
 
     const io = new IntersectionObserver(
       (entries) => {

@@ -45,9 +45,12 @@ export function useCachedAnalysis<T = Record<string, unknown>>(
   useEffect(() => {
     if (!datasetId || !enabled) return;
 
-    // Already have cached data — show immediately
+    // Already have cached data — show immediately. This sync setState IS the
+    // documented pattern for "subscribing to an external system" (our cache).
+    // Without it, dep changes (new datasetId/cacheKey) wouldn't refresh data.
     const hit = getCached<T>(datasetId, cacheKey);
     if (hit !== undefined) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync from cache (external store) on dep change
       setData(hit);
       setLoading(false);
       setError('');

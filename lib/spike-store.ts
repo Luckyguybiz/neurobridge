@@ -4,7 +4,7 @@
  * Used by Next.js API route handlers.
  */
 
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, readdirSync } from 'fs';
 import { join } from 'path';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -535,6 +535,5 @@ export function generateSynthetic(durationSec = 30, nElectrodes = 8, burstProb =
 export function listLocalFiles(): string[] {
   const dataDir = join(process.cwd(), 'data');
   if (!existsSync(dataDir)) return [];
-  const { readdirSync } = require('fs');
   return (readdirSync(dataDir) as string[]).filter((f: string) => f.endsWith('.csv'));
 }
