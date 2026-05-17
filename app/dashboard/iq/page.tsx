@@ -9,6 +9,7 @@ import { getThemeColors } from '@/lib/utils';
 import * as api from '@/lib/api';
 import ChartCard from '@/components/dashboard/ChartCard';
 import QueueStatus from '@/components/dashboard/QueueStatus';
+import { Badge } from '@/components/design';
 
 // ─── Circular Gauge ───────────────────────────────────────────────────────────
 // 270° sweep: from 7:30 (225° CW from top) to 4:30 (135° CW from top)
@@ -249,7 +250,19 @@ export default function IQPage() {
   if (status === 'loading' && spikes.length === 0) {
     return (
       <div className="flex items-center justify-center py-40">
-        <div className="w-8 h-8 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
+        <div
+          className="anim-spin-slow"
+          style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            background:
+              'conic-gradient(from 0deg, var(--bio-primary-500), var(--bio-spark-600), var(--bio-neural-500), var(--bio-primary-500))',
+            mask: 'radial-gradient(farthest-side, transparent calc(100% - 3px), black calc(100% - 3px))',
+            WebkitMask: 'radial-gradient(farthest-side, transparent calc(100% - 3px), black calc(100% - 3px))',
+          }}
+          aria-hidden="true"
+        />
       </div>
     );
   }
@@ -275,8 +288,36 @@ export default function IQPage() {
   };
 
   return (
-    <div className="p-3 sm:p-4 space-y-3">
+    <div className="p-3 sm:p-5 space-y-4">
       <QueueStatus />
+
+      {/* Page header */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex items-start justify-between gap-3 flex-wrap"
+      >
+        <div>
+          <div className="flex items-center gap-3">
+            <h1
+              className="font-display"
+              style={{ fontSize: 'var(--t-2xl)', fontWeight: 'var(--tw-semibold)', letterSpacing: '-0.022em', lineHeight: 1.1, color: 'var(--text-primary)' }}
+            >
+              Network Complexity
+            </h1>
+            {score > 0 && (
+              <Badge tone={score >= 60 ? 'primary' : score >= 40 ? 'warn' : 'error'} variant="glass" size="md">
+                Grade {grade}
+              </Badge>
+            )}
+          </div>
+          <p className="type-body" style={{ color: 'var(--text-secondary)', marginTop: 'var(--space-1)', maxWidth: '56ch' }}>
+            Composite index of 6 network properties. Not a measure of intelligence or cognition.
+          </p>
+        </div>
+      </motion.div>
+
       {/* Hero: gauge + grade + subscores */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}

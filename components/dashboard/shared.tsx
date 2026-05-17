@@ -27,14 +27,30 @@ export function MetricPill({ label, value, unit, color = 'cyan' }: {
   );
 }
 
-/** Loading spinner with optional message */
+/** Loading spinner with optional message — bio-tinted conic gradient */
 export function LoadingSpinner({ message, size = 'md' }: { message?: string; size?: 'sm' | 'md' | 'lg' }) {
-  const sizeMap = { sm: 'w-4 h-4', md: 'w-6 h-6', lg: 'w-8 h-8' };
+  const px = { sm: 16, md: 24, lg: 32 }[size];
   return (
     <div className="flex items-center justify-center py-8">
       <div className="text-center">
-        <div className={`${sizeMap[size]} border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-3`} />
-        {message && <p className="text-[12px] text-th-muted">{message}</p>}
+        <div
+          className="anim-spin-slow mx-auto mb-3"
+          style={{
+            width: `${px}px`,
+            height: `${px}px`,
+            borderRadius: '50%',
+            background:
+              'conic-gradient(from 0deg, var(--bio-primary-500), var(--bio-spark-600), var(--bio-neural-500), var(--bio-primary-500))',
+            mask: `radial-gradient(farthest-side, transparent calc(100% - 3px), black calc(100% - 3px))`,
+            WebkitMask: `radial-gradient(farthest-side, transparent calc(100% - 3px), black calc(100% - 3px))`,
+          }}
+          aria-hidden="true"
+        />
+        {message && (
+          <p className="type-caption" style={{ color: 'var(--text-secondary)' }}>
+            {message}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -44,11 +60,27 @@ export function LoadingSpinner({ message, size = 'md' }: { message?: string; siz
 export function ErrorDisplay({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
     <div className="py-4 text-center">
-      <p className="text-[11px] text-red-400/70 mb-2">{message}</p>
+      <p
+        className="type-caption mb-2"
+        style={{ color: 'var(--bio-error-500)', fontWeight: 'var(--tw-medium)' as unknown as number }}
+      >
+        {message}
+      </p>
       {onRetry && (
         <button
           onClick={onRetry}
-          className="text-[10px] px-3 py-1 rounded-md bg-red-500/10 border border-red-500/20 text-red-400/60 hover:text-red-400 transition-all"
+          className="motion-fast"
+          style={{
+            fontSize: 'var(--t-xs)',
+            padding: '6px 14px',
+            borderRadius: 'var(--radius-full)',
+            background: 'color-mix(in srgb, var(--bio-error-500) 12%, transparent)',
+            color: 'var(--bio-error-500)',
+            fontWeight: 'var(--tw-semibold)' as unknown as number,
+            boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--bio-error-500) 25%, transparent)',
+            border: 'none',
+            cursor: 'pointer',
+          }}
         >
           Retry
         </button>

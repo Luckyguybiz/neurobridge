@@ -203,7 +203,7 @@ function LogicCard({ datasetId }: { datasetId: string }) {
     return (
       <div className="space-y-2">
         <div className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-          Test the organoid's ability to compute boolean logic: AND, OR, XOR, NAND, XNOR gates.
+          Test the organoid&apos;s ability to compute boolean logic: AND, OR, XOR, NAND, XNOR gates.
         </div>
         <RunButton label="Run Benchmark" onClick={run} />
       </div>
@@ -678,17 +678,22 @@ export default function ExperimentsPage() {
   }
 
   return (
-    <div className="p-3 sm:p-4">
+    <div className="p-3 sm:p-5">
       {/* Page header */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="mb-4"
+        className="mb-5"
       >
-        <h1 className="text-[16px] sm:text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Experiments Hub</h1>
-        <p className="text-[11px] sm:text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-          6 computational experiments inspired by DishBrain & Brainoware research
+        <h1
+          className="font-display"
+          style={{ fontSize: 'var(--t-2xl)', fontWeight: 'var(--tw-semibold)', letterSpacing: '-0.022em', lineHeight: 1.1, color: 'var(--text-primary)' }}
+        >
+          Experiments
+        </h1>
+        <p className="type-body" style={{ color: 'var(--text-secondary)', marginTop: 'var(--space-1)' }}>
+          6 computational experiments inspired by DishBrain &amp; Brainoware research.
         </p>
       </motion.div>
 

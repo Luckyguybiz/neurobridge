@@ -13,6 +13,9 @@ import ISIHistogram from '@/components/dashboard/ISIHistogram';
 import CrossCorrelogram from '@/components/dashboard/CrossCorrelogram';
 import ConnectivityGraph from '@/components/dashboard/ConnectivityGraph';
 import AdvancedAnalysis from '@/components/dashboard/AdvancedAnalysis';
+import { StatCard, Segmented, Panel, Button, Badge, Glass } from '@/components/design';
+import type { GlassTint } from '@/components/design';
+import { RadialGauge } from '@/components/charts/RadialGauge';
 
 type Tab = 'visualizations' | 'advanced';
 
@@ -24,114 +27,155 @@ const cardVariants = {
   }),
 };
 
-/** Obvious loading indicator for stat values — spinner + "Loading..." text */
-function StatShimmer() {
-  return (
-    <div className="flex items-center gap-1.5 mt-0.5">
-      <div className="w-3 h-3 border-2 border-cyan-400/40 border-t-cyan-400 rounded-full animate-spin shrink-0" />
-      <span className="text-[11px] animate-pulse" style={{ color: 'var(--text-muted)' }}>Loading…</span>
-    </div>
-  );
-}
-
-function QuickStats() {
+function NCIHero() {
   const router = useRouter();
-  const { cached } = useDashboardContext();
+  const { cached, summary, burstInfo, nElectrodes, duration } = useDashboardContext();
   const { iq, health, consciousness } = cached;
 
   const iqScore = Number(iq?.iq_score ?? iq?.score ?? 0);
   const iqGrade = String(iq?.grade ?? '?');
-  const healthRaw = Number(health?.health_score ?? health?.overall_score ?? 0);
-  const healthScore = healthRaw > 1 ? healthRaw : healthRaw * 100; // normalize: API may return 80 or 0.80
-  const consRaw = Number(consciousness?.consciousness_score ?? (consciousness?.sentience_risk as Record<string,unknown>)?.overall_score ?? 0);
-  const consScore = consRaw > 1 ? consRaw : consRaw * 100; // normalize
-  const consRisk = String(consciousness?.overall_risk_level ?? consciousness?.interpretation ?? '?');
+  const iqLoading = iq === undefined;
 
-  const cards = [
-    {
-      label: 'NCI Score',
-      tip: 'Network Complexity Index: 6-dimension composite of signal, connectivity, information, temporal, adaptability, learning properties (0-100)',
-      loading: iq === undefined,
-      value: iqScore > 0 ? `${iqScore.toFixed(0)} (${iqGrade})` : iq === null ? '—' : '',
-      color: iqScore >= 60 ? 'text-cyan-400' : iqScore >= 40 ? 'text-amber-400' : 'text-amber-400',
-      bg: 'from-cyan-500/8 border-cyan-500/10',
-      href: '/dashboard/iq',
-    },
+  const healthRaw = Number(health?.health_score ?? health?.overall_score ?? 0);
+  const healthScore = healthRaw > 1 ? healthRaw : healthRaw * 100;
+
+  const consRaw = Number(consciousness?.consciousness_score ?? (consciousness?.sentience_risk as Record<string,unknown>)?.overall_score ?? 0);
+  const consScore = consRaw > 1 ? consRaw : consRaw * 100;
+
+  const pop = summary?.population as Record<string, unknown> | undefined;
+  const meanRate = Number(pop?.mean_firing_rate_hz ?? 0);
+
+  const sideStats: Array<{ label: string; value: string; unit?: string; caption?: string; tint: GlassTint; loading: boolean; href: string }> = [
     {
       label: 'Health',
-      tip: 'Viability estimate: firing regularity, electrode coverage, amplitude stability',
+      value: healthScore > 0 ? healthScore.toFixed(0) : health === null ? '—' : '',
+      unit: healthScore > 0 ? '%' : undefined,
+      caption: 'Viability estimate',
+      tint: healthScore >= 70 ? 'primary' : healthScore >= 40 ? 'warn' : 'error',
       loading: health === undefined,
-      value: healthScore > 0 ? `${healthScore.toFixed(0)}%` : health === null ? '—' : '',
-      color: healthScore >= 70 ? 'text-emerald-400' : healthScore >= 40 ? 'text-amber-400' : 'text-red-400',
-      bg: 'from-emerald-500/8 border-emerald-500/10',
       href: '/dashboard/iq',
     },
     {
       label: 'Complexity',
-      // Complexity is not pre-fetched on Overview (its server cost would stall
-      // everything else). Card deep-links to Discovery where the analysis
-      // runs on demand — the value slot shows a CTA instead of "—".
-      tip: 'Network integration index (IIT Phi + PCI + transfer entropy). Computed on demand on the Discovery page — click to open.',
+      value: consScore > 0 ? consScore.toFixed(0) : 'Open',
+      unit: consScore > 0 ? '%' : '→',
+      caption: consScore > 0 ? 'Integration index' : 'Run on Discovery',
+      tint: 'neural',
       loading: consciousness === undefined,
-      value: consScore > 0
-        ? `${consScore.toFixed(0)}%`
-        : 'Open →',
-      color: consScore > 50 ? 'text-red-400' : consScore > 30 ? 'text-amber-400' : 'text-violet-400',
-      bg: 'from-violet-500/8 border-violet-500/10',
       href: '/dashboard/discovery',
     },
     {
-      label: 'Modules',
-      tip: '9 peer-reviewed analysis modules with 64 individual analysis endpoints',
-      loading: false,
-      value: '64 analyses',
-      color: 'text-cyan-400',
-      bg: 'from-cyan-500/8 border-cyan-500/10',
-      href: '/dashboard/experiments',
+      label: 'Firing rate',
+      value: meanRate > 0 ? meanRate.toFixed(2) : '—',
+      unit: meanRate > 0 ? 'Hz' : undefined,
+      caption: `${nElectrodes} ch · ${duration.toFixed(0)}s`,
+      tint: 'spark',
+      loading: summary == null,
+      href: '/dashboard/spikes',
+    },
+    {
+      label: 'Bursts',
+      value: burstInfo ? String(burstInfo.n_bursts) : '—',
+      unit: burstInfo ? `${burstInfo.burst_rate_per_min.toFixed(1)}/min` : undefined,
+      caption: 'Network bursts',
+      tint: 'primary',
+      loading: burstInfo == null,
+      href: '/dashboard/network',
     },
   ];
 
   return (
-    <>
-      <style jsx global>{`
-        @keyframes stat-shimmer {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-      `}</style>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-3">
-        {cards.map((card, i) => (
-          <motion.div
-            key={card.label}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05, duration: 0.4 }}
-            onClick={() => router.push(card.href)}
-            title={card.tip}
-            className={`px-3 py-2.5 rounded-xl bg-gradient-to-br ${card.bg} border cursor-pointer hover:scale-[1.02] transition-transform`}
-          >
-            <div className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{card.label}</div>
-            {card.loading
-              ? <StatShimmer />
-              : <div className={`text-[15px] font-bold tabular-nums ${card.color}`}>{card.value}</div>
-            }
-          </motion.div>
-        ))}
+    <Glass
+      radius="2xl"
+      elevation={3}
+      className="mb-4 anim-spring-in"
+      style={{ padding: 'var(--space-6)', position: 'relative', overflow: 'hidden' }}
+    >
+      {/* Subtle bio-accent blob under gauge */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          left: '8%',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: '280px',
+          height: '280px',
+          background: 'radial-gradient(circle, color-mix(in srgb, var(--bio-primary-500) 22%, transparent), transparent 70%)',
+          filter: 'blur(40px)',
+          pointerEvents: 'none',
+        }}
+      />
+
+      <div
+        className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8"
+        style={{ position: 'relative' }}
+      >
+        {/* Hero radial */}
+        <button
+          type="button"
+          onClick={() => router.push('/dashboard/iq')}
+          aria-label={`NCI Score ${iqScore.toFixed(0)} grade ${iqGrade}, open Complexity page`}
+          className="motion-spring"
+          style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', flex: '0 0 auto' }}
+        >
+          <RadialGauge
+            value={iqLoading || !iq ? 0 : iqScore}
+            max={100}
+            size={220}
+            accent="auto"
+            autoThresholds={[40, 60]}
+            label="NCI Score"
+            subtitle={iqLoading ? 'Computing…' : iq == null ? 'Not available' : `Grade ${iqGrade} · out of 100`}
+            loading={iqLoading}
+            ticks={10}
+          />
+        </button>
+
+        {/* Side stats */}
+        <div className="grid grid-cols-2 gap-3 flex-1 w-full">
+          {sideStats.map((s, i) => (
+            <motion.button
+              key={s.label}
+              type="button"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08 + i * 0.06, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              onClick={() => router.push(s.href)}
+              aria-label={`${s.label}: ${s.value}`}
+              className="text-left"
+              style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
+            >
+              <StatCard
+                label={s.label}
+                value={s.value}
+                unit={s.unit}
+                caption={s.caption}
+                tint={s.tint}
+                size="sm"
+                loading={s.loading}
+              />
+            </motion.button>
+          ))}
+        </div>
       </div>
-    </>
+    </Glass>
   );
 }
 
 export default function DashboardPage() {
-  const { datasetId, spikes, duration, nElectrodes, summary, burstInfo, status, loadingStep } = useDashboardContext();
+  const { datasetId, spikes, duration, nElectrodes, summary, burstInfo, status, loadingStep, cached } = useDashboardContext();
   const [activeTab, setActiveTab] = useState<Tab>('visualizations');
   const [reportLoading, setReportLoading] = useState(false);
 
-  // Staggered chart rendering — avoid blocking browser with 6 D3 charts at once
+  // Staggered chart rendering — avoid blocking browser with 6 D3 charts at once.
+  // Resets the count when spikes change (new dataset loaded), then drips in the
+  // remaining charts over 1 second.
   const [chartsReady, setChartsReady] = useState(0);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync to spikes prop change
     if (spikes.length === 0) { setChartsReady(0); return; }
-    // Render first 2 charts immediately, then add 2 more every 500ms
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- prime initial render after new data
     setChartsReady(2);
     const t1 = setTimeout(() => setChartsReady(4), 500);
     const t2 = setTimeout(() => setChartsReady(6), 1000);
@@ -160,27 +204,44 @@ export default function DashboardPage() {
   // Empty state — no data loaded yet
   if (status === 'idle' && !datasetId) {
     return (
-      <div className="p-3 sm:p-4">
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="text-4xl mb-4">🧠</div>
-          <h2 className="text-[16px] sm:text-[20px] font-display mb-2" style={{ color: 'var(--text-primary)' }}>Load data to begin analysis</h2>
-          <p className="text-[13px] max-w-md leading-relaxed mb-6" style={{ color: 'var(--text-muted)' }}>
-            Choose a data source from the header: <strong className="text-emerald-400">FinalSpark</strong> for real organoid data (2.6M spikes, 32ch MEA, 118h),
-            or <strong style={{ color: 'var(--text-secondary)' }}>30s/120s</strong> to generate synthetic spike data for testing.
+      <div className="p-4 sm:p-8">
+        <div className="flex flex-col items-center justify-center py-16 sm:py-24 text-center anim-spring-in">
+          {/* Breathing orb — sits where the emoji used to live */}
+          <div
+            className="anim-breathe"
+            style={{
+              width: '88px',
+              height: '88px',
+              borderRadius: '50%',
+              marginBottom: 'var(--space-6)',
+              background: 'radial-gradient(circle at 30% 30%, var(--bio-primary-400), var(--bio-neural-500) 70%, var(--bio-spark-600))',
+              boxShadow:
+                '0 0 80px color-mix(in srgb, var(--bio-primary-500) 40%, transparent), inset 0 0 40px rgba(255,255,255,0.15), inset 0 -10px 30px rgba(0,0,0,0.3)',
+            }}
+            aria-hidden="true"
+          />
+          <div className="type-eyebrow" style={{ marginBottom: 'var(--space-2)' }}>Choose a data source</div>
+          <h2 className="font-display" style={{ fontSize: 'var(--t-3xl)', fontWeight: 400, lineHeight: 1.1, letterSpacing: '-0.02em', color: 'var(--text-primary)', marginBottom: 'var(--space-3)' }}>
+            Load data to begin analysis
+          </h2>
+          <p className="type-body-large" style={{ maxWidth: '520px', color: 'var(--text-secondary)', marginBottom: 'var(--space-8)' }}>
+            Pick <span style={{ color: 'var(--bio-primary-500)', fontWeight: 'var(--tw-semibold)' as unknown as number }}>FinalSpark</span> for real organoid data (2.6M spikes, 32ch MEA, 118h),
+            or a synthetic dataset for testing.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-lg w-full text-[11px]">
-            <div className="px-4 py-3 rounded-xl text-left" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-              <div className="font-medium text-emerald-400 mb-1">FinalSpark</div>
-              <div style={{ color: 'var(--text-faint)' }}>Real organoid MEA recording. 4 organoids, 5 days, 437Hz.</div>
-            </div>
-            <div className="px-4 py-3 rounded-xl text-left" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-              <div className="font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Synthetic</div>
-              <div style={{ color: 'var(--text-faint)' }}>Generated spike data with configurable burst probability.</div>
-            </div>
-            <div className="px-4 py-3 rounded-xl text-left" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-              <div className="font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Upload</div>
-              <div style={{ color: 'var(--text-faint)' }}>Your own CSV/HDF5/NWB file. Any MEA system.</div>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full" style={{ maxWidth: '640px' }}>
+            {[
+              { title: 'FinalSpark', desc: 'Real organoid MEA. 4 organoids · 5 days · 437 Hz.', tone: 'primary' as const, badge: '2.6M spikes' },
+              { title: 'Synthetic',  desc: 'Generated spike data with configurable burst probability.', tone: 'spark' as const,   badge: '30s · 120s' },
+              { title: 'Upload',     desc: 'Your own CSV, HDF5, or NWB file. Any MEA system.', tone: 'neural' as const,  badge: 'Any format' },
+            ].map((c, i) => (
+              <Panel key={c.title} radius="xl" elevation={2} padding="md" className={`anim-fade-in-up anim-delay-${i + 1} text-left`}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-2)' }}>
+                  <div className="type-title-3" style={{ fontSize: 'var(--t-base)' }}>{c.title}</div>
+                  <Badge tone={c.tone} size="sm" variant="glass">{c.badge}</Badge>
+                </div>
+                <div className="type-caption" style={{ color: 'var(--text-tertiary)', lineHeight: 1.45 }}>{c.desc}</div>
+              </Panel>
+            ))}
           </div>
         </div>
       </div>
@@ -188,10 +249,6 @@ export default function DashboardPage() {
   }
 
   // Background analysis progress — cached === undefined means "still loading".
-  // Consciousness/Complexity is intentionally not in the background chain:
-  // it's the single most expensive endpoint and would block everything else.
-  // Users get it on demand from the Discovery page.
-  const { cached } = useDashboardContext();
   const bgSteps = [
     { label: 'Summary', done: summary != null },
     { label: 'Health', done: cached.health !== undefined },
@@ -204,29 +261,37 @@ export default function DashboardPage() {
 
   return (
     <div className="p-3 sm:p-4">
-      {/* Background analysis progress banner */}
+      {/* Background analysis progress banner — glass floating toolbar */}
       {bgLoading && (
         <motion.div
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-3 px-3 py-2 rounded-xl flex items-center gap-3 flex-wrap"
-          style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+          className="mb-3 px-4 py-2.5 rounded-xl flex items-center gap-3 flex-wrap"
+          style={{
+            background: 'var(--glass-ultra-thin)',
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            boxShadow: 'inset 0 1px 0 var(--edge-top), inset 0 -1px 0 var(--edge-bottom), 0 0 0 1px var(--edge-outline)',
+          }}
         >
-          <div className="w-4 h-4 border-2 border-cyan-400/40 border-t-cyan-400 rounded-full animate-spin shrink-0" />
-          <span className="text-[11px] font-medium" style={{ color: 'var(--text-secondary)' }}>
-            Running analysis {bgDone}/{bgTotal}
+          <Badge tone="spark" variant="glass" dot pulsing size="sm">
+            {bgDone}/{bgTotal}
+          </Badge>
+          <span className="tabular" style={{ fontSize: 'var(--t-sm)', fontWeight: 'var(--tw-medium)', color: 'var(--text-primary)' }}>
+            Running analysis
           </span>
-          <div className="flex-1 min-w-[100px] h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
+          <div className="flex-1 min-w-[120px] h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--glass-thick)' }}>
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-violet-500"
+              className="h-full rounded-full"
+              style={{ background: 'linear-gradient(90deg, var(--bio-primary-500), var(--bio-spark-600), var(--bio-neural-500))' }}
               initial={{ width: 0 }}
               animate={{ width: `${(bgDone / bgTotal) * 100}%` }}
               transition={{ duration: 0.4 }}
             />
           </div>
-          <div className="flex gap-1.5 text-[10px]" style={{ color: 'var(--text-faint)' }}>
+          <div className="flex gap-2" style={{ fontSize: 'var(--t-xs)', color: 'var(--text-tertiary)' }}>
             {bgSteps.map((s, i) => (
-              <span key={i} className={s.done ? 'text-emerald-400' : ''}>
+              <span key={i} style={{ color: s.done ? 'var(--bio-success-500)' : 'var(--text-tertiary)', fontWeight: s.done ? 'var(--tw-semibold)' as unknown as number : undefined }}>
                 {s.done ? '✓' : '○'} {s.label}
               </span>
             ))}
@@ -234,91 +299,144 @@ export default function DashboardPage() {
         </motion.div>
       )}
 
-      {/* Quick Stats */}
-      {status === 'ready' && datasetId && <QuickStats />}
+      {/* Hero: NCI radial gauge + side stats */}
+      {status === 'ready' && datasetId && <NCIHero />}
 
-      {/* Tab navigation */}
+      {/* Tab navigation — iOS-style segmented control */}
       {status === 'ready' && datasetId && (
-        <div className="flex gap-1 mb-3 flex-wrap">
-          {([
-            { key: 'visualizations' as Tab, label: 'Visualizations', count: 6 },
-            { key: 'advanced'       as Tab, label: 'Advanced', count: 12 },
-          ]).map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 whitespace-nowrap ${
-                activeTab === tab.key
-                  ? 'bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border border-cyan-500/20 text-cyan-400/90'
-                  : 'border'
-              }`}
-              style={activeTab !== tab.key ? { background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-muted)' } : undefined}
-            >
-              {tab.label}
-              {tab.count && <span className="ml-1 text-[9px] opacity-50">{tab.count}</span>}
-            </button>
-          ))}
-          <button
+        <div className="flex gap-2 mb-4 flex-wrap items-center">
+          <Segmented<Tab>
+            options={[
+              { value: 'visualizations', label: <>Visualizations <span style={{ opacity: 0.55, marginLeft: 4, fontSize: '10px' }}>6</span></> },
+              { value: 'advanced',       label: <>Advanced <span style={{ opacity: 0.55, marginLeft: 4, fontSize: '10px' }}>12</span></> },
+            ]}
+            value={activeTab}
+            onChange={setActiveTab}
+            size="sm"
+            accent="primary"
+            label="Dashboard view"
+          />
+          <Button
+            variant="glass"
+            size="sm"
+            accent="neutral"
+            loading={reportLoading}
             onClick={downloadFullReport}
-            disabled={reportLoading}
-            className="text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40 ml-auto whitespace-nowrap"
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+            style={{ marginLeft: 'auto' }}
           >
-            {reportLoading ? 'Generating...' : 'Full Report JSON'}
-          </button>
+            {reportLoading ? 'Generating…' : 'Full Report JSON'}
+          </Button>
         </div>
       )}
 
-      {/* Loading — with detailed progress stages */}
+      {/* Loading — glass card with progress stages */}
       {status === 'loading' && spikes.length === 0 && (
-        <div className="flex items-center justify-center py-20 sm:py-32">
-          <div className="text-center max-w-md px-4">
-            <div className="w-12 h-12 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto mb-5" />
-            <p className="text-[14px] font-medium mb-4" style={{ color: 'var(--text-secondary)' }}>
-              {loadingStep || 'Preparing...'}
-            </p>
-            {/* Progress checklist — shows what's done, in-progress, pending */}
-            <div className="text-left space-y-2 text-[11px]">
-              {[
-                { label: 'Parse data file', done: loadingStep?.includes('spike data') || loadingStep === '' },
-                { label: 'Load spike events', done: loadingStep === '', active: loadingStep?.includes('spike data') },
-                { label: 'Run background analysis', done: false, active: loadingStep === '' },
-              ].map((s, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0" style={{
-                    background: s.done ? 'var(--accent-emerald)' : s.active ? 'var(--accent-cyan)' : 'var(--border)',
-                  }}>
-                    {s.done && <span className="text-[10px] text-black">✓</span>}
-                    {s.active && <div className="w-2 h-2 border border-black/40 border-t-transparent rounded-full animate-spin" />}
+        <div className="flex items-center justify-center py-16 sm:py-24">
+          <Panel radius="2xl" elevation={3} padding="lg" className="anim-spring-in" style={{ maxWidth: '460px', width: '100%' }}>
+            <div className="flex flex-col items-center text-center">
+              {/* Spinner ring with bio colors */}
+              <div
+                className="anim-spin-slow"
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '50%',
+                  background:
+                    'conic-gradient(from 0deg, var(--bio-primary-500), var(--bio-spark-600), var(--bio-neural-500), var(--bio-primary-500))',
+                  mask: 'radial-gradient(farthest-side, transparent calc(100% - 4px), black calc(100% - 4px))',
+                  WebkitMask: 'radial-gradient(farthest-side, transparent calc(100% - 4px), black calc(100% - 4px))',
+                  marginBottom: 'var(--space-5)',
+                }}
+                aria-hidden="true"
+              />
+              <p className="type-title-3" style={{ marginBottom: 'var(--space-4)' }}>
+                {loadingStep || 'Preparing…'}
+              </p>
+              <div className="text-left space-y-2" style={{ alignSelf: 'stretch', fontSize: 'var(--t-sm)' }}>
+                {[
+                  { label: 'Parse data file', done: loadingStep?.includes('spike data') || loadingStep === '' },
+                  { label: 'Load spike events', done: loadingStep === '', active: loadingStep?.includes('spike data') },
+                  { label: 'Run background analysis', done: false, active: loadingStep === '' },
+                ].map((s, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div
+                      className="shrink-0"
+                      style={{
+                        width: '18px',
+                        height: '18px',
+                        borderRadius: '50%',
+                        display: 'grid',
+                        placeItems: 'center',
+                        background: s.done
+                          ? 'var(--bio-success-500)'
+                          : s.active
+                            ? 'color-mix(in srgb, var(--bio-spark-600) 28%, transparent)'
+                            : 'var(--glass-regular)',
+                        boxShadow: s.active ? '0 0 12px color-mix(in srgb, var(--bio-spark-600) 40%, transparent)' : undefined,
+                      }}
+                    >
+                      {s.done && <span style={{ fontSize: '11px', color: '#0a0c14', fontWeight: 700 }}>✓</span>}
+                      {s.active && (
+                        <div
+                          className="anim-spin-slow"
+                          style={{
+                            width: '10px',
+                            height: '10px',
+                            borderRadius: '50%',
+                            border: '1.5px solid color-mix(in srgb, var(--bio-spark-600) 60%, transparent)',
+                            borderTopColor: 'var(--bio-spark-600)',
+                          }}
+                        />
+                      )}
+                    </div>
+                    <span
+                      style={{
+                        color: s.done ? 'var(--text-tertiary)' : s.active ? 'var(--text-primary)' : 'var(--text-quaternary)',
+                        fontWeight: s.active
+                          ? ('var(--tw-medium)' as unknown as number)
+                          : ('var(--tw-normal)' as unknown as number),
+                      }}
+                    >
+                      {s.label}
+                    </span>
                   </div>
-                  <span style={{ color: s.done ? 'var(--text-muted)' : s.active ? 'var(--text-primary)' : 'var(--text-faint)' }}>
-                    {s.label}
-                  </span>
-                </div>
-              ))}
+                ))}
+              </div>
+              <p className="type-caption" style={{ marginTop: 'var(--space-5)', color: 'var(--text-quaternary)' }}>
+                First load of FinalSpark takes ~10s (parsing 129MB CSV). Subsequent loads are cached.
+              </p>
             </div>
-            <p className="text-[10px] mt-5" style={{ color: 'var(--text-faint)' }}>
-              First load of FinalSpark takes ~10s (parsing 129MB CSV). Subsequent loads are cached.
-            </p>
-          </div>
+          </Panel>
         </div>
       )}
 
       {/* No spikes but ready — auto-retry loading spikes */}
       {status === 'ready' && datasetId && spikes.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <div className="w-6 h-6 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
-          <div className="text-[12px]" style={{ color: 'var(--text-muted)' }}>Loading visualizations...</div>
+          <div
+            className="anim-spin-slow"
+            style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '50%',
+              background: 'conic-gradient(from 0deg, var(--bio-primary-500), var(--bio-spark-600), var(--bio-neural-500), var(--bio-primary-500))',
+              mask: 'radial-gradient(farthest-side, transparent calc(100% - 3px), black calc(100% - 3px))',
+              WebkitMask: 'radial-gradient(farthest-side, transparent calc(100% - 3px), black calc(100% - 3px))',
+            }}
+            aria-hidden="true"
+          />
+          <div className="type-caption">Loading visualizations…</div>
         </div>
       )}
 
       {/* Content grid */}
       {spikes.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-          {/* Advanced Analysis tab */}
+          {/* Advanced Analysis tab — `key` re-mounts on dataset change, which
+              naturally resets internal state (visible count) without an effect. */}
           {activeTab === 'advanced' && datasetId && (
             <div className="col-span-full">
-              <AdvancedAnalysis datasetId={datasetId} />
+              <AdvancedAnalysis key={datasetId} datasetId={datasetId} />
             </div>
           )}
 

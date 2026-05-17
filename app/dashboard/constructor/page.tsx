@@ -300,12 +300,24 @@ export default function ConstructorPage() {
   const filteredProtocols = selected ? PROTOCOLS.filter(p => p.id === selected) : PROTOCOLS;
 
   return (
-    <div className="p-3 sm:p-4">
+    <div className="p-3 sm:p-5">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mb-4">
-        <h1 className="text-[16px] sm:text-[18px] font-display" style={{ color: 'var(--text-primary)' }}>Experiment Constructor</h1>
-        <p className="text-[11px] sm:text-[12px] mt-0.5 break-words" style={{ color: 'var(--text-muted)' }}>
-          5 learning protocols from DishBrain, Brainoware, UCSC, and FinalSpark · {datasetId ? <>Dataset: <span className="font-mono text-[10px] break-all">{datasetId}</span></> : 'Generate data first'}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mb-5">
+        <h1
+          className="font-display"
+          style={{ fontSize: 'var(--t-2xl)', fontWeight: 'var(--tw-semibold)', letterSpacing: '-0.022em', lineHeight: 1.1, color: 'var(--text-primary)' }}
+        >
+          Experiment Constructor
+        </h1>
+        <p className="type-body break-words" style={{ color: 'var(--text-secondary)', marginTop: 'var(--space-1)' }}>
+          5 learning protocols from DishBrain, Brainoware, UCSC, and FinalSpark
+          {datasetId ? (
+            <>
+              {' · '}Dataset: <span className="font-mono" style={{ fontSize: 'var(--t-xs)', color: 'var(--text-tertiary)' }}>{datasetId}</span>
+            </>
+          ) : (
+            ' · Generate data first'
+          )}
         </p>
       </motion.div>
 

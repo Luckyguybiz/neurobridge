@@ -306,8 +306,8 @@ export default function AdvancedAnalysis({ datasetId }: { datasetId: string }) {
     return () => clearTimeout(t);
   }, [visible]);
 
-  // Reset when dataset changes
-  useEffect(() => { setVisible(3); }, [datasetId]);
+  // Reset on dataset change happens via `key={datasetId}` in the parent —
+  // re-mounts this component, which naturally resets `visible` to its initial 3.
 
   return (
     <>
