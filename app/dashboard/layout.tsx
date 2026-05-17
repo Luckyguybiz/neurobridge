@@ -151,11 +151,28 @@ function LiveDot() {
 
 function MetricPill({ label, value, unit }: { label: string; value: string; unit?: string }) {
   return (
-    <div className="flex flex-col px-2.5 py-1.5 rounded-lg" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-      <span className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{label}</span>
-      <span className="text-[13px] font-medium tabular-nums leading-tight" style={{ color: 'var(--text-primary)' }}>
+    <div
+      className="flex flex-col px-3 py-1.5 rounded-lg"
+      style={{
+        background: 'var(--glass-ultra-thin)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        boxShadow: 'inset 0 0 0 1px var(--edge-outline)',
+      }}
+    >
+      <span className="type-eyebrow" style={{ fontSize: '9px' }}>{label}</span>
+      <span
+        className="tabular"
+        style={{
+          fontSize: 'var(--t-sm)',
+          fontWeight: 'var(--tw-semibold)',
+          color: 'var(--text-primary)',
+          lineHeight: 1.1,
+          letterSpacing: '-0.01em',
+        }}
+      >
         {value}
-        {unit && <span className="text-[10px] ml-0.5" style={{ color: 'var(--text-muted)' }}>{unit}</span>}
+        {unit && <span style={{ fontSize: '10px', marginLeft: '2px', color: 'var(--text-tertiary)', fontWeight: 400 }}>{unit}</span>}
       </span>
     </div>
   );
@@ -490,6 +507,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     return pathname === href || pathname.startsWith(href + '/');
   };
 
+  // Current page label for mobile breadcrumb (sidebar is hidden on phone)
+  const currentPage = NAV.find((n) => isActive(n.href)) ?? NAV[0];
+
   return (
     <SubsetProvider>
     <DashboardContext.Provider value={{
@@ -500,10 +520,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       live, liveConnect, livePause, liveResume, liveDisconnect,
     }}>
       <div className="min-h-screen grain flex" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-        {/* Ambient blobs */}
+        {/* Ambient bio-tinted blobs — subsurface glow beneath glass layers */}
         <div className="fixed inset-0 pointer-events-none z-0" style={{ opacity: 'var(--ambient-opacity)' }}>
-          <div className="absolute top-0 left-1/4 w-[600px] h-[400px] rounded-full blur-[150px]" style={{ background: 'var(--accent-cyan)' }} />
-          <div className="absolute bottom-0 right-1/4 w-[500px] h-[300px] rounded-full blur-[120px]" style={{ background: 'var(--accent-violet)' }} />
+          <div className="absolute top-0 left-1/4 w-[720px] h-[480px] rounded-full blur-[160px]" style={{ background: 'var(--bio-primary-500)' }} />
+          <div className="absolute bottom-0 right-1/4 w-[560px] h-[340px] rounded-full blur-[140px]" style={{ background: 'var(--bio-neural-500)' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full blur-[180px]" style={{ background: 'var(--bio-spark-600)', opacity: 0.35 }} />
         </div>
 
         {/* Mobile sidebar overlay */}
@@ -518,25 +539,34 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           )}
         </AnimatePresence>
 
-        {/* ── Sidebar ─────────────────────────────────────────────────── */}
+        {/* ── Sidebar (Liquid Glass) ─────────────────────────────────── */}
         <aside
           className={`
             fixed left-0 top-0 h-full z-40 w-[220px]
-            backdrop-blur-2xl flex flex-col
+            flex flex-col
             transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]
             ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           `}
-          style={{ background: 'var(--bg-secondary)', borderRight: '1px solid var(--border)' }}
+          style={{
+            background: 'var(--glass-thin)',
+            backdropFilter: 'blur(40px) saturate(200%)',
+            WebkitBackdropFilter: 'blur(40px) saturate(200%)',
+            boxShadow: 'inset -1px 0 0 var(--edge-outline), 1px 0 24px rgba(0,0,0,0.12)',
+          }}
         >
           {/* Logo */}
-          <div className="h-12 flex items-center justify-between px-4" style={{ borderBottom: '1px solid var(--border)' }}>
+          <div className="h-14 flex items-center justify-between px-4" style={{ borderBottom: '1px solid var(--edge-outline)' }}>
             <Link href="/" className="flex items-center gap-2 group">
-              <span className="text-[14px] font-bold tracking-tight transition-colors duration-300" style={{ color: 'var(--text-primary)' }}>neuro<span className="bg-gradient-to-r from-cyan-400 to-violet-500 bg-clip-text text-transparent">computers</span></span>
+              <span className="font-display" style={{ fontSize: 'var(--t-md)', fontWeight: 'var(--tw-semibold)', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
+                neuro
+                <span className="text-hero-gradient">computers</span>
+              </span>
             </Link>
             <button
-              className="lg:hidden transition-colors"
-              style={{ color: 'var(--text-muted)' }}
+              className="lg:hidden motion-fast"
+              style={{ color: 'var(--text-tertiary)' }}
               onClick={() => setSidebarOpen(false)}
+              aria-label="Close menu"
             >
               <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5}>
                 <path d="M3 3l10 10M13 3L3 13" />
@@ -545,9 +575,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </div>
 
           {/* Nav items */}
-          <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
-            <div className="px-2 pb-1.5">
-              <span className="text-[9px] font-medium uppercase tracking-widest" style={{ color: 'var(--text-faint)' }}>Analysis</span>
+          <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto" aria-label="Primary">
+            <div className="px-2 pb-2">
+              <span className="type-eyebrow">Analysis</span>
             </div>
             {NAV.map(({ href, label, Icon }) => {
               const active = isActive(href);
@@ -556,24 +586,41 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   key={href}
                   href={href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`
-                    flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium
-                    transition-all duration-300 group relative
-                    ${active ? 'border' : ''}
-                  `}
+                  aria-current={active ? 'page' : undefined}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl relative motion-spring group"
                   style={active
-                    ? { background: 'linear-gradient(to right, color-mix(in srgb, var(--accent-cyan) 15%, transparent), color-mix(in srgb, var(--accent-violet) 10%, transparent))', borderColor: 'color-mix(in srgb, var(--accent-cyan) 15%, transparent)', color: 'var(--text-primary)' }
-                    : { color: 'var(--text-muted)' }
+                    ? {
+                        background: 'color-mix(in srgb, var(--bio-primary-500) 10%, var(--glass-regular))',
+                        boxShadow: 'inset 0 1px 0 var(--edge-top), inset 0 -1px 0 var(--edge-bottom), 0 0 0 1px color-mix(in srgb, var(--bio-primary-500) 25%, transparent)',
+                        color: 'var(--text-primary)',
+                        fontSize: 'var(--t-sm)',
+                        fontWeight: 'var(--tw-semibold)',
+                      }
+                    : {
+                        color: 'var(--text-secondary)',
+                        fontSize: 'var(--t-sm)',
+                        fontWeight: 'var(--tw-medium)',
+                      }
                   }
                 >
                   {active && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full" style={{ background: 'linear-gradient(to bottom, var(--accent-cyan), var(--accent-violet))' }} />
+                    <div
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-full"
+                      style={{ background: 'linear-gradient(180deg, var(--bio-primary-500), var(--bio-neural-500))', boxShadow: '0 0 8px color-mix(in srgb, var(--bio-primary-500) 50%, transparent)' }}
+                      aria-hidden="true"
+                    />
                   )}
-                  <span className="transition-colors duration-300" style={{ color: active ? 'var(--accent-cyan)' : 'var(--text-faint)' }}>
+                  <span className="motion-fast" style={{ color: active ? 'var(--bio-primary-500)' : 'var(--text-tertiary)' }}>
                     <Icon />
                   </span>
                   {label}
-                  {active && <div className="ml-auto w-1 h-1 rounded-full" style={{ background: 'var(--accent-cyan)' }} />}
+                  {active && (
+                    <span
+                      className="ml-auto pulse-dot"
+                      style={{ background: 'var(--bio-primary-500)', boxShadow: '0 0 8px var(--bio-primary-500)', width: '6px', height: '6px' }}
+                      aria-hidden="true"
+                    />
+                  )}
                 </Link>
               );
             })}
@@ -581,25 +628,36 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
           {/* Status in sidebar */}
           {status === 'ready' && datasetId && (
-            <div className="px-4 py-3" style={{ borderTop: '1px solid var(--border)' }}>
-              <div className="text-[9px] uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-faint)' }}>Dataset</div>
-              <div className="font-mono text-[10px] truncate" style={{ color: 'var(--text-muted)' }}>{datasetId}</div>
-              <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{nElectrodes} ch · {duration.toFixed(0)}s</div>
+            <div className="px-4 py-3" style={{ borderTop: '1px solid var(--edge-outline)' }}>
+              <div className="type-eyebrow" style={{ marginBottom: '6px' }}>Dataset</div>
+              <div className="font-mono truncate" style={{ fontSize: '10px', color: 'var(--text-tertiary)' }}>{datasetId}</div>
+              <div style={{ fontSize: 'var(--t-xs)', color: 'var(--text-tertiary)', marginTop: '2px', fontVariantNumeric: 'tabular-nums' }}>{nElectrodes} ch · {duration.toFixed(0)}s</div>
             </div>
           )}
 
           {/* Footer */}
-          <div className="px-2 pb-4 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
-            <div className="flex items-center justify-between px-3 py-1.5 mb-1">
-              <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Theme</span>
+          <div className="px-2 pb-4 pt-2" style={{ borderTop: '1px solid var(--edge-outline)' }}>
+            <div className="flex items-center justify-between px-3 py-2 mb-1">
+              <span className="type-eyebrow">Theme</span>
               <ThemeToggle />
             </div>
             <button
               onClick={() => setDebugOpen((v) => !v)}
-              className={`flex items-center gap-2 w-full px-3 py-2 rounded-xl text-[12px] transition-all duration-300 mb-1 ${
-                debugOpen ? 'bg-cyan-500/10 border border-cyan-500/15' : 'hover:bg-[var(--bg-card-hover)]'
-              }`}
-              style={{ color: debugOpen ? 'var(--accent-cyan)' : 'var(--text-muted)' }}
+              className="flex items-center gap-2 w-full px-3 py-2 rounded-xl motion-spring mb-1"
+              style={debugOpen
+                ? {
+                    background: 'color-mix(in srgb, var(--bio-spark-600) 14%, var(--glass-ultra-thin))',
+                    boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--bio-spark-600) 30%, transparent)',
+                    color: 'var(--bio-spark-600)',
+                    fontSize: 'var(--t-sm)',
+                    fontWeight: 'var(--tw-medium)',
+                  }
+                : {
+                    color: 'var(--text-secondary)',
+                    fontSize: 'var(--t-sm)',
+                    fontWeight: 'var(--tw-medium)',
+                  }
+              }
               title="Toggle API Debug Panel (Ctrl+Shift+D)"
               aria-label="Toggle API debug panel"
               aria-expanded={debugOpen}
@@ -612,8 +670,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </button>
             <Link
               href="/"
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] hover:bg-[var(--bg-card-hover)] transition-all duration-300"
-              style={{ color: 'var(--text-muted)' }}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl motion-spring"
+              style={{ color: 'var(--text-secondary)', fontSize: 'var(--t-sm)', fontWeight: 'var(--tw-medium)' }}
             >
               <svg viewBox="0 0 16 16" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round">
                 <path d="M10 3L5 8l5 5" />
@@ -625,27 +683,63 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
         {/* ── Main area ────────────────────────────────────────────────── */}
         <div className="flex-1 flex flex-col min-w-0 lg:pl-[220px]">
-          {/* Header */}
-          <header className="sticky top-0 z-20 backdrop-blur-2xl border-b" style={{ background: 'color-mix(in srgb, var(--bg-primary) 70%, transparent)', borderColor: 'var(--border)' }}>
+          {/* Floating glass header */}
+          <header
+            className="sticky top-0 z-20"
+            style={{
+              background: 'color-mix(in srgb, var(--surface-1) 72%, transparent)',
+              backdropFilter: 'blur(30px) saturate(200%)',
+              WebkitBackdropFilter: 'blur(30px) saturate(200%)',
+              boxShadow: 'inset 0 -1px 0 var(--edge-outline), 0 1px 0 rgba(0,0,0,0.04)',
+            }}>
             <div className="px-3 sm:px-5 min-h-12 py-1.5 sm:py-0 sm:h-12 flex items-center justify-between gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
-              {/* Mobile menu toggle */}
-              <button
-                className="lg:hidden transition-colors flex items-center justify-center w-10 h-10 -ml-2"
-                style={{ color: 'var(--text-muted)' }}
-                onClick={() => setSidebarOpen(true)}
-                aria-label="Open menu"
-              >
-                <svg viewBox="0 0 20 20" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round">
-                  <path d="M3 6h14M3 10h14M3 14h14" />
-                </svg>
-              </button>
+              {/* Mobile menu toggle + current page label (sidebar hidden on phone) */}
+              <div className="flex items-center gap-2 lg:hidden -ml-1">
+                <button
+                  type="button"
+                  className="transition-colors flex items-center justify-center w-10 h-10"
+                  style={{ color: 'var(--text-muted)' }}
+                  onClick={() => setSidebarOpen(true)}
+                  aria-label="Open menu"
+                >
+                  <svg viewBox="0 0 20 20" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round">
+                    <path d="M3 6h14M3 10h14M3 14h14" />
+                  </svg>
+                </button>
+                <span
+                  className="truncate"
+                  style={{
+                    fontSize: 'var(--t-sm)',
+                    fontWeight: 'var(--tw-semibold)',
+                    color: 'var(--text-primary)',
+                    letterSpacing: '-0.01em',
+                  }}
+                >
+                  {currentPage.label}
+                </span>
+              </div>
 
               {/* Status badge + dataset name */}
               <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
                 {status === 'ready' && (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/[0.08] border border-emerald-500/[0.12] shrink-0">
+                  <div
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full shrink-0"
+                    style={{
+                      background: 'color-mix(in srgb, var(--bio-success-500) 12%, var(--glass-ultra-thin))',
+                      backdropFilter: 'blur(20px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                      boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--bio-success-500) 28%, transparent)',
+                    }}
+                  >
                     <LiveDot />
-                    <span className="text-[10px] text-emerald-400/80 font-medium">
+                    <span
+                      style={{
+                        fontSize: 'var(--t-xs)',
+                        color: 'var(--bio-success-500)',
+                        fontWeight: 'var(--tw-semibold)',
+                        letterSpacing: '0.01em',
+                      }}
+                    >
                       {datasetSource === 'finalspark' || datasetSource === 'fs437'
                         ? 'FinalSpark 5-day'
                         : datasetSource === 'synthetic-30'
@@ -656,22 +750,71 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                               ? 'Uploaded'
                               : 'READY'}
                     </span>
-                    <span className="text-[10px] text-emerald-400/50 font-mono tabular-nums">
+                    <span
+                      className="font-mono tabular"
+                      style={{
+                        fontSize: '10px',
+                        color: 'color-mix(in srgb, var(--bio-success-500) 60%, transparent)',
+                      }}
+                    >
                       {Math.floor(elapsed / 60)}:{(elapsed % 60).toString().padStart(2, '0')}
                     </span>
                   </div>
                 )}
                 {status === 'loading' && (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/[0.08] border border-amber-500/[0.12] shrink-0">
-                    <div className="w-3 h-3 border-[1.5px] border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
-                    <span className="text-[10px] text-amber-400/80 font-medium">
-                      {loadingStep || 'Loading...'}
+                  <div
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full shrink-0"
+                    style={{
+                      background: 'color-mix(in srgb, var(--bio-warn-500) 14%, var(--glass-ultra-thin))',
+                      backdropFilter: 'blur(20px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                      boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--bio-warn-500) 30%, transparent)',
+                    }}
+                  >
+                    <div
+                      className="anim-spin-slow"
+                      style={{
+                        width: '11px',
+                        height: '11px',
+                        borderRadius: '50%',
+                        background:
+                          'conic-gradient(from 0deg, var(--bio-warn-500), var(--bio-primary-500), var(--bio-warn-500))',
+                        mask: 'radial-gradient(farthest-side, transparent calc(100% - 1.5px), black calc(100% - 1.5px))',
+                        WebkitMask: 'radial-gradient(farthest-side, transparent calc(100% - 1.5px), black calc(100% - 1.5px))',
+                      }}
+                      aria-hidden="true"
+                    />
+                    <span
+                      style={{
+                        fontSize: 'var(--t-xs)',
+                        color: 'var(--bio-warn-500)',
+                        fontWeight: 'var(--tw-semibold)',
+                      }}
+                    >
+                      {loadingStep || 'Loading…'}
                     </span>
                   </div>
                 )}
                 {status === 'error' && (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-red-500/[0.08] border border-red-500/[0.12] shrink-0">
-                    <span className="text-[10px] text-red-400/80 font-medium">ERROR</span>
+                  <div
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full shrink-0"
+                    style={{
+                      background: 'color-mix(in srgb, var(--bio-error-500) 12%, var(--glass-ultra-thin))',
+                      backdropFilter: 'blur(20px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                      boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--bio-error-500) 28%, transparent)',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 'var(--t-xs)',
+                        color: 'var(--bio-error-500)',
+                        fontWeight: 'var(--tw-semibold)',
+                        letterSpacing: '0.02em',
+                      }}
+                    >
+                      ERROR
+                    </span>
                   </div>
                 )}
 
@@ -731,15 +874,47 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     }
                   }}
                   disabled={status === 'loading'}
-                  className={`text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40 shrink-0 whitespace-nowrap ${
-                    datasetSource === 'finalspark' && status === 'ready'
-                      ? 'bg-gradient-to-r from-emerald-500/25 to-cyan-500/25 border border-emerald-400/30 text-emerald-300 ring-1 ring-emerald-400/20'
-                      : 'bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 border border-emerald-500/20 text-emerald-400/80 hover:text-emerald-300'
-                  }`}
+                  className="motion-spring shrink-0 whitespace-nowrap inline-flex items-center gap-1.5"
+                  style={{
+                    fontSize: 'var(--t-xs)',
+                    fontWeight: 'var(--tw-semibold)',
+                    padding: '6px 14px',
+                    borderRadius: 'var(--radius-full)',
+                    background: datasetSource === 'finalspark' && status === 'ready'
+                      ? 'color-mix(in srgb, var(--bio-primary-500) 22%, var(--glass-ultra-thin))'
+                      : 'color-mix(in srgb, var(--bio-primary-500) 14%, var(--glass-ultra-thin))',
+                    backdropFilter: 'blur(20px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                    color: 'var(--bio-primary-500)',
+                    boxShadow: datasetSource === 'finalspark' && status === 'ready'
+                      ? 'inset 0 0 0 1px color-mix(in srgb, var(--bio-primary-500) 45%, transparent), 0 0 16px color-mix(in srgb, var(--bio-primary-500) 18%, transparent)'
+                      : 'inset 0 0 0 1px color-mix(in srgb, var(--bio-primary-500) 28%, transparent)',
+                    border: 'none',
+                    cursor: status === 'loading' ? 'wait' : 'pointer',
+                    opacity: status === 'loading' ? 0.5 : 1,
+                  }}
                 >
-                  {datasetSource === 'finalspark' && status === 'loading' && <span className="inline-block w-2.5 h-2.5 border-[1.5px] border-amber-400/30 border-t-amber-400 rounded-full animate-spin mr-1 align-middle" />}
+                  {datasetSource === 'finalspark' && status === 'loading' && (
+                    <span
+                      className="anim-spin-slow"
+                      style={{
+                        width: '11px',
+                        height: '11px',
+                        borderRadius: '50%',
+                        background: 'conic-gradient(from 0deg, var(--bio-primary-500), var(--bio-spark-600), var(--bio-primary-500))',
+                        mask: 'radial-gradient(farthest-side, transparent calc(100% - 1.5px), black calc(100% - 1.5px))',
+                        WebkitMask: 'radial-gradient(farthest-side, transparent calc(100% - 1.5px), black calc(100% - 1.5px))',
+                      }}
+                      aria-hidden="true"
+                    />
+                  )}
                   FinalSpark
-                  <span className="hidden sm:inline text-[8px] opacity-50 ml-0.5">fs437</span>
+                  <span
+                    className="hidden sm:inline"
+                    style={{ fontSize: '9px', opacity: 0.55, marginLeft: '2px', letterSpacing: '0.04em' }}
+                  >
+                    fs437
+                  </span>
                 </button>
                 {/* FinalSpark metadata tooltip */}
                 {datasetSource === 'finalspark' && status === 'ready' && (
@@ -759,16 +934,40 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                       onClick={btn.onClick}
                       disabled={status === 'loading'}
                       title={btn.title}
-                      className={`text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40 shrink-0 whitespace-nowrap ${
-                        isActive
-                          ? 'bg-gradient-to-r from-cyan-500/25 to-violet-500/25 border border-cyan-400/30 text-cyan-300 ring-1 ring-cyan-400/20'
-                          : isLoading
-                            ? 'bg-gradient-to-r from-amber-500/15 to-amber-500/10 border border-amber-500/20 text-amber-400/80'
-                            : 'hover:text-cyan-300'
-                      }`}
-                      style={!isActive && !isLoading ? { background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' } : undefined}
+                      className="motion-spring shrink-0 whitespace-nowrap inline-flex items-center gap-1.5"
+                      style={{
+                        fontSize: 'var(--t-xs)',
+                        fontWeight: 'var(--tw-semibold)',
+                        padding: '6px 14px',
+                        borderRadius: 'var(--radius-full)',
+                        background: isActive
+                          ? 'color-mix(in srgb, var(--bio-spark-600) 20%, var(--glass-ultra-thin))'
+                          : 'var(--glass-ultra-thin)',
+                        backdropFilter: 'blur(20px) saturate(180%)',
+                        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                        color: isActive ? 'var(--bio-spark-600)' : 'var(--text-secondary)',
+                        boxShadow: isActive
+                          ? 'inset 0 0 0 1px color-mix(in srgb, var(--bio-spark-600) 40%, transparent), 0 0 14px color-mix(in srgb, var(--bio-spark-600) 16%, transparent)'
+                          : 'inset 0 0 0 1px var(--edge-outline)',
+                        border: 'none',
+                        cursor: status === 'loading' ? 'wait' : 'pointer',
+                        opacity: status === 'loading' && !isLoading ? 0.5 : 1,
+                      }}
                     >
-                      {isLoading && <span className="inline-block w-2.5 h-2.5 border-[1.5px] border-amber-400/30 border-t-amber-400 rounded-full animate-spin mr-1 align-middle" />}
+                      {isLoading && (
+                        <span
+                          className="anim-spin-slow"
+                          style={{
+                            width: '11px',
+                            height: '11px',
+                            borderRadius: '50%',
+                            background: 'conic-gradient(from 0deg, var(--bio-warn-500), var(--bio-primary-500), var(--bio-warn-500))',
+                            mask: 'radial-gradient(farthest-side, transparent calc(100% - 1.5px), black calc(100% - 1.5px))',
+                            WebkitMask: 'radial-gradient(farthest-side, transparent calc(100% - 1.5px), black calc(100% - 1.5px))',
+                          }}
+                          aria-hidden="true"
+                        />
+                      )}
                       {btn.label}
                     </button>
                   );
@@ -777,16 +976,39 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   onClick={() => fileInputRef.current?.click()}
                   disabled={status === 'loading'}
                   title="Upload your own MEA dataset (CSV, HDF5, Parquet)"
-                  className="text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 disabled:opacity-40 shrink-0 whitespace-nowrap"
-                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                  className="motion-spring shrink-0 whitespace-nowrap"
+                  style={{
+                    fontSize: 'var(--t-xs)',
+                    fontWeight: 'var(--tw-semibold)',
+                    padding: '6px 14px',
+                    borderRadius: 'var(--radius-full)',
+                    background: 'var(--glass-ultra-thin)',
+                    backdropFilter: 'blur(20px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                    color: 'var(--text-secondary)',
+                    boxShadow: 'inset 0 0 0 1px var(--edge-outline)',
+                    border: 'none',
+                    cursor: status === 'loading' ? 'wait' : 'pointer',
+                    opacity: status === 'loading' ? 0.5 : 1,
+                  }}
                 >
                   Upload
                 </button>
                 {datasetId && status === 'ready' && (
                   <a
                     href={api.getExportCSVUrl(datasetId)}
-                    className="text-[11px] px-3 py-1.5 rounded-lg transition-all duration-300 shrink-0 whitespace-nowrap"
-                    style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                    className="motion-spring shrink-0 whitespace-nowrap inline-flex items-center"
+                    style={{
+                      fontSize: 'var(--t-xs)',
+                      fontWeight: 'var(--tw-semibold)',
+                      padding: '6px 14px',
+                      borderRadius: 'var(--radius-full)',
+                      background: 'var(--glass-ultra-thin)',
+                      backdropFilter: 'blur(20px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                      color: 'var(--text-secondary)',
+                      boxShadow: 'inset 0 0 0 1px var(--edge-outline)',
+                    }}
                   >
                     CSV
                   </a>
@@ -796,8 +1018,21 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
             {/* Error bar */}
             {error && (
-              <div className="px-4 pb-2">
-                <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-[11px] text-red-400">{error}</div>
+              <div className="px-4 pb-3">
+                <div
+                  className="px-4 py-2.5 rounded-xl anim-fade-in-down"
+                  style={{
+                    background: 'color-mix(in srgb, var(--bio-error-500) 12%, var(--glass-ultra-thin))',
+                    backdropFilter: 'blur(20px) saturate(180%)',
+                    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                    boxShadow: 'inset 0 0 0 1px color-mix(in srgb, var(--bio-error-500) 28%, transparent)',
+                    fontSize: 'var(--t-sm)',
+                    fontWeight: 'var(--tw-medium)',
+                    color: 'var(--bio-error-500)',
+                  }}
+                >
+                  {error}
+                </div>
               </div>
             )}
           </header>
